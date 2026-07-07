@@ -27,6 +27,10 @@ https://your-vercel-link.vercel.app/admin
 - Upload small gallery images.
 - Delete gallery items.
 - View volunteer/contact submissions.
+- View donation test records.
+- View newsletter subscribers.
+- Send newsletter email from the CMS after email credentials are configured.
+- View visitor analytics privately in the CMS.
 
 ## Vercel Environment Variables Needed
 
