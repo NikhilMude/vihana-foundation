@@ -34,7 +34,7 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
         <Logo brandName={content.brandName} brandTagline={content.brandTagline} logoImageUrl={content.logoImageUrl} />
 
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Main navigation">
-          {navigation.map((item) => (
+          {navigation.filter((item) => item.href !== "/donor").map((item) => (
             <SmartNavLink
               key={item.label}
               href={item.href}
