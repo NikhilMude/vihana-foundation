@@ -7,7 +7,7 @@ import { SiteContent } from "@/lib/cmsContent";
 
 export default function Testimonials({ content }: { content: SiteContent }) {
   return (
-    <section className="bg-stone-50 py-24 md:py-32">
+    <section className="bg-stone-50 py-12 md:py-16">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -20,7 +20,7 @@ export default function Testimonials({ content }: { content: SiteContent }) {
           </div>
         </Reveal>
 
-        <div className="mt-14 flex snap-x gap-5 overflow-x-auto pb-4">
+        <div className="mt-10 flex snap-x gap-5 overflow-x-auto pb-4">
           {content.testimonials.map((item, index) => (
             <Reveal key={item.id} delay={index * 0.05}>
               <article className="min-w-[300px] snap-start rounded-[8px] border border-slate-200 bg-white p-6 shadow-sm sm:min-w-[420px]">
@@ -45,3 +45,4 @@ export default function Testimonials({ content }: { content: SiteContent }) {
     </section>
   );
 }
+

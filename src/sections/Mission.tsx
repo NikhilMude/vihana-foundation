@@ -8,7 +8,7 @@ const icons = [BookOpen, Soup, HeartHandshake, ShieldCheck];
 
 export default function Mission({ content }: { content: SiteContent }) {
   return (
-    <section id="mission" className="bg-white py-24 md:py-32">
+    <section id="mission" className="bg-white py-12 md:py-16">
       <Container>
         <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
           <Reveal>
@@ -30,7 +30,7 @@ export default function Mission({ content }: { content: SiteContent }) {
           </Reveal>
         </div>
 
-        <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {content.missionPillars.map((item, index) => {
             const Icon = icons[index % icons.length];
 
@@ -53,3 +53,4 @@ export default function Mission({ content }: { content: SiteContent }) {
     </section>
   );
 }
+

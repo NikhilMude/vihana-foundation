@@ -10,7 +10,7 @@ const accents = ["bg-sky-100 text-sky-700", "bg-amber-100 text-amber-700", "bg-r
 
 export default function Programs({ content }: { content: SiteContent }) {
   return (
-    <section id="programs" className="bg-stone-50 py-24 md:py-32">
+    <section id="programs" className="bg-stone-50 py-12 md:py-16">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -28,7 +28,7 @@ export default function Programs({ content }: { content: SiteContent }) {
           </div>
         </Reveal>
 
-        <div className="mt-14 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {content.programCards.map((program, index) => {
             const Icon = icons[index % icons.length];
 
@@ -59,3 +59,4 @@ export default function Programs({ content }: { content: SiteContent }) {
     </section>
   );
 }
+

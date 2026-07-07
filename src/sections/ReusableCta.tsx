@@ -8,7 +8,7 @@ import { SiteContent } from "@/lib/cmsContent";
 
 export default function ReusableCta({ content }: { content: SiteContent }) {
   return (
-    <section className="bg-white py-16">
+    <section className="bg-white py-12 md:py-16">
       <Container>
         <Reveal>
           <div
@@ -36,3 +36,4 @@ export default function ReusableCta({ content }: { content: SiteContent }) {
     </section>
   );
 }
+

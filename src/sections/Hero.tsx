@@ -11,7 +11,7 @@ const promises = ["Education support", "Nutritious meals", "Health and wellness"
 export default function Hero({ content }: { content: SiteContent }) {
   return (
     <section id="home" className="relative overflow-hidden bg-[linear-gradient(135deg,#f8fafc_0%,#ecfeff_48%,#fff7ed_100%)] pt-28">
-      <Container className="grid min-h-[calc(100vh-5rem)] items-center gap-12 pb-16 pt-8 lg:grid-cols-[1.02fr_0.98fr] lg:pb-20">
+      <Container className="grid min-h-[calc(88vh-5rem)] items-center gap-10 pb-12 pt-8 lg:grid-cols-[1.02fr_0.98fr] lg:pb-16">
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-amber-700 shadow-sm backdrop-blur">
             <Gift className="h-4 w-4" />
@@ -85,3 +85,4 @@ export default function Hero({ content }: { content: SiteContent }) {
     </section>
   );
 }
+

@@ -28,7 +28,7 @@ export default function Donation({ content }: { content: SiteContent }) {
   ];
 
   return (
-    <section id="donate" className="bg-stone-50 py-24 md:py-32">
+    <section id="donate" className="bg-stone-50 py-12 md:py-16">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -46,7 +46,7 @@ export default function Donation({ content }: { content: SiteContent }) {
           </div>
         </Reveal>
 
-        <div className="mt-14 grid gap-5 lg:grid-cols-3">
+        <div className="mt-10 grid gap-5 lg:grid-cols-3">
           {donationOptions.map((option, index) => {
             const Icon = option.icon;
 
@@ -100,3 +100,4 @@ export default function Donation({ content }: { content: SiteContent }) {
     </section>
   );
 }
+

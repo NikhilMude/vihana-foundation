@@ -15,7 +15,7 @@ export default function Gallery({ content, items }: { content: SiteContent; item
   const [selected, setSelected] = useState<GalleryItem | null>(null);
 
   return (
-    <section id="gallery" className="bg-stone-50 py-24 md:py-32">
+    <section id="gallery" className="bg-stone-50 py-12 md:py-16">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -29,7 +29,7 @@ export default function Gallery({ content, items }: { content: SiteContent; item
           </div>
         </Reveal>
 
-        <div className="mt-14 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="mt-10 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
           <Reveal>
             <div className="flex min-h-[420px] flex-col justify-end rounded-[8px] bg-[linear-gradient(135deg,#0f766e,#0ea5e9)] p-7 text-white shadow-xl shadow-slate-900/10">
               <Camera className="h-10 w-10 text-amber-200" />
@@ -100,3 +100,4 @@ export default function Gallery({ content, items }: { content: SiteContent; item
     </section>
   );
 }
+

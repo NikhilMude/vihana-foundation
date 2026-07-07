@@ -8,7 +8,7 @@ import { SiteContent } from "@/lib/cmsContent";
 
 export default function News({ content }: { content: SiteContent }) {
   return (
-    <section className="bg-stone-50 py-24 md:py-32">
+    <section className="bg-stone-50 py-12 md:py-16">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -21,7 +21,7 @@ export default function News({ content }: { content: SiteContent }) {
           </div>
         </Reveal>
 
-        <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {content.newsItems.map((item, index) => (
             <Reveal key={item.id} delay={index * 0.05}>
               <article className="overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-sm">
@@ -52,3 +52,4 @@ export default function News({ content }: { content: SiteContent }) {
     </section>
   );
 }
+
