@@ -289,6 +289,7 @@ export const defaultSiteContent: SiteContent = {
     { label: "Gallery", href: "#gallery" },
     { label: "Donate", href: "#donate" },
     { label: "Contact Us", href: "/contact-us" },
+    { label: "Donor Login", href: "/donor" },
   ],
   socialLinks: [
     { id: "instagram", label: "Instagram", href: "", iconImageUrl: "" },

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { HeartHandshake, Menu, X } from "lucide-react";
+import { HeartHandshake, Menu, UserRound, X } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -45,7 +45,14 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
           ))}
         </nav>
 
-        <div className="hidden lg:block">
+        <div className="hidden items-center gap-3 lg:flex">
+          <Button asChild variant="outline" className="h-11 rounded-full border-teal-200 bg-white/80 px-5 text-teal-800 shadow-sm hover:bg-teal-50">
+            <SmartNavLink href="/donor">
+              <UserRound className="mr-2 h-4 w-4" />
+              Donor Login
+            </SmartNavLink>
+          </Button>
+
           <Button asChild className="h-11 rounded-full bg-teal-700 px-6 shadow-sm transition-all duration-300 hover:bg-teal-800">
             <SmartNavLink href="/#donate">
               <HeartHandshake className="mr-2 h-4 w-4" />
@@ -83,7 +90,14 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
               </SmartNavLink>
             ))}
 
-            <Button asChild className="mt-4 h-12 rounded-full bg-teal-700 text-base hover:bg-teal-800">
+            <Button asChild variant="outline" className="mt-4 h-12 rounded-full border-teal-200 bg-teal-50 text-base text-teal-800 hover:bg-teal-100">
+              <SmartNavLink href="/donor" onClick={() => setOpen(false)}>
+                <UserRound className="mr-2 h-4 w-4" />
+                Donor Login
+              </SmartNavLink>
+            </Button>
+
+            <Button asChild className="h-12 rounded-full bg-teal-700 text-base hover:bg-teal-800">
               <SmartNavLink href="/#donate" onClick={() => setOpen(false)}>
                 <HeartHandshake className="mr-2 h-4 w-4" />
                 Donate

@@ -109,6 +109,9 @@ export default function Footer({
                   {item.label}
                 </SmartNavLink>
               ))}
+              <SmartNavLink href="/donor" className="text-sm font-bold text-amber-300 transition hover:text-white">
+                Donor Login
+              </SmartNavLink>
             </div>
           </div>
 
