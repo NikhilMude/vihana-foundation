@@ -34,7 +34,7 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
           : "bg-transparent"
       }`}
     >
-      <Container className="flex h-20 items-center justify-between">
+      <Container className="flex h-16 items-center justify-between sm:h-20">
         <Logo brandName={content.brandName} brandTagline={content.brandTagline} logoImageUrl={content.logoImageUrl} />
 
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Main navigation">
@@ -61,7 +61,7 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
         <Button
           variant="ghost"
           size="icon"
-          className="rounded-[8px] lg:hidden"
+          className="h-10 w-10 rounded-full bg-white/80 shadow-sm lg:hidden"
           onClick={() => setOpen((value) => !value)}
           aria-label="Toggle menu"
         >
@@ -70,24 +70,24 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
       </Container>
 
       <div
-        className={`overflow-hidden border-t bg-white transition-all duration-300 lg:hidden ${
-          open ? "max-h-96" : "max-h-0 border-transparent"
+        className={`overflow-hidden border-t bg-white/95 shadow-2xl shadow-slate-900/10 backdrop-blur-xl transition-all duration-300 lg:hidden ${
+          open ? "max-h-[34rem]" : "max-h-0 border-transparent"
         }`}
       >
-        <Container className="py-5">
-          <div className="flex flex-col gap-2">
+        <Container className="py-4">
+          <div className="flex flex-col gap-1">
             {navigation.map((item) => (
               <Link
                 key={item.label}
                 href={normalizeHref(item.href)}
                 onClick={() => setOpen(false)}
-                className="rounded-[8px] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-teal-700"
+                className="rounded-[8px] px-4 py-3.5 text-base font-semibold text-slate-700 transition hover:bg-teal-50 hover:text-teal-800"
               >
                 {item.label}
               </Link>
             ))}
 
-            <Button asChild className="mt-4 h-11 rounded-full bg-teal-700 hover:bg-teal-800">
+            <Button asChild className="mt-4 h-12 rounded-full bg-teal-700 text-base hover:bg-teal-800">
               <Link href="/#donate" onClick={() => setOpen(false)}>
                 <HeartHandshake className="mr-2 h-4 w-4" />
                 Donate

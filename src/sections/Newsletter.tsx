@@ -39,16 +39,16 @@ export default function Newsletter({ content }: { content: SiteContent }) {
   }
 
   return (
-    <section className="bg-white py-12 md:py-16">
+    <section className="bg-white py-10 md:py-16">
       <Container>
         <Reveal>
-          <div className="mx-auto max-w-4xl rounded-[8px] border border-slate-200 bg-stone-50 p-7 text-center shadow-sm sm:p-10">
+          <div className="mx-auto max-w-4xl rounded-[8px] border border-slate-200 bg-stone-50 p-5 text-center shadow-sm sm:p-10">
             <Mail className="mx-auto h-10 w-10 text-teal-700" />
-            <h2 className="mt-5 font-[family-name:var(--font-playfair)] text-4xl font-bold leading-tight text-slate-950">
+            <h2 className="mt-4 font-[family-name:var(--font-playfair)] text-[2rem] font-bold leading-tight text-slate-950 sm:mt-5 sm:text-4xl">
               {content.newsletterHeading}
             </h2>
-            <p className="mx-auto mt-4 max-w-2xl leading-8 text-slate-600">{content.newsletterDescription}</p>
-            <form onSubmit={handleSubmit} className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row">
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-8">{content.newsletterDescription}</p>
+            <form onSubmit={handleSubmit} className="mx-auto mt-6 flex max-w-xl flex-col gap-3 sm:mt-8 sm:flex-row">
               <input
                 name="email"
                 required

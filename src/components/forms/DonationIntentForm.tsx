@@ -46,13 +46,13 @@ export default function DonationIntentForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 rounded-[8px] border border-slate-200 bg-white p-6 shadow-sm">
-      <h3 className="text-xl font-bold text-slate-950">Log a test donation</h3>
+    <form onSubmit={handleSubmit} className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:mt-8 sm:p-6">
+      <h3 className="text-lg font-bold text-slate-950 sm:text-xl">Log a test donation</h3>
       <p className="mt-2 text-sm leading-6 text-slate-500">
         This records a donation intent for testing. It is not a real payment gateway.
       </p>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
+      <div className="mt-5 grid gap-3 md:grid-cols-2 md:gap-4">
         <input name="name" required placeholder="Name" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
         <input name="email" required type="email" placeholder="Email" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
         <input name="phone" placeholder="Phone" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
@@ -75,7 +75,7 @@ export default function DonationIntentForm() {
 
       {status === "error" ? <p className="mt-4 rounded-[8px] bg-rose-50 px-4 py-3 text-sm font-bold text-rose-800">{error}</p> : null}
 
-      <Button disabled={status === "loading"} className="mt-5 h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
+      <Button disabled={status === "loading"} className="mt-5 h-12 w-full rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800 sm:w-auto">
         {status === "loading" ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Send className="mr-2 h-5 w-5" />}
         Record Donation
       </Button>

@@ -10,32 +10,32 @@ const promises = ["Education support", "Nutritious meals", "Health and wellness"
 
 export default function Hero({ content }: { content: SiteContent }) {
   return (
-    <section id="home" className="relative overflow-hidden bg-[linear-gradient(135deg,#f8fafc_0%,#ecfeff_48%,#fff7ed_100%)] pt-28">
-      <Container className="grid min-h-[calc(88vh-5rem)] items-center gap-10 pb-12 pt-8 lg:grid-cols-[1.02fr_0.98fr] lg:pb-16">
-        <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white/80 px-4 py-2 text-xs font-bold uppercase tracking-[0.22em] text-amber-700 shadow-sm backdrop-blur">
+    <section id="home" className="relative overflow-hidden bg-[linear-gradient(135deg,#f8fafc_0%,#ecfeff_50%,#fff7ed_100%)] pt-20 sm:pt-28">
+      <Container className="grid items-center gap-8 pb-10 pt-6 sm:min-h-[calc(88vh-5rem)] sm:gap-10 sm:pb-12 sm:pt-8 lg:grid-cols-[1.02fr_0.98fr] lg:pb-16">
+        <div className="max-w-3xl text-center lg:text-left">
+          <div className="mx-auto inline-flex max-w-full items-center gap-2 rounded-full border border-amber-200 bg-white/85 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-700 shadow-sm backdrop-blur sm:px-4 sm:text-xs sm:tracking-[0.22em] lg:mx-0">
             <Gift className="h-4 w-4" />
-            {content.heroBadge}
+            <span className="truncate">{content.heroBadge}</span>
           </div>
 
-          <h1 className="mt-8 max-w-4xl font-[family-name:var(--font-playfair)] text-5xl font-bold leading-[1.02] text-slate-950 sm:text-6xl lg:text-7xl">
+          <h1 className="mx-auto mt-6 max-w-4xl font-[family-name:var(--font-playfair)] text-[2.75rem] font-bold leading-[0.98] text-slate-950 sm:mt-8 sm:text-6xl lg:mx-0 lg:text-7xl">
             {content.heroTitle}
             <span className="block text-teal-700">{content.heroHighlight}</span>
           </h1>
 
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-slate-600 sm:text-xl">
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:mt-7 sm:text-xl sm:leading-8 lg:mx-0">
             {content.heroDescription}
           </p>
 
-          <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-            <Button asChild size="lg" className="h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
+          <div className="mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:justify-center lg:justify-start">
+            <Button asChild size="lg" className="h-12 w-full rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800 sm:w-auto">
               <Link href={content.heroPrimaryHref}>
                 <HeartHandshake className="mr-2 h-5 w-5" />
                 {content.heroPrimaryLabel}
               </Link>
             </Button>
 
-            <Button asChild variant="outline" size="lg" className="h-12 rounded-full border-slate-300 bg-white/70 px-7 text-base hover:bg-white">
+            <Button asChild variant="outline" size="lg" className="h-12 w-full rounded-full border-slate-300 bg-white/80 px-7 text-base hover:bg-white sm:w-auto">
               <Link href={content.heroSecondaryHref}>
                 {content.heroSecondaryLabel}
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -43,9 +43,9 @@ export default function Hero({ content }: { content: SiteContent }) {
             </Button>
           </div>
 
-          <div className="mt-10 grid gap-3 sm:grid-cols-3">
+          <div className="mx-auto mt-7 grid max-w-md gap-3 text-left sm:mt-10 sm:max-w-none sm:grid-cols-3 lg:mx-0">
             {promises.map((promise) => (
-              <div key={promise} className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <div key={promise} className="flex items-center gap-2 rounded-full bg-white/70 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm sm:bg-transparent sm:px-0 sm:shadow-none">
                 <CheckCircle2 className="h-5 w-5 text-teal-700" />
                 {promise}
               </div>
@@ -53,7 +53,7 @@ export default function Hero({ content }: { content: SiteContent }) {
           </div>
         </div>
 
-        <div className="relative">
+        <div className="relative mx-auto w-full max-w-[25rem] lg:max-w-none">
           <div className="relative overflow-hidden">
             <Image
               src={content.heroImageUrl || "/illustrations/hero.png"}
@@ -61,19 +61,19 @@ export default function Hero({ content }: { content: SiteContent }) {
               width={760}
               height={760}
               priority
-              className="h-auto w-full object-contain mix-blend-multiply"
+              className="mx-auto h-auto w-full max-w-[24rem] object-contain mix-blend-multiply sm:max-w-[32rem] lg:max-w-none"
             />
           </div>
 
-          <div className="mt-4 grid gap-4 sm:grid-cols-[0.72fr_1fr]">
-            <div className="rounded-[8px] bg-white p-5 shadow-xl shadow-slate-900/10">
-              <p className="text-3xl font-bold text-teal-700">10K+</p>
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-4 sm:gap-4">
+            <div className="rounded-[8px] bg-white p-4 shadow-xl shadow-slate-900/10 sm:p-5">
+              <p className="text-2xl font-bold text-teal-700 sm:text-3xl">10K+</p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Meals shared
               </p>
             </div>
 
-            <div className="rounded-[8px] bg-slate-950 p-5 text-white shadow-xl shadow-slate-900/20">
+            <div className="rounded-[8px] bg-slate-950 p-4 text-white shadow-xl shadow-slate-900/20 sm:p-5">
               <p className="text-sm font-semibold text-amber-200">Birthday to impact</p>
               <p className="mt-1 text-sm leading-6 text-slate-300">
                 A simple celebration can become food, care and confidence.

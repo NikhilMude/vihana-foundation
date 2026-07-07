@@ -28,39 +28,39 @@ export default function Donation({ content }: { content: SiteContent }) {
   ];
 
   return (
-    <section id="donate" className="bg-stone-50 py-12 md:py-16">
+    <section id="donate" className="bg-stone-50 py-10 md:py-16">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
-            <span className="text-sm font-bold uppercase tracking-[0.26em] text-amber-600">
+            <span className="text-xs font-bold uppercase tracking-[0.22em] text-amber-600 sm:text-sm sm:tracking-[0.26em]">
               {content.donateEyebrow}
             </span>
 
-            <h2 className="mt-5 font-[family-name:var(--font-playfair)] text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">
+            <h2 className="mt-4 font-[family-name:var(--font-playfair)] text-[2rem] font-bold leading-tight text-slate-950 sm:mt-5 sm:text-5xl">
               {content.donateTitle}
             </h2>
 
-            <p className="mt-6 text-lg leading-8 text-slate-600">
+            <p className="mt-4 text-base leading-7 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8">
               {content.donateDescription}
             </p>
           </div>
         </Reveal>
 
-        <div className="mt-10 grid gap-5 lg:grid-cols-3">
+        <div className="mt-8 grid gap-4 lg:mt-10 lg:grid-cols-3 lg:gap-5">
           {donationOptions.map((option, index) => {
             const Icon = option.icon;
 
             return (
               <Reveal key={option.title} delay={index * 0.06}>
-                <div className="h-full rounded-[8px] border border-slate-200 bg-white p-6 shadow-sm">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-[8px] bg-teal-50 text-teal-700">
-                    <Icon className="h-6 w-6" />
+                <div className="h-full rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-[8px] bg-teal-50 text-teal-700 sm:h-12 sm:w-12">
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
 
-                  <h3 className="mt-6 text-xl font-bold text-slate-950">{option.title}</h3>
+                  <h3 className="mt-5 text-lg font-bold text-slate-950 sm:mt-6 sm:text-xl">{option.title}</h3>
 
-                  <div className="mt-3 flex items-center justify-between gap-3 rounded-[8px] bg-slate-50 px-4 py-3">
-                    <p className="text-sm font-bold text-slate-800">{option.value}</p>
+                  <div className="mt-3 flex items-center justify-between gap-3 rounded-[8px] bg-slate-50 px-3 py-3 sm:px-4">
+                    <p className="min-w-0 break-words text-sm font-bold leading-6 text-slate-800">{option.value}</p>
                     <Copy className="h-4 w-4 shrink-0 text-slate-400" />
                   </div>
 
@@ -72,13 +72,13 @@ export default function Donation({ content }: { content: SiteContent }) {
         </div>
 
         <Reveal>
-          <div className="mt-8 rounded-[8px] border border-teal-200 bg-white p-6 shadow-sm">
-            <div className="flex gap-4">
+          <div className="mt-6 rounded-[8px] border border-teal-200 bg-white p-5 shadow-sm sm:mt-8 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row">
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-teal-50 text-teal-700">
                 <FileCheck2 className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-slate-950">Trust and transparency</h3>
+                <h3 className="text-lg font-bold text-slate-950 sm:text-xl">Trust and transparency</h3>
                 <div className="mt-3 grid gap-2 text-sm leading-6 text-slate-600 md:grid-cols-2">
                   <p><span className="font-bold text-slate-800">Legal status:</span> {content.legalStatusNote}</p>
                   <p><span className="font-bold text-slate-800">Registration:</span> {content.registrationNumber || "To be updated"}</p>

@@ -3,6 +3,12 @@ export type NavigationItem = {
   href: string;
 };
 
+export type SocialLink = {
+  id: string;
+  label: string;
+  href: string;
+};
+
 export type EditableItem = {
   id: string;
   title: string;
@@ -115,6 +121,7 @@ export type SiteContent = {
   newsletterEmailSubject: string;
   newsletterEmailBody: string;
   navigationItems: NavigationItem[];
+  socialLinks: SocialLink[];
   sectionOrder: SectionConfig[];
   missionPillars: EditableItem[];
   programCards: EditableItem[];
@@ -234,6 +241,12 @@ export const defaultSiteContent: SiteContent = {
     { label: "Gallery", href: "#gallery" },
     { label: "Donate", href: "#donate" },
     { label: "Contact Us", href: "/contact-us" },
+  ],
+  socialLinks: [
+    { id: "instagram", label: "Instagram", href: "" },
+    { id: "facebook", label: "Facebook", href: "" },
+    { id: "youtube", label: "YouTube", href: "" },
+    { id: "linkedin", label: "LinkedIn", href: "" },
   ],
   sectionOrder: [
     { id: "hero", label: "Hero", visible: true },
@@ -521,6 +534,7 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
     ...(content || {}),
   };
   const navigationItems = arrayOrDefault(merged.navigationItems, defaultSiteContent.navigationItems);
+  const socialLinks = arrayOrDefault(merged.socialLinks, defaultSiteContent.socialLinks);
   const pages = arrayOrDefault(merged.pages, defaultSiteContent.pages);
   const sectionOrder = arrayOrDefault(merged.sectionOrder, defaultSiteContent.sectionOrder);
   const navigationWithDefaults = [
@@ -547,6 +561,7 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
   return {
     ...merged,
     navigationItems: navigationWithDefaults,
+    socialLinks,
     sectionOrder: [
       ...sectionOrder,
       ...defaultSiteContent.sectionOrder.filter(

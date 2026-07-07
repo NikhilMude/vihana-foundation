@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
-import { CmsPage, EditableItem, GalleryItem, NavigationItem, SectionConfig, SiteContent } from "@/lib/cmsContent";
+import { CmsPage, EditableItem, GalleryItem, NavigationItem, SectionConfig, SiteContent, SocialLink } from "@/lib/cmsContent";
 
 type Message = {
   id: string;
@@ -222,6 +222,14 @@ function emptyPage(): CmsPage {
   };
 }
 
+function emptySocialLink(): SocialLink {
+  return {
+    id: uniqueId("social"),
+    label: "Instagram",
+    href: "",
+  };
+}
+
 export default function AdminDashboard({
   initialContent,
   initialGalleryItems,
@@ -328,6 +336,31 @@ export default function AdminDashboard({
     const nextContent = { ...content, navigationItems };
     setContent(nextContent);
     void persistContent(nextContent, "Navigation order saved.", "Saving navigation order...");
+  }
+
+  function updateSocialLink(index: number, key: keyof SocialLink, value: string) {
+    setContent((current) => ({
+      ...current,
+      socialLinks: current.socialLinks.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [key]: value } : item
+      ),
+    }));
+  }
+
+  function addSocialLink() {
+    setContent((current) => ({
+      ...current,
+      socialLinks: [...current.socialLinks, emptySocialLink()],
+    }));
+    setStatus("Social links updated. Click Save to publish it.");
+  }
+
+  function removeSocialLink(index: number) {
+    setContent((current) => ({
+      ...current,
+      socialLinks: current.socialLinks.filter((_, itemIndex) => itemIndex !== index),
+    }));
+    setStatus("Social links updated. Click Save to publish it.");
   }
 
   function updateSectionConfig(index: number, key: keyof SectionConfig, value: string | boolean) {
@@ -694,41 +727,80 @@ export default function AdminDashboard({
         ) : null}
 
         {tab === "navigation" ? (
-          <div className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-xl font-bold text-slate-950">Navigation Links</h2>
-              <Button type="button" onClick={addNavigationItem} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Link
-              </Button>
-            </div>
-            <div className="mt-5 grid gap-4">
-              {content.navigationItems.map((item, index) => (
-                <div key={`${item.label}-${index}`} className="grid gap-3 rounded-[8px] border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_1fr_auto_auto_auto]">
-                  <input value={item.label} onChange={(event) => updateNavigation(index, "label", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Label" />
-                  <input value={item.href} onChange={(event) => updateNavigation(index, "href", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="/page or #section" />
-                  <button
-                    type="button"
-                    disabled={saving || index === 0}
-                    onClick={() => moveNavigationItem(index, -1)}
-                    className="rounded-[8px] bg-white px-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-teal-50 hover:text-teal-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    Up
-                  </button>
-                  <button
-                    type="button"
-                    disabled={saving || index === content.navigationItems.length - 1}
-                    onClick={() => moveNavigationItem(index, 1)}
-                    className="rounded-[8px] bg-white px-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-teal-50 hover:text-teal-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    Down
-                  </button>
-                  <button type="button" onClick={() => removeNavigationItem(index)} className="inline-flex items-center justify-center rounded-[8px] px-4 text-sm font-bold text-rose-700">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
+          <div className="mt-6 grid gap-6">
+            <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="text-xl font-bold text-slate-950">Navigation Links</h2>
+                <Button type="button" onClick={addNavigationItem} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Link
+                </Button>
+              </div>
+              <div className="mt-5 grid gap-4">
+                {content.navigationItems.map((item, index) => (
+                  <div key={`${item.label}-${index}`} className="grid gap-3 rounded-[8px] border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_1fr_auto_auto_auto]">
+                    <input value={item.label} onChange={(event) => updateNavigation(index, "label", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Label" />
+                    <input value={item.href} onChange={(event) => updateNavigation(index, "href", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="/page or #section" />
+                    <button
+                      type="button"
+                      disabled={saving || index === 0}
+                      onClick={() => moveNavigationItem(index, -1)}
+                      className="rounded-[8px] bg-white px-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-teal-50 hover:text-teal-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Up
+                    </button>
+                    <button
+                      type="button"
+                      disabled={saving || index === content.navigationItems.length - 1}
+                      onClick={() => moveNavigationItem(index, 1)}
+                      className="rounded-[8px] bg-white px-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-teal-50 hover:text-teal-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Down
+                    </button>
+                    <button type="button" onClick={() => removeNavigationItem(index)} className="inline-flex items-center justify-center rounded-[8px] px-4 text-sm font-bold text-rose-700">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex items-center justify-between gap-4">
+                <h2 className="text-xl font-bold text-slate-950">Social Media Links</h2>
+                <Button type="button" onClick={addSocialLink} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Social Link
+                </Button>
+              </div>
+              <div className="mt-5 grid gap-4">
+                {content.socialLinks.map((item, index) => (
+                  <div key={item.id} className="grid gap-3 rounded-[8px] border border-slate-200 bg-slate-50 p-4 md:grid-cols-[0.7fr_1fr_auto]">
+                    <select
+                      value={item.label}
+                      onChange={(event) => updateSocialLink(index, "label", event.target.value)}
+                      className="h-11 rounded-[8px] border border-slate-200 px-4"
+                    >
+                      <option>Instagram</option>
+                      <option>Facebook</option>
+                      <option>YouTube</option>
+                      <option>LinkedIn</option>
+                      <option>X</option>
+                      <option>Website</option>
+                    </select>
+                    <input
+                      value={item.href}
+                      onChange={(event) => updateSocialLink(index, "href", event.target.value)}
+                      className="h-11 rounded-[8px] border border-slate-200 px-4"
+                      placeholder="https://..."
+                    />
+                    <button type="button" onClick={() => removeSocialLink(index)} className="inline-flex items-center justify-center rounded-[8px] px-4 text-sm font-bold text-rose-700">
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </section>
           </div>
         ) : null}
 

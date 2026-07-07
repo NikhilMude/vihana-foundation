@@ -55,7 +55,7 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/8 sm:p-6">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
         <div>
           <label htmlFor="name" className="text-sm font-bold text-slate-800">
             Name
@@ -86,7 +86,7 @@ export default function ContactForm() {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+      <div className="mt-3 grid gap-3 sm:mt-4 sm:grid-cols-2 sm:gap-4">
         <div>
           <label htmlFor="phone" className="text-sm font-bold text-slate-800">
             Phone
@@ -123,7 +123,7 @@ export default function ContactForm() {
         <input id="company" name="company" tabIndex={-1} autoComplete="off" />
       </div>
 
-      <div className="mt-4">
+      <div className="mt-3 sm:mt-4">
         <label htmlFor="message" className="text-sm font-bold text-slate-800">
           Message
         </label>
