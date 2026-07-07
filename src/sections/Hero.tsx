@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Gift, HeartHandshake } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Container } from "@/components/ui/container";
+import { Button } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
 
 const promises = ["Education support", "Nutritious meals", "Health and wellness"];
 

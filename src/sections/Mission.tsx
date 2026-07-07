@@ -1,6 +1,6 @@
 import { BookOpen, HeartHandshake, ShieldCheck, Soup } from "lucide-react";
 
-import { Container } from "@/components/ui/container";
+import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 
 const pillars = [

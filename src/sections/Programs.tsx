@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, GraduationCap, HeartPulse, Soup, Trees } from "lucide-react";
 
-import { Container } from "@/components/ui/container";
+import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 
 const programs = [

@@ -1,6 +1,6 @@
 import { BadgeCheck, CalendarHeart, HandCoins } from "lucide-react";
 
-import { Container } from "@/components/ui/container";
+import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 
 const stats = [

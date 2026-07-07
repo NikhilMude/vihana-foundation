@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { HeartHandshake, Menu, X } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Container } from "@/components/ui/container";
-import { Logo } from "@/components/ui/logo";
+import { Button } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
+import { Logo } from "@/components/ui/Logo";
 import { navigation } from "@/constants/navigation";
 
 export default function Navbar() {

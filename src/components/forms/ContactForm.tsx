@@ -3,7 +3,7 @@
 import { FormEvent, useState } from "react";
 import { CheckCircle2, Loader2, Send } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 const interests = ["Birthday Campaign", "Volunteer", "Donation", "Partnership", "General"];
 

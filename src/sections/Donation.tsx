@@ -1,6 +1,6 @@
 import { BadgeIndianRupee, Building2, Copy, QrCode } from "lucide-react";
 
-import { Container } from "@/components/ui/container";
+import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 
 const donationOptions = [

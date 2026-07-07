@@ -1,7 +1,7 @@
 import { Gift, HandHeart, Mail } from "lucide-react";
 
 import ContactForm from "@/components/forms/ContactForm";
-import { Container } from "@/components/ui/container";
+import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 
 const actions = [

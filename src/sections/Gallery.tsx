@@ -1,6 +1,6 @@
 import { Camera, GraduationCap, HeartPulse, Soup } from "lucide-react";
 
-import { Container } from "@/components/ui/container";
+import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 
 const moments = [
