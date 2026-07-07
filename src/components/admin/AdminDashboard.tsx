@@ -16,6 +16,8 @@ import {
   Settings,
   Trash2,
   Users,
+  BadgeIndianRupee,
+  Mail,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
@@ -43,15 +45,48 @@ type Visitor = {
   createdAt?: string;
 };
 
+type DonationRecord = {
+  id: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  amount?: string;
+  method?: string;
+  transactionId?: string;
+  message?: string;
+  status?: string;
+  createdAt?: string;
+};
+
+type SubscriberRecord = {
+  id: string;
+  email?: string;
+  source?: string;
+  createdAt?: string;
+};
+
 type AdminDashboardProps = {
   initialContent: SiteContent;
   initialGalleryItems: GalleryItem[];
   initialMessages: Message[];
   initialVisitors: Visitor[];
   visitorCount: number;
+  initialDonations: DonationRecord[];
+  initialSubscribers: SubscriberRecord[];
 };
 
-type Tab = "content" | "media" | "navigation" | "order" | "sections" | "pages" | "gallery" | "messages" | "visitors";
+type Tab =
+  | "content"
+  | "media"
+  | "navigation"
+  | "order"
+  | "sections"
+  | "pages"
+  | "gallery"
+  | "messages"
+  | "donations"
+  | "subscribers"
+  | "visitors";
 type ListKey =
   | "missionPillars"
   | "programCards"
@@ -115,11 +150,19 @@ const contentFields: { key: keyof SiteContent; label: string; multiline?: boolea
   { key: "newsletterDescription", label: "Newsletter description", multiline: true },
   { key: "newsletterPlaceholder", label: "Newsletter input placeholder" },
   { key: "newsletterButtonText", label: "Newsletter button text" },
+  { key: "newsletterEmailSubject", label: "Newsletter email subject" },
+  { key: "newsletterEmailBody", label: "Newsletter email body", multiline: true },
   { key: "upiId", label: "UPI ID" },
   { key: "bankAccountName", label: "Bank account name" },
   { key: "bankAccountNumber", label: "Bank account number" },
   { key: "bankIfsc", label: "IFSC" },
   { key: "bankName", label: "Bank name" },
+  { key: "legalStatusNote", label: "Legal status note" },
+  { key: "registrationNumber", label: "Registration number" },
+  { key: "panNumber", label: "PAN number" },
+  { key: "taxExemptionNote", label: "80G / 12A note" },
+  { key: "annualReportHref", label: "Annual report link" },
+  { key: "founderStory", label: "Founder story", multiline: true },
   { key: "volunteerTitle", label: "Volunteer title" },
   { key: "volunteerEyebrow", label: "Volunteer small label" },
   { key: "volunteerDescription", label: "Volunteer description", multiline: true },
@@ -182,15 +225,20 @@ export default function AdminDashboard({
   initialMessages,
   initialVisitors,
   visitorCount,
+  initialDonations,
+  initialSubscribers,
 }: AdminDashboardProps) {
   const [tab, setTab] = useState<Tab>("content");
   const [content, setContent] = useState(initialContent);
   const [galleryItems, setGalleryItems] = useState(initialGalleryItems);
   const [messages] = useState(initialMessages);
   const [visitors] = useState(initialVisitors);
+  const [donations] = useState(initialDonations);
+  const [subscribers] = useState(initialSubscribers);
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
+  const [sendingNewsletter, setSendingNewsletter] = useState(false);
 
   const tabs = useMemo(
     () => [
@@ -202,6 +250,8 @@ export default function AdminDashboard({
       { id: "pages" as const, label: "Pages", icon: FileText },
       { id: "gallery" as const, label: "Gallery", icon: ImagePlus },
       { id: "messages" as const, label: "Messages", icon: Inbox },
+      { id: "donations" as const, label: "Donations", icon: BadgeIndianRupee },
+      { id: "subscribers" as const, label: "Newsletter", icon: Mail },
       { id: "visitors" as const, label: "Visitors", icon: Users },
     ],
     []
@@ -417,6 +467,43 @@ export default function AdminDashboard({
       setGalleryItems((items) => items.filter((item) => item.id !== id));
       setStatus("Gallery item deleted.");
     }
+  }
+
+  async function sendNewsletter() {
+    setSendingNewsletter(true);
+    setStatus("");
+
+    const response = await fetch("/api/admin/newsletter/send", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        subject: content.newsletterEmailSubject,
+        body: content.newsletterEmailBody,
+      }),
+    });
+
+    const result = (await response.json()) as {
+      ok: boolean;
+      recipients?: number;
+      sent?: number;
+      skipped?: boolean;
+      message?: string;
+    };
+
+    setSendingNewsletter(false);
+
+    if (!response.ok || !result.ok) {
+      setStatus(result.message || "Could not send newsletter.");
+      return;
+    }
+
+    setStatus(
+      result.skipped
+        ? "Newsletter saved, but email provider is not configured."
+        : `Newsletter sent to ${result.sent || 0} of ${result.recipients || 0} subscribers.`
+    );
   }
 
   return (
@@ -716,6 +803,73 @@ export default function AdminDashboard({
             ) : (
               <div className="rounded-[8px] border border-slate-200 bg-white p-8 text-center text-slate-600">
                 No messages received yet.
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        {tab === "donations" ? (
+          <div className="mt-6 grid gap-4">
+            {donations.length ? (
+              donations.map((donation) => (
+                <div key={donation.id} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex flex-col justify-between gap-2 md:flex-row">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-950">{donation.name}</h3>
+                      <p className="text-sm text-slate-500">
+                        {donation.email} {donation.phone ? `| ${donation.phone}` : ""}
+                      </p>
+                    </div>
+                    <p className="text-lg font-bold text-teal-700">INR {donation.amount}</p>
+                  </div>
+                  <div className="mt-4 grid gap-2 text-sm text-slate-600 md:grid-cols-2">
+                    <p><span className="font-bold text-slate-800">Method:</span> {donation.method}</p>
+                    <p><span className="font-bold text-slate-800">Reference:</span> {donation.transactionId}</p>
+                    <p><span className="font-bold text-slate-800">Status:</span> {donation.status}</p>
+                    <p><span className="font-bold text-slate-800">Date:</span> {donation.createdAt}</p>
+                  </div>
+                  {donation.message ? <p className="mt-4 leading-7 text-slate-700">{donation.message}</p> : null}
+                </div>
+              ))
+            ) : (
+              <div className="rounded-[8px] border border-slate-200 bg-white p-8 text-center text-slate-600">
+                No donation records yet.
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        {tab === "subscribers" ? (
+          <div className="mt-6 grid gap-4">
+            <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-950">Send Newsletter</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                Edit the subject and body in the Text tab, then send it to all subscribers here.
+              </p>
+              <div className="mt-5 rounded-[8px] bg-slate-50 p-4">
+                <p className="text-sm font-bold text-slate-800">Subject</p>
+                <p className="mt-1 text-slate-700">{content.newsletterEmailSubject}</p>
+                <p className="mt-4 text-sm font-bold text-slate-800">Body</p>
+                <p className="mt-1 whitespace-pre-line leading-7 text-slate-700">{content.newsletterEmailBody}</p>
+              </div>
+              <Button onClick={sendNewsletter} disabled={sendingNewsletter} className="mt-5 h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
+                {sendingNewsletter ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Mail className="mr-2 h-5 w-5" />}
+                Send Newsletter
+              </Button>
+            </div>
+
+            {subscribers.length ? (
+              subscribers.map((subscriber) => (
+                <div key={subscriber.id} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <h3 className="font-bold text-slate-950">{subscriber.email}</h3>
+                  <p className="mt-2 text-sm text-slate-500">
+                    {subscriber.source || "website"} | {subscriber.createdAt}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-[8px] border border-slate-200 bg-white p-8 text-center text-slate-600">
+                No newsletter subscribers yet.
               </div>
             )}
           </div>

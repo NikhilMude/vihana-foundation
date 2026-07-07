@@ -1,6 +1,7 @@
-import { BadgeIndianRupee, Building2, Copy, QrCode } from "lucide-react";
+import { BadgeIndianRupee, Building2, Copy, FileCheck2, QrCode } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
+import DonationIntentForm from "@/components/forms/DonationIntentForm";
 import Reveal from "@/components/ui/Reveal";
 import { SiteContent } from "@/lib/cmsContent";
 
@@ -9,20 +10,20 @@ export default function Donation({ content }: { content: SiteContent }) {
     {
       icon: BadgeIndianRupee,
       title: "UPI",
-      value: content.upiId,
-      note: "Use only verified payment details before public fundraising.",
+      value: content.upiId || "test-vihana@upi",
+      note: "Dummy test UPI. Replace before accepting real donations.",
     },
     {
       icon: Building2,
       title: "Bank Transfer",
-      value: `${content.bankAccountName} | ${content.bankAccountNumber} | ${content.bankIfsc}`,
-      note: content.bankName,
+      value: `${content.bankAccountName || "Vihana Foundation Test"} | ${content.bankAccountNumber || "000000000000"} | ${content.bankIfsc || "TEST0001234"}`,
+      note: content.bankName || "Test Bank",
     },
     {
       icon: QrCode,
       title: "QR Code",
-      value: "Coming soon",
-      note: "Add a verified payment QR image before publishing donations.",
+      value: "TEST-QR-VIHANA",
+      note: "Dummy QR reference for testing only.",
     },
   ];
 
@@ -69,6 +70,32 @@ export default function Donation({ content }: { content: SiteContent }) {
             );
           })}
         </div>
+
+        <Reveal>
+          <div className="mt-8 rounded-[8px] border border-teal-200 bg-white p-6 shadow-sm">
+            <div className="flex gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[8px] bg-teal-50 text-teal-700">
+                <FileCheck2 className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-950">Trust and transparency</h3>
+                <div className="mt-3 grid gap-2 text-sm leading-6 text-slate-600 md:grid-cols-2">
+                  <p><span className="font-bold text-slate-800">Legal status:</span> {content.legalStatusNote}</p>
+                  <p><span className="font-bold text-slate-800">Registration:</span> {content.registrationNumber || "To be updated"}</p>
+                  <p><span className="font-bold text-slate-800">PAN:</span> {content.panNumber || "To be updated"}</p>
+                  <p><span className="font-bold text-slate-800">80G / 12A:</span> {content.taxExemptionNote || "To be updated"}</p>
+                </div>
+                {content.annualReportHref ? (
+                  <a href={content.annualReportHref} className="mt-4 inline-flex text-sm font-bold text-teal-700">
+                    View annual report
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        </Reveal>
+
+        <DonationIntentForm />
       </Container>
     </section>
   );

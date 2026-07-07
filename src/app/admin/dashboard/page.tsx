@@ -3,7 +3,14 @@ import { redirect } from "next/navigation";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import { isAdminAuthenticated } from "@/lib/adminAuth";
 import { listDocuments } from "@/lib/firestoreAdmin";
-import { getGalleryItems, getRecentVisitors, getSiteContent, getVisitorStats } from "@/lib/siteData";
+import {
+  getDonationIntents,
+  getGalleryItems,
+  getNewsletterSubscribers,
+  getRecentVisitors,
+  getSiteContent,
+  getVisitorStats,
+} from "@/lib/siteData";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +32,8 @@ export default async function AdminDashboardPage() {
   let messages: Message[] = [];
   const visitorStats = await getVisitorStats();
   const visitors = await getRecentVisitors();
+  const donations = await getDonationIntents();
+  const subscribers = await getNewsletterSubscribers();
 
   try {
     messages = (await listDocuments("websiteMessages"))
@@ -49,6 +58,8 @@ export default async function AdminDashboardPage() {
       initialMessages={messages}
       initialVisitors={visitors}
       visitorCount={visitorStats.total}
+      initialDonations={donations}
+      initialSubscribers={subscribers}
     />
   );
 }

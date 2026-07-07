@@ -76,3 +76,43 @@ export async function getRecentVisitors() {
     return [];
   }
 }
+
+export async function getDonationIntents() {
+  try {
+    const donations = await listDocuments("donationIntents");
+
+    return donations
+      .map((donation) => ({
+        id: String(donation.id || ""),
+        name: String(donation.name || ""),
+        email: String(donation.email || ""),
+        phone: String(donation.phone || ""),
+        amount: String(donation.amount || ""),
+        method: String(donation.method || ""),
+        transactionId: String(donation.transactionId || ""),
+        message: String(donation.message || ""),
+        status: String(donation.status || ""),
+        createdAt: String(donation.createdAt || ""),
+      }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  } catch {
+    return [];
+  }
+}
+
+export async function getNewsletterSubscribers() {
+  try {
+    const subscribers = await listDocuments("newsletterSubscribers");
+
+    return subscribers
+      .map((subscriber) => ({
+        id: String(subscriber.id || ""),
+        email: String(subscriber.email || ""),
+        source: String(subscriber.source || ""),
+        createdAt: String(subscriber.createdAt || ""),
+      }))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  } catch {
+    return [];
+  }
+}

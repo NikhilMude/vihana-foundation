@@ -1,0 +1,71 @@
+import { NextResponse } from "next/server";
+
+import { addDocument } from "@/lib/firestoreAdmin";
+import { sendEmail } from "@/lib/email";
+
+export const runtime = "nodejs";
+
+type DonationPayload = {
+  name?: string;
+  email?: string;
+  phone?: string;
+  amount?: string;
+  method?: string;
+  transactionId?: string;
+  message?: string;
+};
+
+function clean(value: unknown) {
+  return typeof value === "string" ? value.trim().slice(0, 500) : "";
+}
+
+function isEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+export async function POST(request: Request) {
+  try {
+    const payload = (await request.json()) as DonationPayload;
+    const name = clean(payload.name);
+    const email = clean(payload.email).toLowerCase();
+    const phone = clean(payload.phone);
+    const amount = clean(payload.amount);
+    const method = clean(payload.method) || "UPI";
+    const transactionId = clean(payload.transactionId) || "Test / pending";
+    const message = clean(payload.message);
+
+    if (!name || !isEmail(email) || !amount) {
+      return NextResponse.json({ ok: false, message: "Please enter name, email and amount." }, { status: 400 });
+    }
+
+    const createdAt = new Date().toISOString();
+
+    await addDocument("donationIntents", {
+      name,
+      email,
+      phone,
+      amount,
+      method,
+      transactionId,
+      message,
+      status: "Test / self-reported",
+      createdAt,
+    });
+
+    await sendEmail({
+      to: email,
+      subject: "Thank you for supporting Vihana Foundation",
+      html: `
+        <p>Dear ${name},</p>
+        <p>Thank you for supporting Vihana Foundation.</p>
+        <p>We received your donation intent for <strong>INR ${amount}</strong> through <strong>${method}</strong>.</p>
+        <p>Transaction/reference: ${transactionId}</p>
+        <p>This is a test-mode acknowledgement until verified payment integration and official receipts are configured.</p>
+      `,
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ ok: false, message: "Could not record donation right now." }, { status: 500 });
+  }
+}

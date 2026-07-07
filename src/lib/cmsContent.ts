@@ -73,6 +73,12 @@ export type SiteContent = {
   bankAccountNumber: string;
   bankIfsc: string;
   bankName: string;
+  legalStatusNote: string;
+  registrationNumber: string;
+  panNumber: string;
+  taxExemptionNote: string;
+  annualReportHref: string;
+  founderStory: string;
   volunteerTitle: string;
   volunteerEyebrow: string;
   volunteerDescription: string;
@@ -103,6 +109,8 @@ export type SiteContent = {
   newsletterDescription: string;
   newsletterPlaceholder: string;
   newsletterButtonText: string;
+  newsletterEmailSubject: string;
+  newsletterEmailBody: string;
   navigationItems: NavigationItem[];
   sectionOrder: SectionConfig[];
   missionPillars: EditableItem[];
@@ -162,11 +170,18 @@ export const defaultSiteContent: SiteContent = {
   donateEyebrow: "Donate",
   donateDescription:
     "Donation information is ready as a website section. Replace the placeholders with your verified charity payment details before accepting public donations.",
-  upiId: "vihanafoundation@upi",
-  bankAccountName: "Vihana Foundation",
-  bankAccountNumber: "Add account number",
-  bankIfsc: "Add IFSC",
-  bankName: "Add bank name",
+  upiId: "test-vihana@upi",
+  bankAccountName: "Vihana Foundation Test",
+  bankAccountNumber: "000000000000",
+  bankIfsc: "TEST0001234",
+  bankName: "Test Bank",
+  legalStatusNote: "Legal registration details will be published after formal verification.",
+  registrationNumber: "",
+  panNumber: "",
+  taxExemptionNote: "",
+  annualReportHref: "",
+  founderStory:
+    "Vihana Foundation was created as a family-led act of gratitude, inspired by Vihana's birthday and the belief that personal celebrations can become meaningful support for children. The foundation is being shaped to support education, nutrition, healthcare and community care with transparency, dignity and warmth.",
   volunteerTitle: "Help make Vihana's birthday a reason for many children to smile.",
   volunteerEyebrow: "Volunteer",
   volunteerDescription:
@@ -201,6 +216,9 @@ export const defaultSiteContent: SiteContent = {
     "Receive updates about campaigns, volunteer opportunities and stories of impact.",
   newsletterPlaceholder: "Email address",
   newsletterButtonText: "Subscribe",
+  newsletterEmailSubject: "Vihana Foundation Update",
+  newsletterEmailBody:
+    "Dear supporter,\n\nThank you for being part of the Vihana Foundation community.\n\nWe are grateful for your kindness and support.\n\nWith gratitude,\nVihana Foundation",
   navigationItems: [
     { label: "Home", href: "#home" },
     { label: "About Vihana", href: "/about-vihana" },
@@ -219,11 +237,11 @@ export const defaultSiteContent: SiteContent = {
     { id: "impact", label: "Impact Stats", visible: true },
     { id: "story", label: "Featured Story", visible: true },
     { id: "cta", label: "Donation CTA", visible: true },
-    { id: "testimonials", label: "Testimonials", visible: true },
+    { id: "testimonials", label: "Testimonials", visible: false },
     { id: "faq", label: "FAQ", visible: true },
-    { id: "gallery", label: "Gallery", visible: true },
-    { id: "news", label: "News", visible: true },
-    { id: "newsletter", label: "Newsletter", visible: true },
+    { id: "gallery", label: "Gallery", visible: false },
+    { id: "news", label: "News", visible: false },
+    { id: "newsletter", label: "Newsletter", visible: false },
     { id: "donate", label: "Donation Details", visible: true },
     { id: "volunteer", label: "Volunteer Form", visible: true },
   ],
@@ -409,7 +427,7 @@ export const defaultSiteContent: SiteContent = {
       slug: "about-vihana",
       title: "About Vihana",
       description: "The story and spirit behind Vihana Foundation.",
-      body: "Vihana Foundation was created to turn love, celebration and gratitude into practical help for children and families.",
+      body: "Vihana Foundation was created as a family-led act of gratitude, inspired by Vihana's birthday and the belief that personal celebrations can become meaningful support for children.\n\nThe name Vihana carries the heart of the mission: to turn love, celebration and kindness into practical help for children and families. Every initiative is intended to support education, nutrition, healthcare and community care with dignity.\n\nThe foundation is still growing its public story, partnerships and verified impact records. As formal registration, tax-exemption details and annual reports become available, they will be published clearly for donor trust and transparency.",
       buttonLabel: "Join the Movement",
       buttonHref: "/#volunteer",
       published: true,
@@ -455,6 +473,46 @@ function arrayOrDefault<T>(value: unknown, fallback: T[]): T[] {
   return Array.isArray(value) ? (value as T[]) : fallback;
 }
 
+function isOldPlaceholderPage(page: CmsPage) {
+  return (
+    page.slug === "about-vihana" &&
+    page.body.trim() ===
+      "Vihana Foundation was created to turn love, celebration and gratitude into practical help for children and families."
+  );
+}
+
+function hasRealGallery(items: GalleryItem[]) {
+  return items.some((item) => item.imageUrl);
+}
+
+function sectionShouldRender(section: SectionConfig, content: SiteContent, galleryItems: GalleryItem[]) {
+  if (!section.visible) {
+    return false;
+  }
+
+  if (section.id === "testimonials") {
+    return content.testimonials.some((item) => Boolean(item.imageUrl || item.name || item.title) && !item.name?.includes("Vihana Volunteer") && !item.name?.includes("Supporter Family"));
+  }
+
+  if (section.id === "gallery") {
+    return hasRealGallery(galleryItems);
+  }
+
+  if (section.id === "news") {
+    return content.newsItems.some((item) => item.imageUrl || !item.title.toLowerCase().includes("birthday kindness campaign"));
+  }
+
+  if (section.id === "newsletter") {
+    return false;
+  }
+
+  return true;
+}
+
+export function getRenderableSections(content: SiteContent, galleryItems: GalleryItem[]) {
+  return content.sectionOrder.filter((section) => sectionShouldRender(section, content, galleryItems));
+}
+
 export function mergeSiteContent(content: Partial<SiteContent> | null | undefined): SiteContent {
   const merged = {
     ...defaultSiteContent,
@@ -470,7 +528,15 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
     ),
   ];
   const pagesWithDefaults = [
-    ...pages,
+    ...pages.map((page) => {
+      const defaultPage = defaultSiteContent.pages.find((item) => item.slug === page.slug);
+
+      if (defaultPage && isOldPlaceholderPage(page)) {
+        return defaultPage;
+      }
+
+      return page;
+    }),
     ...defaultSiteContent.pages.filter(
       (defaultPage) => !pages.some((page) => page.slug === defaultPage.slug)
     ),

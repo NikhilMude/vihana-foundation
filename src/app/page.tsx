@@ -18,7 +18,8 @@ import ReusableCta from "@/sections/ReusableCta";
 import Testimonials from "@/sections/Testimonials";
 import Volunteer from "@/sections/Volunteer";
 import WhyChooseUs from "@/sections/WhyChooseUs";
-import { getGalleryItems, getSiteContent, getVisitorStats } from "@/lib/siteData";
+import { getRenderableSections } from "@/lib/cmsContent";
+import { getGalleryItems, getSiteContent } from "@/lib/siteData";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,6 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function Home() {
   const content = await getSiteContent();
   const galleryItems = await getGalleryItems();
-  const visitorStats = await getVisitorStats();
 
   const sectionMap = {
     hero: <Hero key="hero" content={content} />,
@@ -65,14 +65,13 @@ export default async function Home() {
       <VisitTracker />
 
       <main className="overflow-x-hidden">
-        {content.sectionOrder
-          .filter((section) => section.visible)
+        {getRenderableSections(content, galleryItems)
           .map((section) => sectionMap[section.id as keyof typeof sectionMap])
           .filter(Boolean)}
       </main>
 
       <FloatingDonate content={content} />
-      <Footer content={content} navigation={content.navigationItems} visitorCount={visitorStats.total} />
+      <Footer content={content} navigation={content.navigationItems} />
     </div>
   );
 }
