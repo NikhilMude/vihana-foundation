@@ -96,6 +96,7 @@ type AdminDashboardProps = {
 };
 
 type Tab =
+  | "overview"
   | "content"
   | "email"
   | "media"
@@ -229,6 +230,29 @@ const listLabels: Record<ListKey, string> = {
   faqs: "FAQ",
   newsItems: "News / Activities",
 };
+
+const listHelp: Record<ListKey, { first: string; second: string; body: keyof EditableItem; bodyLabel: string }> = {
+  missionPillars: { first: "Title", second: "Small label / value", body: "description", bodyLabel: "Description" },
+  programCards: { first: "Program title", second: "Small label / value", body: "description", bodyLabel: "Description" },
+  whyFeatures: { first: "Title", second: "Small label / value", body: "description", bodyLabel: "Description" },
+  impactStats: { first: "Label", second: "Number", body: "description", bodyLabel: "Short explanation" },
+  impactNotes: { first: "Title", second: "Small label / value", body: "description", bodyLabel: "Description" },
+  volunteerActions: { first: "Action title", second: "Small label / value", body: "description", bodyLabel: "Description" },
+  eventItems: { first: "Event title", second: "Date", body: "description", bodyLabel: "Event details" },
+  annualReports: { first: "Report title", second: "Year / status", body: "description", bodyLabel: "Description" },
+  testimonials: { first: "Person name", second: "Role", body: "quote", bodyLabel: "Quote" },
+  faqs: { first: "Question", second: "Optional label", body: "answer", bodyLabel: "Answer" },
+  newsItems: { first: "News title", second: "Date", body: "summary", bodyLabel: "Summary" },
+};
+
+const quickActions: { tab: Tab; title: string; description: string; icon: typeof Pencil }[] = [
+  { tab: "content", title: "Edit Website Text", description: "Hero, mission, donate, contact, footer and SEO text.", icon: Pencil },
+  { tab: "pages", title: "Edit Pages", description: "About, Contact, Legal pages and any new page.", icon: FileText },
+  { tab: "media", title: "Change Images", description: "Logo, hero image, mission image and donation image.", icon: ImagePlus },
+  { tab: "sections", title: "Edit Cards", description: "Programs, impact numbers, FAQ, news, events and reports.", icon: LayoutList },
+  { tab: "navigation", title: "Menu & Social Links", description: "Website menu, footer links and social media.", icon: Navigation },
+  { tab: "donations", title: "Donation Reports", description: "Donation records, donor reports and CSV downloads.", icon: BadgeIndianRupee },
+];
 
 const socialIconPresets = [
   { label: "Instagram", mark: "IG" },
@@ -461,7 +485,7 @@ export default function AdminDashboard({
   initialDonors,
   initialSubscribers,
 }: AdminDashboardProps) {
-  const [tab, setTab] = useState<Tab>("content");
+  const [tab, setTab] = useState<Tab>("overview");
   const [content, setContent] = useState(initialContent);
   const [galleryItems, setGalleryItems] = useState(initialGalleryItems);
   const [messages] = useState(initialMessages);
@@ -478,6 +502,7 @@ export default function AdminDashboard({
 
   const tabs = useMemo(
     () => [
+      { id: "overview" as const, label: "Dashboard", icon: Settings },
       { id: "content" as const, label: "Website Text", icon: Pencil },
       { id: "pages" as const, label: "Pages", icon: FileText },
       { id: "sections" as const, label: "Section Cards", icon: LayoutList },
@@ -891,6 +916,62 @@ export default function AdminDashboard({
           </div>
         </div>
 
+        {tab === "overview" ? (
+          <div className="mt-6 grid gap-6">
+            <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-600">Start Here</p>
+                  <h2 className="mt-2 text-2xl font-bold text-slate-950">What do you want to update?</h2>
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                    Use these shortcuts for common tasks. Save Changes at the top publishes website content updates.
+                  </p>
+                </div>
+                <Button type="button" onClick={() => saveContent()} disabled={saving} className="h-11 rounded-full bg-teal-700 px-6 hover:bg-teal-800">
+                  {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+                  Save Changes
+                </Button>
+              </div>
+
+              <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {quickActions.map((action) => {
+                  const Icon = action.icon;
+
+                  return (
+                    <button
+                      key={action.title}
+                      type="button"
+                      onClick={() => setTab(action.tab)}
+                      className="rounded-[8px] border border-slate-200 bg-slate-50 p-5 text-left transition hover:-translate-y-0.5 hover:border-teal-200 hover:bg-teal-50 hover:shadow-sm"
+                    >
+                      <div className="flex h-11 w-11 items-center justify-center rounded-[8px] bg-white text-teal-700 shadow-sm">
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <h3 className="mt-4 text-lg font-bold text-slate-950">{action.title}</h3>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">{action.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section className="grid gap-4 md:grid-cols-5">
+              {[
+                ["Messages", messages.length],
+                ["Donations", donations.length],
+                ["Donors", donors.length],
+                ["Subscribers", subscribers.length],
+                ["Visitors", visitorCount],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{label}</p>
+                  <p className="mt-2 text-3xl font-black text-slate-950">{value}</p>
+                </div>
+              ))}
+            </section>
+          </div>
+        ) : null}
+
         {tab === "content" ? (
           <form onSubmit={saveContent} className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-start">
@@ -1256,7 +1337,10 @@ export default function AdminDashboard({
             {(Object.keys(listLabels) as ListKey[]).map((listKey) => (
               <section key={listKey} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center justify-between gap-4">
-                  <h2 className="text-xl font-bold text-slate-950">{listLabels[listKey]}</h2>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-950">{listLabels[listKey]}</h2>
+                    <p className="mt-1 text-sm text-slate-500">Add, edit, delete and reorder these website items.</p>
+                  </div>
                   <Button type="button" onClick={() => addListItem(listKey)} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
                     <Plus className="mr-2 h-4 w-4" />
                     Add
@@ -1265,9 +1349,25 @@ export default function AdminDashboard({
                 <div className="mt-5 grid gap-4">
                   {content[listKey].map((item, index) => (
                     <div key={item.id} className="grid gap-3 rounded-[8px] border border-slate-200 bg-slate-50 p-4 lg:grid-cols-2">
-                      <input value={item.title} onChange={(event) => updateListItem(listKey, index, "title", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Title / name / question" />
-                      <input value={item.value || ""} onChange={(event) => updateListItem(listKey, index, "value", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Number/value/date/role" />
-                      <textarea value={item.description || item.quote || item.answer || item.summary || ""} onChange={(event) => updateListItem(listKey, index, "description", event.target.value)} rows={3} className="rounded-[8px] border border-slate-200 px-4 py-3 lg:col-span-2" placeholder="Description / quote / answer / summary" />
+                      <input
+                        value={listKey === "testimonials" ? item.name || item.title : listKey === "faqs" ? item.question || item.title : item.title}
+                        onChange={(event) => updateListItem(listKey, index, listKey === "testimonials" ? "name" : listKey === "faqs" ? "question" : "title", event.target.value)}
+                        className="h-11 rounded-[8px] border border-slate-200 px-4"
+                        placeholder={listHelp[listKey].first}
+                      />
+                      <input
+                        value={listKey === "testimonials" ? item.role || item.value || "" : item.value || ""}
+                        onChange={(event) => updateListItem(listKey, index, listKey === "testimonials" ? "role" : "value", event.target.value)}
+                        className="h-11 rounded-[8px] border border-slate-200 px-4"
+                        placeholder={listHelp[listKey].second}
+                      />
+                      <textarea
+                        value={String(item[listHelp[listKey].body] || "")}
+                        onChange={(event) => updateListItem(listKey, index, listHelp[listKey].body, event.target.value)}
+                        rows={3}
+                        className="rounded-[8px] border border-slate-200 px-4 py-3 lg:col-span-2"
+                        placeholder={listHelp[listKey].bodyLabel}
+                      />
                       <input value={item.linkLabel || ""} onChange={(event) => updateListItem(listKey, index, "linkLabel", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button text, if needed" />
                       <div className="flex gap-3">
                         <input value={item.linkHref || ""} onChange={(event) => updateListItem(listKey, index, "linkHref", event.target.value)} className="h-11 flex-1 rounded-[8px] border border-slate-200 px-4" placeholder="Button link, if needed" />
