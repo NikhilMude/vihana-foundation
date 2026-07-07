@@ -4,6 +4,8 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import VisitTracker from "@/components/analytics/VisitTracker";
 import Footer from "@/components/layout/Footer";
+import FloatingDonate from "@/components/layout/FloatingDonate";
+import FloatingWhatsApp from "@/components/layout/FloatingWhatsApp";
 import Navbar from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -63,6 +65,8 @@ export default async function CmsPage({ params }: PageProps) {
         </section>
       </main>
 
+      <FloatingDonate content={content} />
+      <FloatingWhatsApp content={content} />
       <Footer content={content} navigation={content.navigationItems} />
     </div>
   );

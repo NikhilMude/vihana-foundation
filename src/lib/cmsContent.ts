@@ -116,6 +116,10 @@ export type SiteContent = {
   floatingDonateHref: string;
   floatingDonateColor: string;
   floatingDonateTextColor: string;
+  whatsappEnabled: string;
+  whatsappNumber: string;
+  whatsappMessage: string;
+  whatsappButtonText: string;
   ctaHeading: string;
   ctaDescription: string;
   ctaButtonText: string;
@@ -128,6 +132,10 @@ export type SiteContent = {
   faqTitle: string;
   newsEyebrow: string;
   newsTitle: string;
+  eventsEyebrow: string;
+  eventsTitle: string;
+  annualReportsEyebrow: string;
+  annualReportsTitle: string;
   newsletterHeading: string;
   newsletterDescription: string;
   newsletterPlaceholder: string;
@@ -147,6 +155,8 @@ export type SiteContent = {
   testimonials: EditableItem[];
   faqs: EditableItem[];
   newsItems: EditableItem[];
+  eventItems: EditableItem[];
+  annualReports: EditableItem[];
   pages: CmsPage[];
 };
 
@@ -240,6 +250,10 @@ export const defaultSiteContent: SiteContent = {
   floatingDonateHref: "#donate",
   floatingDonateColor: "#0f766e",
   floatingDonateTextColor: "#ffffff",
+  whatsappEnabled: "true",
+  whatsappNumber: "",
+  whatsappMessage: "Hello Vihana Foundation, I would like to know more.",
+  whatsappButtonText: "WhatsApp",
   ctaHeading: "Make one celebration meaningful for many children.",
   ctaDescription:
     "Your support can become meals, learning materials, care and confidence for children who need it most.",
@@ -253,6 +267,10 @@ export const defaultSiteContent: SiteContent = {
   faqTitle: "Questions families and supporters often ask.",
   newsEyebrow: "News & Activities",
   newsTitle: "Recent moments and upcoming work.",
+  eventsEyebrow: "Events",
+  eventsTitle: "Upcoming drives and community moments.",
+  annualReportsEyebrow: "Transparency",
+  annualReportsTitle: "Annual reports and public documents.",
   newsletterHeading: "Stay connected with Vihana Foundation.",
   newsletterDescription:
     "Receive updates about campaigns, volunteer opportunities and stories of impact.",
@@ -288,7 +306,9 @@ export const defaultSiteContent: SiteContent = {
     { id: "testimonials", label: "Testimonials", visible: false },
     { id: "faq", label: "FAQ", visible: true },
     { id: "gallery", label: "Gallery", visible: true },
+    { id: "events", label: "Events", visible: true },
     { id: "news", label: "News", visible: false },
+    { id: "annualReports", label: "Annual Reports", visible: true },
     { id: "newsletter", label: "Newsletter", visible: true },
     { id: "donate", label: "Donation Details", visible: true },
     { id: "volunteer", label: "Volunteer Form", visible: true },
@@ -473,6 +493,27 @@ export const defaultSiteContent: SiteContent = {
       linkHref: "/about-vihana",
     },
   ],
+  eventItems: [
+    {
+      id: "event-1",
+      title: "Birthday Kindness Drive",
+      value: "To be announced",
+      description: "A community campaign for school kits, nutritious meals and volunteer participation.",
+      imageUrl: "/images/generated/vihana-meal-support-photo.jpg",
+      linkLabel: "Register Interest",
+      linkHref: "#volunteer",
+    },
+  ],
+  annualReports: [
+    {
+      id: "annual-report-1",
+      title: "Annual Report",
+      value: "Coming soon",
+      description: "Verified reports and public documents will be published here as they become available.",
+      linkLabel: "View Document",
+      linkHref: "",
+    },
+  ],
   pages: [
     {
       id: "about-vihana",
@@ -604,6 +645,14 @@ function sectionShouldRender(section: SectionConfig, content: SiteContent, galle
     return content.newsItems.some((item) => item.imageUrl || !item.title.toLowerCase().includes("birthday kindness campaign"));
   }
 
+  if (section.id === "events") {
+    return content.eventItems.some((item) => item.title);
+  }
+
+  if (section.id === "annualReports") {
+    return content.annualReports.some((item) => item.title);
+  }
+
   return true;
 }
 
@@ -661,6 +710,8 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
     testimonials: arrayOrDefault(merged.testimonials, defaultSiteContent.testimonials),
     faqs: arrayOrDefault(merged.faqs, defaultSiteContent.faqs),
     newsItems: arrayOrDefault(merged.newsItems, defaultSiteContent.newsItems),
+    eventItems: arrayOrDefault(merged.eventItems, defaultSiteContent.eventItems),
+    annualReports: arrayOrDefault(merged.annualReports, defaultSiteContent.annualReports),
     pages: pagesWithDefaults,
   };
 }

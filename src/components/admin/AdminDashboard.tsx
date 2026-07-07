@@ -95,6 +95,8 @@ type ListKey =
   | "impactStats"
   | "impactNotes"
   | "volunteerActions"
+  | "eventItems"
+  | "annualReports"
   | "testimonials"
   | "faqs"
   | "newsItems";
@@ -122,6 +124,10 @@ const contentFields: { key: keyof SiteContent; label: string; multiline?: boolea
   { key: "floatingDonateHref", label: "Floating donate link" },
   { key: "floatingDonateColor", label: "Floating donate background color" },
   { key: "floatingDonateTextColor", label: "Floating donate text color" },
+  { key: "whatsappEnabled", label: "WhatsApp enabled (true/false)" },
+  { key: "whatsappNumber", label: "WhatsApp number with country code" },
+  { key: "whatsappMessage", label: "WhatsApp default message", multiline: true },
+  { key: "whatsappButtonText", label: "WhatsApp button text" },
   { key: "missionTitle", label: "Mission title" },
   { key: "missionEyebrow", label: "Mission small label" },
   { key: "missionDescription", label: "Mission description", multiline: true },
@@ -159,6 +165,10 @@ const contentFields: { key: keyof SiteContent; label: string; multiline?: boolea
   { key: "faqTitle", label: "FAQ title" },
   { key: "newsEyebrow", label: "News small label" },
   { key: "newsTitle", label: "News title" },
+  { key: "eventsEyebrow", label: "Events small label" },
+  { key: "eventsTitle", label: "Events title" },
+  { key: "annualReportsEyebrow", label: "Annual reports small label" },
+  { key: "annualReportsTitle", label: "Annual reports title" },
   { key: "newsletterHeading", label: "Newsletter heading" },
   { key: "newsletterDescription", label: "Newsletter description", multiline: true },
   { key: "newsletterPlaceholder", label: "Newsletter input placeholder" },
@@ -192,6 +202,8 @@ const listLabels: Record<ListKey, string> = {
   impactStats: "Impact Numbers",
   impactNotes: "Impact Notes",
   volunteerActions: "Volunteer Actions",
+  eventItems: "Events",
+  annualReports: "Annual Reports / PDFs",
   testimonials: "Testimonials",
   faqs: "FAQ",
   newsItems: "News / Activities",
@@ -200,10 +212,10 @@ const listLabels: Record<ListKey, string> = {
 const socialIconPresets = [
   { label: "Instagram", mark: "IG" },
   { label: "Facebook", mark: "f" },
-  { label: "YouTube", mark: "▶" },
+  { label: "YouTube", mark: "YT" },
   { label: "LinkedIn", mark: "in" },
   { label: "X", mark: "X" },
-  { label: "Website", mark: "🌐" },
+  { label: "Website", mark: "WWW" },
 ];
 
 function uniqueId(prefix: string) {
@@ -501,6 +513,23 @@ export default function AdminDashboard({
 
     if (file.size > 700000) {
       setStatus("Please choose a smaller image under 700 KB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => callback(String(reader.result || ""));
+    reader.readAsDataURL(file);
+  }
+
+  function handleDocumentUpload(event: ChangeEvent<HTMLInputElement>, callback: (value: string) => void) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (file.size > 1800000) {
+      setStatus("Please choose a PDF under 1.8 MB.");
       return;
     }
 
@@ -851,7 +880,7 @@ export default function AdminDashboard({
                   <div key={item.id} className="grid gap-3 rounded-[8px] border border-slate-200 bg-slate-50 p-4 md:grid-cols-[0.7fr_1fr_auto]">
                     <div className="grid grid-cols-[auto_1fr] gap-3">
                       <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-950 text-sm font-black text-white">
-                        {socialIconPresets.find((preset) => preset.label === item.label)?.mark || "🌐"}
+                        {socialIconPresets.find((preset) => preset.label === item.label)?.mark || "WWW"}
                       </div>
                       <select
                         value={item.label}
@@ -1009,6 +1038,14 @@ export default function AdminDashboard({
                         onChange={(event) => handleImageUpload(event, (value) => updateListItem(listKey, index, "imageUrl", value))}
                         className="rounded-[8px] border border-dashed border-slate-300 bg-white p-3 text-sm lg:col-span-2"
                       />
+                      {listKey === "annualReports" ? (
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          onChange={(event) => handleDocumentUpload(event, (value) => updateListItem(listKey, index, "linkHref", value))}
+                          className="rounded-[8px] border border-dashed border-slate-300 bg-white p-3 text-sm lg:col-span-2"
+                        />
+                      ) : null}
                     </div>
                   ))}
                 </div>

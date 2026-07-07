@@ -3,8 +3,11 @@ import type { Metadata } from "next";
 import VisitTracker from "@/components/analytics/VisitTracker";
 import Footer from "@/components/layout/Footer";
 import FloatingDonate from "@/components/layout/FloatingDonate";
+import FloatingWhatsApp from "@/components/layout/FloatingWhatsApp";
 import Navbar from "@/components/layout/Navbar";
+import AnnualReports from "@/sections/AnnualReports";
 import Donation from "@/sections/Donation";
+import Events from "@/sections/Events";
 import Faq from "@/sections/Faq";
 import FeaturedStory from "@/sections/FeaturedStory";
 import Gallery from "@/sections/Gallery";
@@ -53,7 +56,9 @@ export default async function Home() {
     testimonials: <Testimonials key="testimonials" content={content} />,
     faq: <Faq key="faq" content={content} />,
     gallery: <Gallery key="gallery" content={content} items={galleryItems} />,
+    events: <Events key="events" content={content} />,
     news: <News key="news" content={content} />,
+    annualReports: <AnnualReports key="annualReports" content={content} />,
     newsletter: <Newsletter key="newsletter" content={content} />,
     donate: <Donation key="donate" content={content} />,
     volunteer: <Volunteer key="volunteer" content={content} />,
@@ -71,6 +76,7 @@ export default async function Home() {
       </main>
 
       <FloatingDonate content={content} />
+      <FloatingWhatsApp content={content} />
       <Footer content={content} navigation={content.navigationItems} />
     </div>
   );

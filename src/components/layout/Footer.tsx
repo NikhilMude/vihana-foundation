@@ -18,7 +18,7 @@ function getSocialMark(label: string) {
   }
 
   if (normalized.includes("youtube")) {
-    return "▶";
+    return "YT";
   }
 
   if (normalized.includes("linkedin")) {
