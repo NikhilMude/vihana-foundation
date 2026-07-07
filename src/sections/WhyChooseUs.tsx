@@ -8,7 +8,7 @@ const icons = [Heart, Users, Leaf, HandHeart];
 
 export default function WhyChooseUs({ content }: { content: SiteContent }) {
   return (
-    <section className="bg-white py-8 md:py-12">
+    <section className="bg-white py-6 md:py-12">
       <Container>
         <div className="grid gap-7 lg:grid-cols-[0.85fr_1.15fr] lg:items-start lg:gap-10">
           <Reveal>

@@ -11,7 +11,7 @@ const accents = ["bg-sky-100 text-sky-700", "bg-amber-100 text-amber-700", "bg-r
 
 export default function Programs({ content }: { content: SiteContent }) {
   return (
-    <section id="programs" className="bg-stone-50 py-8 md:py-12">
+    <section id="programs" className="bg-stone-50 py-6 md:py-12">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">

@@ -39,7 +39,7 @@ export default function Newsletter({ content }: { content: SiteContent }) {
   }
 
   return (
-    <section className="bg-white py-8 md:py-12">
+    <section className="bg-white py-6 md:py-12">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-4xl rounded-[8px] border border-slate-200 bg-stone-50 p-5 text-center shadow-sm sm:p-8">

@@ -29,7 +29,7 @@ export default function Donation({ content }: { content: SiteContent }) {
   ];
 
   return (
-    <section id="donate" className="bg-stone-50 py-8 md:py-12">
+    <section id="donate" className="bg-stone-50 py-6 md:py-12">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">

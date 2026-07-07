@@ -51,7 +51,7 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
           : "bg-transparent"
       }`}
     >
-      <Container className="flex h-16 items-center justify-between sm:h-20">
+      <Container className="flex h-14 items-center justify-between sm:h-20">
         <Logo brandName={content.brandName} brandTagline={content.brandTagline} logoImageUrl={content.logoImageUrl} />
 
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Main navigation">
@@ -85,11 +85,11 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
         <Button
           variant="ghost"
           size="icon"
-          className="h-10 w-10 rounded-full bg-white/80 shadow-sm lg:hidden"
+          className="h-9 w-9 rounded-full bg-white/85 shadow-sm lg:hidden"
           onClick={() => setOpen((value) => !value)}
           aria-label="Toggle menu"
         >
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </Button>
       </Container>
 
@@ -98,27 +98,27 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
           open ? "max-h-[34rem]" : "max-h-0 border-transparent"
         }`}
       >
-        <Container className="py-4">
+        <Container className="py-3">
           <div className="flex flex-col gap-1">
             {menuNavigation.map((item) => (
               <SmartNavLink
                 key={item.label}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="rounded-[8px] px-4 py-3.5 text-base font-semibold text-slate-700 transition hover:bg-teal-50 hover:text-teal-800"
+                className="rounded-[8px] px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-teal-50 hover:text-teal-800"
               >
                 {item.label}
               </SmartNavLink>
             ))}
 
-            <Button asChild variant="outline" className="mt-4 h-12 rounded-full border-teal-200 bg-teal-50 text-base text-teal-800 hover:bg-teal-100">
+            <Button asChild variant="outline" className="mt-3 h-10 rounded-full border-teal-200 bg-teal-50 text-sm text-teal-800 hover:bg-teal-100">
               <SmartNavLink href="/donor" onClick={() => setOpen(false)}>
                 <UserRound className="mr-2 h-4 w-4" />
                 {donorLabel}
               </SmartNavLink>
             </Button>
 
-            <Button asChild className="h-12 rounded-full bg-teal-700 text-base hover:bg-teal-800">
+            <Button asChild className="h-10 rounded-full bg-teal-700 text-sm hover:bg-teal-800">
               <SmartNavLink href="/#donate" onClick={() => setOpen(false)}>
                 <HeartHandshake className="mr-2 h-4 w-4" />
                 Donate

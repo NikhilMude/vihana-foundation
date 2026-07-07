@@ -8,7 +8,7 @@ import { SiteContent } from "@/lib/cmsContent";
 
 export default function Events({ content }: { content: SiteContent }) {
   return (
-    <section className="bg-white py-8 md:py-12">
+    <section className="bg-white py-6 md:py-12">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">

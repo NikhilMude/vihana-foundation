@@ -9,7 +9,7 @@ const icons = [Gift, HandHeart, Mail];
 
 export default function Volunteer({ content }: { content: SiteContent }) {
   return (
-    <section id="volunteer" className="bg-white py-8 md:py-12">
+    <section id="volunteer" className="bg-white py-6 md:py-12">
       <Container>
         <div className="grid gap-7 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-8">
           <Reveal>

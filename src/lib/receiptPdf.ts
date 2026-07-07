@@ -70,49 +70,103 @@ function textLine(x: number, y: number, size: number, text: string, font = "F1")
 
 export function createReceiptPdf(content: SiteContent, donation: ReceiptDonation) {
   const receiptNumber = donation.receiptNumber || donation.id || "Pending";
-  const rows = [
-    ["Receipt Number", receiptNumber],
-    ["Receipt Status", donation.receiptStatus || "Provisional receipt generated"],
-    ["Receipt Date", formatDate(donation.receiptIssuedAt || donation.createdAt)],
+  const receiptDate = formatDate(donation.receiptIssuedAt || donation.createdAt);
+  const donorRows = [
     ["Donor Name", donation.name || "Not available"],
     ["Email", donation.email || "Not available"],
     ["Phone", donation.phone || "Not added"],
     ["PAN", donation.pan || "Not added"],
     ["Address", donation.address || "Not added"],
+  ];
+  const donationRows = [
+    ["Receipt Number", receiptNumber],
+    ["Receipt Status", donation.receiptStatus || "Provisional receipt generated"],
+    ["Receipt Date", receiptDate],
     ["Amount", `INR ${donation.amount || "0"}`],
     ["Purpose", donation.purpose || "General Fund"],
     ["Frequency", donation.frequency || "One Time"],
     ["Payment Method", donation.method || "Not recorded"],
     ["Transaction Reference", donation.transactionId || "Not recorded"],
   ];
+  const foundationRows = [
+    ["Foundation", `${content.brandName} ${content.brandTagline}`.trim()],
+    ["Email", content.contactEmail || "contact@vihanafoundation.org"],
+    ["Phone", content.contactPhone || "Not added"],
+    ["UPI", content.upiId || "Not added"],
+    ["Bank", content.bankName || "Not added"],
+    ["Account", content.bankAccountNumber || "Not added"],
+    ["IFSC", content.bankIfsc || "Not added"],
+    ["PAN", content.panNumber || "Not added"],
+    ["Legal status", content.legalStatusNote || "Legal details pending verification"],
+  ];
   const commands: string[] = [
     "0.96 0.98 0.98 rg 0 0 595 842 re f",
     "0.02 0.48 0.44 rg 0 792 595 50 re f",
+    "1 1 1 rg",
     textLine(52, 805, 18, `${content.brandName} ${content.brandTagline}`, "F2"),
+    "0.02 0.48 0.44 rg",
     textLine(52, 742, 28, content.receiptTitle || "Donation Receipt", "F2"),
     textLine(52, 718, 12, content.receiptSubtitle || "Provisional acknowledgement"),
     textLine(398, 742, 10, `Receipt`, "F2"),
     textLine(398, 724, 12, receiptNumber, "F2"),
     "1 1 1 rg 44 96 507 590 re f",
     "0.85 0.89 0.92 RG 44 96 507 590 re S",
+    "0.93 0.99 0.97 rg 64 612 467 54 re f",
+    "0.70 0.91 0.86 RG 64 612 467 54 re S",
+    "0.02 0.48 0.44 rg",
+    textLine(82, 646, 9, "AMOUNT RECEIVED", "F2"),
+    textLine(82, 624, 20, `INR ${donation.amount || "0"}`, "F2"),
+    "0.02 0.04 0.12 rg",
+    textLine(310, 646, 9, "FOR", "F2"),
+    textLine(310, 624, 13, donation.purpose || "General Fund", "F2"),
+    "0.02 0.04 0.12 rg",
+    textLine(64, 580, 12, "Donor Details", "F2"),
+    textLine(304, 580, 12, "Donation Details", "F2"),
   ];
 
-  let y = 660;
-  rows.forEach(([label, value]) => {
-    commands.push(textLine(64, y, 10, label, "F2"));
-    wrapText(value, 58).forEach((line, index) => {
-      commands.push(textLine(210, y - index * 14, 10, line));
+  let donorY = 552;
+  donorRows.forEach(([label, value]) => {
+    commands.push("0.38 0.45 0.55 rg");
+    commands.push(textLine(64, donorY, 8, label.toUpperCase(), "F2"));
+    commands.push("0.02 0.04 0.12 rg");
+    wrapText(value, 34).forEach((line, index) => {
+      commands.push(textLine(64, donorY - 15 - index * 12, 9, line));
     });
-    y -= Math.max(24, wrapText(value, 58).length * 14 + 10);
+    donorY -= Math.max(42, wrapText(value, 34).length * 12 + 28);
   });
 
-  y -= 6;
-  wrapText(content.receiptLegalNote || "", 90).forEach((line) => {
-    commands.push(textLine(64, y, 9, line));
-    y -= 12;
+  let donationY = 552;
+  donationRows.forEach(([label, value]) => {
+    commands.push("0.38 0.45 0.55 rg");
+    commands.push(textLine(304, donationY, 8, label.toUpperCase(), "F2"));
+    commands.push("0.02 0.04 0.12 rg");
+    wrapText(value, 32).forEach((line, index) => {
+      commands.push(textLine(304, donationY - 15 - index * 12, 9, line));
+    });
+    donationY -= Math.max(42, wrapText(value, 32).length * 12 + 28);
   });
 
+  commands.push("0.98 0.96 0.89 rg 64 204 467 82 re f");
+  commands.push("0.94 0.72 0.23 RG 64 204 467 82 re S");
+  commands.push("0.02 0.04 0.12 rg");
+  commands.push(textLine(82, 260, 10, "Foundation Details", "F2"));
+  foundationRows.slice(0, 5).forEach(([label, value], index) => {
+    commands.push(textLine(82, 242 - index * 13, 8, `${label}: ${value}`));
+  });
+  foundationRows.slice(5).forEach(([label, value], index) => {
+    commands.push(textLine(304, 242 - index * 13, 8, `${label}: ${value}`));
+  });
+
+  let noteY = 176;
+  commands.push("0.38 0.45 0.55 rg");
+  wrapText(content.receiptLegalNote || "", 92).slice(0, 4).forEach((line) => {
+    commands.push(textLine(64, noteY, 8, line));
+    noteY -= 11;
+  });
+
+  commands.push("0.02 0.48 0.44 rg");
   commands.push(textLine(64, 130, 10, content.receiptFooterNote || "Thank you for supporting Vihana Foundation.", "F2"));
+  commands.push("0.02 0.04 0.12 rg");
   commands.push(textLine(390, 130, 10, content.receiptSignatureName || "Vihana Foundation", "F2"));
   commands.push(textLine(390, 114, 8, "Authorized acknowledgement"));
 

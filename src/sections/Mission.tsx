@@ -9,7 +9,7 @@ const icons = [BookOpen, Soup, HeartHandshake, ShieldCheck];
 
 export default function Mission({ content }: { content: SiteContent }) {
   return (
-    <section id="mission" className="bg-white py-8 md:py-12">
+    <section id="mission" className="bg-white py-6 md:py-12">
       <Container>
         <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:gap-12">
           <Reveal>

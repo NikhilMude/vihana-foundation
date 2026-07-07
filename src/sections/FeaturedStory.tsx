@@ -11,7 +11,7 @@ export default function FeaturedStory({ content }: { content: SiteContent }) {
   const story = content.featuredStory;
 
   return (
-    <section className="bg-white py-8 md:py-12">
+    <section className="bg-white py-6 md:py-12">
       <Container>
         <Reveal>
           <div className="grid gap-5 overflow-hidden rounded-[8px] border border-slate-200 bg-stone-50 p-4 shadow-sm sm:p-5 lg:grid-cols-[0.9fr_1.1fr] lg:gap-8 lg:p-8">
