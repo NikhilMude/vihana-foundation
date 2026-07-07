@@ -261,8 +261,7 @@ export default function AdminDashboard({
     []
   );
 
-  async function saveContent(event?: FormEvent<HTMLFormElement>) {
-    event?.preventDefault();
+  async function persistContent(nextContent: SiteContent, successMessage = "Website saved.") {
     setSaving(true);
     setStatus("");
 
@@ -271,11 +270,16 @@ export default function AdminDashboard({
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content: nextContent }),
     });
 
     setSaving(false);
-    setStatus(response.ok ? "Website saved." : "Could not save website.");
+    setStatus(response.ok ? successMessage : "Could not save website.");
+  }
+
+  async function saveContent(event?: FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
+    await persistContent(content);
   }
 
   function updateContent(key: keyof SiteContent, value: string) {
@@ -296,6 +300,7 @@ export default function AdminDashboard({
       ...current,
       navigationItems: [...current.navigationItems, { label: "New Link", href: "/" }],
     }));
+    setStatus("Navigation updated. Click Save to publish it.");
   }
 
   function removeNavigationItem(index: number) {
@@ -303,9 +308,12 @@ export default function AdminDashboard({
       ...current,
       navigationItems: current.navigationItems.filter((_, itemIndex) => itemIndex !== index),
     }));
+    setStatus("Navigation updated. Click Save to publish it.");
   }
 
   function moveNavigationItem(index: number, direction: -1 | 1) {
+    let nextContent: SiteContent | null = null;
+
     setContent((current) => {
       const next = [...current.navigationItems];
       const target = index + direction;
@@ -315,8 +323,13 @@ export default function AdminDashboard({
       }
 
       [next[index], next[target]] = [next[target], next[index]];
-      return { ...current, navigationItems: next };
+      nextContent = { ...current, navigationItems: next };
+      return nextContent;
     });
+
+    if (nextContent) {
+      void persistContent(nextContent, "Navigation order saved.");
+    }
   }
 
   function updateSectionConfig(index: number, key: keyof SectionConfig, value: string | boolean) {
@@ -329,6 +342,8 @@ export default function AdminDashboard({
   }
 
   function moveSection(index: number, direction: -1 | 1) {
+    let nextContent: SiteContent | null = null;
+
     setContent((current) => {
       const next = [...current.sectionOrder];
       const target = index + direction;
@@ -338,8 +353,13 @@ export default function AdminDashboard({
       }
 
       [next[index], next[target]] = [next[target], next[index]];
-      return { ...current, sectionOrder: next };
+      nextContent = { ...current, sectionOrder: next };
+      return nextContent;
     });
+
+    if (nextContent) {
+      void persistContent(nextContent, "Homepage order saved.");
+    }
   }
 
   function updateListItem(listKey: ListKey, index: number, key: keyof EditableItem, value: string) {
@@ -356,6 +376,7 @@ export default function AdminDashboard({
       ...current,
       [listKey]: [...current[listKey], emptyItem(listKey)],
     }));
+    setStatus("Card list updated. Click Save to publish it.");
   }
 
   function removeListItem(listKey: ListKey, index: number) {
@@ -363,9 +384,12 @@ export default function AdminDashboard({
       ...current,
       [listKey]: current[listKey].filter((_, itemIndex) => itemIndex !== index),
     }));
+    setStatus("Card list updated. Click Save to publish it.");
   }
 
   function moveListItem(listKey: ListKey, index: number, direction: -1 | 1) {
+    let nextContent: SiteContent | null = null;
+
     setContent((current) => {
       const next = [...current[listKey]];
       const target = index + direction;
@@ -375,8 +399,13 @@ export default function AdminDashboard({
       }
 
       [next[index], next[target]] = [next[target], next[index]];
-      return { ...current, [listKey]: next };
+      nextContent = { ...current, [listKey]: next };
+      return nextContent;
     });
+
+    if (nextContent) {
+      void persistContent(nextContent, "Card order saved.");
+    }
   }
 
   function updateFeaturedStory(key: keyof EditableItem, value: string) {
@@ -401,6 +430,7 @@ export default function AdminDashboard({
       ...current,
       pages: [...current.pages, emptyPage()],
     }));
+    setStatus("Page list updated. Click Save to publish it.");
   }
 
   function removePage(index: number) {
@@ -408,6 +438,7 @@ export default function AdminDashboard({
       ...current,
       pages: current.pages.filter((_, pageIndex) => pageIndex !== index),
     }));
+    setStatus("Page list updated. Click Save to publish it.");
   }
 
   function handleImageUpload(event: ChangeEvent<HTMLInputElement>, callback: (value: string) => void) {
@@ -520,12 +551,12 @@ export default function AdminDashboard({
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button onClick={() => saveContent()} disabled={saving} className="h-11 rounded-full bg-amber-400 px-6 text-slate-950 hover:bg-amber-300">
+            <Button type="button" onClick={() => saveContent()} disabled={saving} className="h-11 rounded-full bg-amber-400 px-6 text-slate-950 hover:bg-amber-300">
               {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
               Save
             </Button>
             <form action="/api/admin/logout" method="post">
-              <Button className="h-11 rounded-full bg-white px-6 text-slate-950 hover:bg-slate-200">Logout</Button>
+              <Button type="submit" className="h-11 rounded-full bg-white px-6 text-slate-950 hover:bg-slate-200">Logout</Button>
             </form>
           </div>
         </div>
@@ -536,6 +567,7 @@ export default function AdminDashboard({
 
             return (
               <button
+                type="button"
                 key={item.id}
                 onClick={() => setTab(item.id)}
                 className={`inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-bold transition ${
@@ -575,7 +607,7 @@ export default function AdminDashboard({
               ))}
             </div>
 
-            <Button disabled={saving} className="mt-6 h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
+            <Button type="submit" disabled={saving} className="mt-6 h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
               {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
               Save Text
             </Button>
@@ -615,7 +647,7 @@ export default function AdminDashboard({
                 <p className="mt-3 whitespace-pre-line leading-7 text-slate-700">{content.newsletterEmailBody}</p>
               </div>
 
-              <Button disabled={saving} className="mt-6 h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
+              <Button type="submit" disabled={saving} className="mt-6 h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
                 {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
                 Save Email Template
               </Button>
@@ -678,7 +710,7 @@ export default function AdminDashboard({
           <div className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-xl font-bold text-slate-950">Navigation Links</h2>
-              <Button onClick={addNavigationItem} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
+              <Button type="button" onClick={addNavigationItem} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Link
               </Button>
@@ -688,9 +720,9 @@ export default function AdminDashboard({
                 <div key={`${item.label}-${index}`} className="grid gap-3 rounded-[8px] border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_1fr_auto_auto_auto]">
                   <input value={item.label} onChange={(event) => updateNavigation(index, "label", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Label" />
                   <input value={item.href} onChange={(event) => updateNavigation(index, "href", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="/page or #section" />
-                  <button onClick={() => moveNavigationItem(index, -1)} className="rounded-[8px] px-3 text-sm font-bold text-slate-700">Up</button>
-                  <button onClick={() => moveNavigationItem(index, 1)} className="rounded-[8px] px-3 text-sm font-bold text-slate-700">Down</button>
-                  <button onClick={() => removeNavigationItem(index)} className="inline-flex items-center justify-center rounded-[8px] px-4 text-sm font-bold text-rose-700">
+                  <button type="button" onClick={() => moveNavigationItem(index, -1)} className="rounded-[8px] px-3 text-sm font-bold text-slate-700">Up</button>
+                  <button type="button" onClick={() => moveNavigationItem(index, 1)} className="rounded-[8px] px-3 text-sm font-bold text-slate-700">Down</button>
+                  <button type="button" onClick={() => removeNavigationItem(index)} className="inline-flex items-center justify-center rounded-[8px] px-4 text-sm font-bold text-rose-700">
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
@@ -719,8 +751,8 @@ export default function AdminDashboard({
                     onChange={(event) => updateSectionConfig(index, "label", event.target.value)}
                     className="h-11 rounded-[8px] border border-slate-200 px-4"
                   />
-                  <button onClick={() => moveSection(index, -1)} className="rounded-[8px] px-3 text-sm font-bold text-slate-700">Up</button>
-                  <button onClick={() => moveSection(index, 1)} className="rounded-[8px] px-3 text-sm font-bold text-slate-700">Down</button>
+                  <button type="button" onClick={() => moveSection(index, -1)} className="rounded-[8px] px-3 text-sm font-bold text-slate-700">Up</button>
+                  <button type="button" onClick={() => moveSection(index, 1)} className="rounded-[8px] px-3 text-sm font-bold text-slate-700">Down</button>
                 </div>
               ))}
             </div>
@@ -745,7 +777,7 @@ export default function AdminDashboard({
               <section key={listKey} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center justify-between gap-4">
                   <h2 className="text-xl font-bold text-slate-950">{listLabels[listKey]}</h2>
-                  <Button onClick={() => addListItem(listKey)} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
+                  <Button type="button" onClick={() => addListItem(listKey)} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
                     <Plus className="mr-2 h-4 w-4" />
                     Add
                   </Button>
@@ -759,9 +791,9 @@ export default function AdminDashboard({
                       <input value={item.linkLabel || ""} onChange={(event) => updateListItem(listKey, index, "linkLabel", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button text, if needed" />
                       <div className="flex gap-3">
                         <input value={item.linkHref || ""} onChange={(event) => updateListItem(listKey, index, "linkHref", event.target.value)} className="h-11 flex-1 rounded-[8px] border border-slate-200 px-4" placeholder="Button link, if needed" />
-                        <button onClick={() => moveListItem(listKey, index, -1)} className="h-11 rounded-[8px] px-3 text-sm font-bold text-slate-700">Up</button>
-                        <button onClick={() => moveListItem(listKey, index, 1)} className="h-11 rounded-[8px] px-3 text-sm font-bold text-slate-700">Down</button>
-                        <button onClick={() => removeListItem(listKey, index)} className="inline-flex h-11 w-11 items-center justify-center rounded-[8px] text-rose-700">
+                        <button type="button" onClick={() => moveListItem(listKey, index, -1)} className="h-11 rounded-[8px] px-3 text-sm font-bold text-slate-700">Up</button>
+                        <button type="button" onClick={() => moveListItem(listKey, index, 1)} className="h-11 rounded-[8px] px-3 text-sm font-bold text-slate-700">Down</button>
+                        <button type="button" onClick={() => removeListItem(listKey, index)} className="inline-flex h-11 w-11 items-center justify-center rounded-[8px] text-rose-700">
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
@@ -783,7 +815,7 @@ export default function AdminDashboard({
           <div className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between gap-4">
               <h2 className="text-xl font-bold text-slate-950">Pages</h2>
-              <Button onClick={addPage} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
+              <Button type="button" onClick={addPage} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Page
               </Button>
@@ -809,7 +841,7 @@ export default function AdminDashboard({
                         <LinkIcon className="h-4 w-4" />
                         Open page
                       </a>
-                      <button onClick={() => removePage(index)} className="inline-flex items-center gap-2 text-sm font-bold text-rose-700">
+                      <button type="button" onClick={() => removePage(index)} className="inline-flex items-center gap-2 text-sm font-bold text-rose-700">
                         <Trash2 className="h-4 w-4" />
                         Delete
                       </button>
@@ -830,7 +862,7 @@ export default function AdminDashboard({
               <textarea name="description" required rows={4} className="mt-4 w-full resize-none rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-teal-600" placeholder="Description" />
               <input type="file" accept="image/*" onChange={(event) => handleImageUpload(event, setImagePreview)} className="mt-4 w-full rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm" />
               {imagePreview ? <Image src={imagePreview} alt="Preview" width={600} height={320} unoptimized className="mt-4 h-44 w-full rounded-[8px] object-cover" /> : null}
-              <Button disabled={saving} className="mt-5 h-12 w-full rounded-full bg-teal-700 text-base hover:bg-teal-800">
+              <Button type="submit" disabled={saving} className="mt-5 h-12 w-full rounded-full bg-teal-700 text-base hover:bg-teal-800">
                 {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ImagePlus className="mr-2 h-5 w-5" />}
                 Add To Gallery
               </Button>
@@ -844,7 +876,7 @@ export default function AdminDashboard({
                     <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">{item.tag}</p>
                     <h3 className="mt-2 text-lg font-bold text-slate-950">{item.title}</h3>
                     <p className="mt-2 leading-7 text-slate-600">{item.description}</p>
-                    <button onClick={() => deleteGalleryItem(item.id)} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-rose-700">
+                    <button type="button" onClick={() => deleteGalleryItem(item.id)} className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-rose-700">
                       <Trash2 className="h-4 w-4" />
                       Delete
                     </button>
@@ -925,7 +957,7 @@ export default function AdminDashboard({
                 <p className="mt-4 text-sm font-bold text-slate-800">Body</p>
                 <p className="mt-1 whitespace-pre-line leading-7 text-slate-700">{content.newsletterEmailBody}</p>
               </div>
-              <Button onClick={sendNewsletter} disabled={sendingNewsletter} className="mt-5 h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
+              <Button type="button" onClick={sendNewsletter} disabled={sendingNewsletter} className="mt-5 h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
                 {sendingNewsletter ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Mail className="mr-2 h-5 w-5" />}
                 Send Newsletter
               </Button>
