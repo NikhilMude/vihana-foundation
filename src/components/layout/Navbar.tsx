@@ -9,6 +9,10 @@ import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
 import { NavigationItem } from "@/lib/cmsContent";
 
+function normalizeHref(href: string) {
+  return href.startsWith("#") ? `/${href}` : href;
+}
+
 export default function Navbar({ navigation }: { navigation: NavigationItem[] }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -37,7 +41,7 @@ export default function Navbar({ navigation }: { navigation: NavigationItem[] })
           {navigation.map((item) => (
             <Link
               key={item.label}
-              href={item.href}
+              href={normalizeHref(item.href)}
               className="relative text-sm font-semibold text-slate-700 transition duration-300 hover:text-teal-700 after:absolute after:-bottom-2 after:left-0 after:h-[2px] after:w-0 after:bg-teal-700 after:transition-all after:duration-300 hover:after:w-full"
             >
               {item.label}
@@ -75,7 +79,7 @@ export default function Navbar({ navigation }: { navigation: NavigationItem[] })
             {navigation.map((item) => (
               <Link
                 key={item.label}
-                href={item.href}
+                href={normalizeHref(item.href)}
                 onClick={() => setOpen(false)}
                 className="rounded-[8px] px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-teal-700"
               >

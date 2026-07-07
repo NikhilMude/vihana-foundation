@@ -118,12 +118,13 @@ export const defaultSiteContent: SiteContent = {
   contactLocation: "India",
   navigationItems: [
     { label: "Home", href: "#home" },
+    { label: "About Vihana", href: "/about-vihana" },
     { label: "Mission", href: "#mission" },
     { label: "Programs", href: "#programs" },
     { label: "Impact", href: "#impact" },
     { label: "Gallery", href: "#gallery" },
     { label: "Donate", href: "#donate" },
-    { label: "Volunteer", href: "#volunteer" },
+    { label: "Contact Us", href: "/contact-us" },
   ],
   missionPillars: [
     {
@@ -250,6 +251,16 @@ export const defaultSiteContent: SiteContent = {
       buttonHref: "/#volunteer",
       published: true,
     },
+    {
+      id: "contact-us",
+      slug: "contact-us",
+      title: "Contact Us",
+      description: "Reach Vihana Foundation for volunteering, donations, partnerships and birthday campaigns.",
+      body: "We would love to hear from you.\n\nUse the volunteer form on the homepage to send your message, or contact us directly using the phone and email details listed on the website.\n\nYou can reach out for birthday campaigns, donations, volunteering, school partnerships, health camps or community initiatives.",
+      buttonLabel: "Send A Message",
+      buttonHref: "/#volunteer",
+      published: true,
+    },
   ],
 };
 
@@ -286,16 +297,30 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
     ...defaultSiteContent,
     ...(content || {}),
   };
+  const navigationItems = arrayOrDefault(merged.navigationItems, defaultSiteContent.navigationItems);
+  const pages = arrayOrDefault(merged.pages, defaultSiteContent.pages);
+  const navigationWithDefaults = [
+    ...navigationItems,
+    ...defaultSiteContent.navigationItems.filter(
+      (defaultItem) => !navigationItems.some((item) => item.href === defaultItem.href)
+    ),
+  ];
+  const pagesWithDefaults = [
+    ...pages,
+    ...defaultSiteContent.pages.filter(
+      (defaultPage) => !pages.some((page) => page.slug === defaultPage.slug)
+    ),
+  ];
 
   return {
     ...merged,
-    navigationItems: arrayOrDefault(merged.navigationItems, defaultSiteContent.navigationItems),
+    navigationItems: navigationWithDefaults,
     missionPillars: arrayOrDefault(merged.missionPillars, defaultSiteContent.missionPillars),
     programCards: arrayOrDefault(merged.programCards, defaultSiteContent.programCards),
     whyFeatures: arrayOrDefault(merged.whyFeatures, defaultSiteContent.whyFeatures),
     impactStats: arrayOrDefault(merged.impactStats, defaultSiteContent.impactStats),
     impactNotes: arrayOrDefault(merged.impactNotes, defaultSiteContent.impactNotes),
     volunteerActions: arrayOrDefault(merged.volunteerActions, defaultSiteContent.volunteerActions),
-    pages: arrayOrDefault(merged.pages, defaultSiteContent.pages),
+    pages: pagesWithDefaults,
   };
 }
