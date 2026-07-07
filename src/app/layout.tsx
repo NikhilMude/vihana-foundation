@@ -1,26 +1,20 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display, Geist } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
-
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-});
 
 export const metadata: Metadata = {
-  title: "Vihana Foundation",
+  metadataBase: new URL("https://vihanafoundation.org"),
+  title: "Vihana Foundation | Every Birthday. A Thousand Smiles.",
   description:
-    "Every Birthday. A Thousand Smiles. Creating opportunities for children through education, nutrition, healthcare and kindness.",
+    "Vihana Foundation turns celebrations into education, nutrition, healthcare and community support for children and families.",
   icons: {
     icon: "/favicon.ico",
+  },
+  openGraph: {
+    title: "Vihana Foundation",
+    description:
+      "Every Birthday. A Thousand Smiles. Creating opportunities for children through care, learning and kindness.",
+    type: "website",
+    images: ["/illustrations/hero.png"],
   },
 };
 
@@ -30,10 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body className={`${inter.variable} ${playfair.variable}`}>
-        {children}
-      </body>
+    <html lang="en">
+      <body>{children}</body>
     </html>
   );
 }

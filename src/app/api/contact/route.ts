@@ -1,0 +1,87 @@
+import { NextResponse } from "next/server";
+
+const messageTypes = new Set(["Birthday Campaign", "Volunteer", "Donation", "Partnership", "General"]);
+
+type ContactPayload = {
+  name?: string;
+  email?: string;
+  phone?: string;
+  interest?: string;
+  message?: string;
+  company?: string;
+};
+
+function clean(value: unknown) {
+  return typeof value === "string" ? value.trim().slice(0, 1200) : "";
+}
+
+function isEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+export async function POST(request: Request) {
+  try {
+    const payload = (await request.json()) as ContactPayload;
+
+    if (clean(payload.company)) {
+      return NextResponse.json({ ok: true });
+    }
+
+    const name = clean(payload.name);
+    const email = clean(payload.email).toLowerCase();
+    const phone = clean(payload.phone);
+    const interest = clean(payload.interest);
+    const message = clean(payload.message);
+
+    if (!name || !isEmail(email) || !message || !messageTypes.has(interest)) {
+      return NextResponse.json(
+        { ok: false, message: "Please check the form and try again." },
+        { status: 400 }
+      );
+    }
+
+    const projectId = process.env.FIREBASE_PROJECT_ID;
+    const apiKey = process.env.FIREBASE_WEB_API_KEY;
+
+    if (!projectId || !apiKey) {
+      return NextResponse.json(
+        { ok: false, message: "Firebase is not connected yet." },
+        { status: 503 }
+      );
+    }
+
+    const firestoreUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/websiteMessages?key=${apiKey}`;
+
+    const response = await fetch(firestoreUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        fields: {
+          name: { stringValue: name },
+          email: { stringValue: email },
+          phone: { stringValue: phone },
+          interest: { stringValue: interest },
+          message: { stringValue: message },
+          source: { stringValue: "vihana-foundation-website" },
+          createdAt: { timestampValue: new Date().toISOString() },
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { ok: false, message: "We could not save your message right now." },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json(
+      { ok: false, message: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
+  }
+}
