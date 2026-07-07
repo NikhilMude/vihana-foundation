@@ -3,10 +3,9 @@ import { Mail, MapPin, Phone } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
-import { navigation } from "@/constants/navigation";
-import { SiteContent } from "@/lib/cmsContent";
+import { NavigationItem, SiteContent } from "@/lib/cmsContent";
 
-export default function Footer({ content }: { content: SiteContent }) {
+export default function Footer({ content, navigation }: { content: SiteContent; navigation: NavigationItem[] }) {
   return (
     <footer className="bg-slate-950 py-16 text-white">
       <Container>

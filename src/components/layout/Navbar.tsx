@@ -7,9 +7,9 @@ import { HeartHandshake, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
-import { navigation } from "@/constants/navigation";
+import { NavigationItem } from "@/lib/cmsContent";
 
-export default function Navbar() {
+export default function Navbar({ navigation }: { navigation: NavigationItem[] }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -47,7 +47,7 @@ export default function Navbar() {
 
         <div className="hidden lg:block">
           <Button asChild className="h-11 rounded-full bg-teal-700 px-6 shadow-sm transition-all duration-300 hover:bg-teal-800">
-            <Link href="#donate">
+            <Link href="/#donate">
               <HeartHandshake className="mr-2 h-4 w-4" />
               Donate
             </Link>
@@ -84,7 +84,7 @@ export default function Navbar() {
             ))}
 
             <Button asChild className="mt-4 h-11 rounded-full bg-teal-700 hover:bg-teal-800">
-              <Link href="#donate" onClick={() => setOpen(false)}>
+              <Link href="/#donate" onClick={() => setOpen(false)}>
                 <HeartHandshake className="mr-2 h-4 w-4" />
                 Donate
               </Link>

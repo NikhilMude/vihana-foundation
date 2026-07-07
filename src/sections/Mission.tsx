@@ -4,28 +4,7 @@ import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 import { SiteContent } from "@/lib/cmsContent";
 
-const pillars = [
-  {
-    icon: BookOpen,
-    title: "Learning",
-    text: "School supplies, mentoring and digital support that help children stay curious and confident.",
-  },
-  {
-    icon: Soup,
-    title: "Nutrition",
-    text: "Healthy meals and essential food support for children and families facing daily hardship.",
-  },
-  {
-    icon: HeartHandshake,
-    title: "Care",
-    text: "Health awareness, preventive checkups and practical help delivered with dignity.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Trust",
-    text: "Clear stewardship, local partnerships and responsible use of every contribution.",
-  },
-];
+const icons = [BookOpen, Soup, HeartHandshake, ShieldCheck];
 
 export default function Mission({ content }: { content: SiteContent }) {
   return (
@@ -52,8 +31,8 @@ export default function Mission({ content }: { content: SiteContent }) {
         </div>
 
         <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {pillars.map((item, index) => {
-            const Icon = item.icon;
+          {content.missionPillars.map((item, index) => {
+            const Icon = icons[index % icons.length];
 
             return (
               <Reveal key={item.title} delay={index * 0.06}>
@@ -64,7 +43,7 @@ export default function Mission({ content }: { content: SiteContent }) {
 
                   <h3 className="mt-6 text-xl font-bold text-slate-950">{item.title}</h3>
 
-                  <p className="mt-3 leading-7 text-slate-600">{item.text}</p>
+                  <p className="mt-3 leading-7 text-slate-600">{item.description}</p>
                 </div>
               </Reveal>
             );

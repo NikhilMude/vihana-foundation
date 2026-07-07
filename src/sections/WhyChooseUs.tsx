@@ -4,32 +4,7 @@ import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 import { SiteContent } from "@/lib/cmsContent";
 
-const features = [
-  {
-    icon: Heart,
-    title: "Personal Origin",
-    description:
-      "Inspired by Vihana, the foundation carries a deeply human promise: celebrate life by improving another child's day.",
-  },
-  {
-    icon: Users,
-    title: "Local Partnerships",
-    description:
-      "Programs are delivered with schools, volunteers and community partners who know where support matters most.",
-  },
-  {
-    icon: Leaf,
-    title: "Sustainable Action",
-    description:
-      "We focus on repeatable, practical initiatives that can grow without losing care, accountability or warmth.",
-  },
-  {
-    icon: HandHeart,
-    title: "Dignity First",
-    description:
-      "Every act of service is designed to respect families, protect children and create confidence rather than dependency.",
-  },
-];
+const icons = [Heart, Users, Leaf, HandHeart];
 
 export default function WhyChooseUs({ content }: { content: SiteContent }) {
   return (
@@ -53,8 +28,8 @@ export default function WhyChooseUs({ content }: { content: SiteContent }) {
           </Reveal>
 
           <div className="grid gap-4 md:grid-cols-2">
-            {features.map((feature, index) => {
-              const Icon = feature.icon;
+            {content.whyFeatures.map((feature, index) => {
+              const Icon = icons[index % icons.length];
 
               return (
                 <Reveal key={feature.title} delay={index * 0.06}>

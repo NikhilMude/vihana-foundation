@@ -1,8 +1,39 @@
+export type NavigationItem = {
+  label: string;
+  href: string;
+};
+
+export type EditableItem = {
+  id: string;
+  title: string;
+  description: string;
+  tag?: string;
+  value?: string;
+  linkLabel?: string;
+  linkHref?: string;
+};
+
+export type CmsPage = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  body: string;
+  buttonLabel: string;
+  buttonHref: string;
+  published: boolean;
+};
+
 export type SiteContent = {
   heroBadge: string;
   heroTitle: string;
   heroHighlight: string;
   heroDescription: string;
+  heroImageUrl: string;
+  heroPrimaryLabel: string;
+  heroPrimaryHref: string;
+  heroSecondaryLabel: string;
+  heroSecondaryHref: string;
   missionTitle: string;
   missionDescription: string;
   programsTitle: string;
@@ -26,6 +57,14 @@ export type SiteContent = {
   contactEmail: string;
   contactPhone: string;
   contactLocation: string;
+  navigationItems: NavigationItem[];
+  missionPillars: EditableItem[];
+  programCards: EditableItem[];
+  whyFeatures: EditableItem[];
+  impactStats: EditableItem[];
+  impactNotes: EditableItem[];
+  volunteerActions: EditableItem[];
+  pages: CmsPage[];
 };
 
 export type GalleryItem = {
@@ -42,6 +81,11 @@ export const defaultSiteContent: SiteContent = {
   heroHighlight: "A Thousand Smiles.",
   heroDescription:
     "Vihana Foundation turns celebrations into meaningful care for children through learning support, nourishing meals, health access and community-led kindness.",
+  heroImageUrl: "/illustrations/hero.png",
+  heroPrimaryLabel: "Join the Movement",
+  heroPrimaryHref: "#volunteer",
+  heroSecondaryLabel: "Our Story",
+  heroSecondaryHref: "#mission",
   missionTitle: "Turning personal celebration into public good.",
   missionDescription:
     "Vihana Foundation was created from a simple belief: joy becomes more powerful when it is shared. Each initiative helps children feel seen, supported and ready to build a brighter future.",
@@ -72,6 +116,141 @@ export const defaultSiteContent: SiteContent = {
   contactEmail: "hello@vihanafoundation.org",
   contactPhone: "+91 98765 43210",
   contactLocation: "India",
+  navigationItems: [
+    { label: "Home", href: "#home" },
+    { label: "Mission", href: "#mission" },
+    { label: "Programs", href: "#programs" },
+    { label: "Impact", href: "#impact" },
+    { label: "Gallery", href: "#gallery" },
+    { label: "Donate", href: "#donate" },
+    { label: "Volunteer", href: "#volunteer" },
+  ],
+  missionPillars: [
+    {
+      id: "learning",
+      title: "Learning",
+      description: "School supplies, mentoring and digital support that help children stay curious and confident.",
+    },
+    {
+      id: "nutrition",
+      title: "Nutrition",
+      description: "Healthy meals and essential food support for children and families facing daily hardship.",
+    },
+    {
+      id: "care",
+      title: "Care",
+      description: "Health awareness, preventive checkups and practical help delivered with dignity.",
+    },
+    {
+      id: "trust",
+      title: "Trust",
+      description: "Clear stewardship, local partnerships and responsible use of every contribution.",
+    },
+  ],
+  programCards: [
+    {
+      id: "education",
+      title: "Education Support",
+      description: "School kits, scholarships, digital access and mentoring that reduce barriers to learning.",
+      linkLabel: "Support this program",
+      linkHref: "#volunteer",
+    },
+    {
+      id: "food",
+      title: "Food and Nutrition",
+      description: "Meal drives, ration support and nutrition-focused outreach for children and families.",
+      linkLabel: "Support this program",
+      linkHref: "#volunteer",
+    },
+    {
+      id: "health",
+      title: "Health and Wellness",
+      description: "Medical camps, wellness awareness and preventive care through trusted local partners.",
+      linkLabel: "Support this program",
+      linkHref: "#volunteer",
+    },
+    {
+      id: "community",
+      title: "Community and Environment",
+      description: "Clean surroundings, tree plantation and civic initiatives that strengthen neighborhoods.",
+      linkLabel: "Support this program",
+      linkHref: "#volunteer",
+    },
+  ],
+  whyFeatures: [
+    {
+      id: "origin",
+      title: "Personal Origin",
+      description: "Inspired by Vihana, the foundation carries a deeply human promise: celebrate life by improving another child's day.",
+    },
+    {
+      id: "partners",
+      title: "Local Partnerships",
+      description: "Programs are delivered with schools, volunteers and community partners who know where support matters most.",
+    },
+    {
+      id: "sustainable",
+      title: "Sustainable Action",
+      description: "We focus on repeatable, practical initiatives that can grow without losing care, accountability or warmth.",
+    },
+    {
+      id: "dignity",
+      title: "Dignity First",
+      description: "Every act of service is designed to respect families, protect children and create confidence rather than dependency.",
+    },
+  ],
+  impactStats: [
+    { id: "children", value: "500+", title: "Children supported", description: "" },
+    { id: "meals", value: "10K+", title: "Meals served", description: "" },
+    { id: "volunteers", value: "100+", title: "Volunteers engaged", description: "" },
+    { id: "trees", value: "2K+", title: "Trees planted", description: "" },
+  ],
+  impactNotes: [
+    {
+      id: "birthdays",
+      title: "Birthday campaigns",
+      description: "Families can dedicate birthdays to meals, school supplies or health support.",
+    },
+    {
+      id: "giving",
+      title: "Direct giving",
+      description: "Contributions are directed toward practical, visible community needs.",
+    },
+    {
+      id: "delivery",
+      title: "Accountable delivery",
+      description: "Programs are tracked so supporters can understand the difference they helped create.",
+    },
+  ],
+  volunteerActions: [
+    {
+      id: "birthday",
+      title: "Dedicate a birthday",
+      description: "Turn a special day into meals, books, school kits or health support.",
+    },
+    {
+      id: "time",
+      title: "Volunteer time",
+      description: "Help organize drives, mentor children or support community outreach.",
+    },
+    {
+      id: "partner",
+      title: "Partner with us",
+      description: "Collaborate through schools, companies, local groups or family campaigns.",
+    },
+  ],
+  pages: [
+    {
+      id: "about-vihana",
+      slug: "about-vihana",
+      title: "About Vihana",
+      description: "The story and spirit behind Vihana Foundation.",
+      body: "Vihana Foundation was created to turn love, celebration and gratitude into practical help for children and families.",
+      buttonLabel: "Join the Movement",
+      buttonHref: "/#volunteer",
+      published: true,
+    },
+  ],
 };
 
 export const defaultGalleryItems: GalleryItem[] = [
@@ -98,9 +277,25 @@ export const defaultGalleryItems: GalleryItem[] = [
   },
 ];
 
+function arrayOrDefault<T>(value: unknown, fallback: T[]): T[] {
+  return Array.isArray(value) ? (value as T[]) : fallback;
+}
+
 export function mergeSiteContent(content: Partial<SiteContent> | null | undefined): SiteContent {
-  return {
+  const merged = {
     ...defaultSiteContent,
     ...(content || {}),
+  };
+
+  return {
+    ...merged,
+    navigationItems: arrayOrDefault(merged.navigationItems, defaultSiteContent.navigationItems),
+    missionPillars: arrayOrDefault(merged.missionPillars, defaultSiteContent.missionPillars),
+    programCards: arrayOrDefault(merged.programCards, defaultSiteContent.programCards),
+    whyFeatures: arrayOrDefault(merged.whyFeatures, defaultSiteContent.whyFeatures),
+    impactStats: arrayOrDefault(merged.impactStats, defaultSiteContent.impactStats),
+    impactNotes: arrayOrDefault(merged.impactNotes, defaultSiteContent.impactNotes),
+    volunteerActions: arrayOrDefault(merged.volunteerActions, defaultSiteContent.volunteerActions),
+    pages: arrayOrDefault(merged.pages, defaultSiteContent.pages),
   };
 }

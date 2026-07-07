@@ -5,23 +5,7 @@ import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 import { SiteContent } from "@/lib/cmsContent";
 
-const actions = [
-  {
-    icon: Gift,
-    title: "Dedicate a birthday",
-    text: "Turn a special day into meals, books, school kits or health support.",
-  },
-  {
-    icon: HandHeart,
-    title: "Volunteer time",
-    text: "Help organize drives, mentor children or support community outreach.",
-  },
-  {
-    icon: Mail,
-    title: "Partner with us",
-    text: "Collaborate through schools, companies, local groups or family campaigns.",
-  },
-];
+const icons = [Gift, HandHeart, Mail];
 
 export default function Volunteer({ content }: { content: SiteContent }) {
   return (
@@ -43,8 +27,8 @@ export default function Volunteer({ content }: { content: SiteContent }) {
               </p>
 
               <div className="mt-8 grid gap-4">
-                {actions.map((action) => {
-                  const Icon = action.icon;
+                {content.volunteerActions.map((action, index) => {
+                  const Icon = icons[index % icons.length];
 
                   return (
                     <div key={action.title} className="rounded-[8px] border border-slate-200 bg-slate-50 p-5">
@@ -55,7 +39,7 @@ export default function Volunteer({ content }: { content: SiteContent }) {
 
                         <div>
                           <h3 className="font-bold text-slate-950">{action.title}</h3>
-                          <p className="mt-1 leading-7 text-slate-600">{action.text}</p>
+                          <p className="mt-1 leading-7 text-slate-600">{action.description}</p>
                         </div>
                       </div>
                     </div>

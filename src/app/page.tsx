@@ -19,7 +19,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-950">
-      <Navbar />
+      <Navbar navigation={content.navigationItems} />
 
       <main className="overflow-x-hidden">
         <Hero content={content} />
@@ -32,7 +32,7 @@ export default async function Home() {
         <Volunteer content={content} />
       </main>
 
-      <Footer content={content} />
+      <Footer content={content} navigation={content.navigationItems} />
     </div>
   );
 }

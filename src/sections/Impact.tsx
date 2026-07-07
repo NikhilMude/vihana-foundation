@@ -4,30 +4,7 @@ import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 import { SiteContent } from "@/lib/cmsContent";
 
-const stats = [
-  { value: "500+", label: "Children supported" },
-  { value: "10K+", label: "Meals served" },
-  { value: "100+", label: "Volunteers engaged" },
-  { value: "2K+", label: "Trees planted" },
-];
-
-const notes = [
-  {
-    icon: CalendarHeart,
-    title: "Birthday campaigns",
-    text: "Families can dedicate birthdays to meals, school supplies or health support.",
-  },
-  {
-    icon: HandCoins,
-    title: "Direct giving",
-    text: "Contributions are directed toward practical, visible community needs.",
-  },
-  {
-    icon: BadgeCheck,
-    title: "Accountable delivery",
-    text: "Programs are tracked so supporters can understand the difference they helped create.",
-  },
-];
+const noteIcons = [CalendarHeart, HandCoins, BadgeCheck];
 
 export default function Impact({ content }: { content: SiteContent }) {
   return (
@@ -50,12 +27,12 @@ export default function Impact({ content }: { content: SiteContent }) {
         </Reveal>
 
         <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((item, index) => (
-            <Reveal key={item.label} delay={index * 0.05}>
+          {content.impactStats.map((item, index) => (
+            <Reveal key={item.id} delay={index * 0.05}>
               <div className="rounded-[8px] border border-white/15 bg-white/10 p-6 text-center backdrop-blur">
                 <p className="text-4xl font-bold sm:text-5xl">{item.value}</p>
                 <p className="mt-3 text-sm font-semibold uppercase tracking-[0.18em] text-teal-50/75">
-                  {item.label}
+                  {item.title}
                 </p>
               </div>
             </Reveal>
@@ -63,15 +40,15 @@ export default function Impact({ content }: { content: SiteContent }) {
         </div>
 
         <div className="mt-14 grid gap-4 lg:grid-cols-3">
-          {notes.map((note, index) => {
-            const Icon = note.icon;
+          {content.impactNotes.map((note, index) => {
+            const Icon = noteIcons[index % noteIcons.length];
 
             return (
               <Reveal key={note.title} delay={index * 0.06}>
                 <div className="h-full rounded-[8px] bg-white p-6 text-slate-950">
                   <Icon className="h-7 w-7 text-amber-500" />
                   <h3 className="mt-5 text-xl font-bold">{note.title}</h3>
-                  <p className="mt-3 leading-7 text-slate-600">{note.text}</p>
+                  <p className="mt-3 leading-7 text-slate-600">{note.description}</p>
                 </div>
               </Reveal>
             );

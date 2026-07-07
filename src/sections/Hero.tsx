@@ -29,15 +29,15 @@ export default function Hero({ content }: { content: SiteContent }) {
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg" className="h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
-              <Link href="#volunteer">
+              <Link href={content.heroPrimaryHref}>
                 <HeartHandshake className="mr-2 h-5 w-5" />
-                Join the Movement
+                {content.heroPrimaryLabel}
               </Link>
             </Button>
 
             <Button asChild variant="outline" size="lg" className="h-12 rounded-full border-slate-300 bg-white/70 px-7 text-base hover:bg-white">
-              <Link href="#mission">
-                Our Story
+              <Link href={content.heroSecondaryHref}>
+                {content.heroSecondaryLabel}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Link>
             </Button>
@@ -56,7 +56,7 @@ export default function Hero({ content }: { content: SiteContent }) {
         <div className="relative">
           <div className="relative overflow-hidden">
             <Image
-              src="/illustrations/hero.png"
+              src={content.heroImageUrl || "/illustrations/hero.png"}
               alt="Children supported by Vihana Foundation programs"
               width={760}
               height={760}

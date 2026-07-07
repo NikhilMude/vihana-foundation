@@ -15,7 +15,14 @@ https://your-vercel-link.vercel.app/admin
 ## What The CMS Can Do
 
 - Edit homepage text.
+- Change hero image.
+- Change hero button text and links.
 - Edit donation details.
+- Edit top navigation links.
+- Add links to custom pages or page sections.
+- Edit homepage cards, stats and action blocks.
+- Add new website pages.
+- Publish or unpublish pages.
 - Add gallery items.
 - Upload small gallery images.
 - Delete gallery items.

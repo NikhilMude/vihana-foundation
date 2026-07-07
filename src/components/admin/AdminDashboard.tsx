@@ -1,11 +1,23 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 import Image from "next/image";
-import { ImagePlus, Inbox, Loader2, Pencil, Save, Trash2 } from "lucide-react";
+import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import {
+  FileText,
+  ImagePlus,
+  Inbox,
+  LayoutList,
+  Link as LinkIcon,
+  Loader2,
+  Navigation,
+  Pencil,
+  Plus,
+  Save,
+  Trash2,
+} from "lucide-react";
 
-import { GalleryItem, SiteContent } from "@/lib/cmsContent";
 import { Button } from "@/components/ui/Button";
+import { CmsPage, EditableItem, GalleryItem, NavigationItem, SiteContent } from "@/lib/cmsContent";
 
 type Message = {
   id: string;
@@ -23,11 +35,18 @@ type AdminDashboardProps = {
   initialMessages: Message[];
 };
 
-const fields: { key: keyof SiteContent; label: string; multiline?: boolean }[] = [
+type Tab = "content" | "media" | "navigation" | "sections" | "pages" | "gallery" | "messages";
+type ListKey = "missionPillars" | "programCards" | "whyFeatures" | "impactStats" | "impactNotes" | "volunteerActions";
+
+const contentFields: { key: keyof SiteContent; label: string; multiline?: boolean }[] = [
   { key: "heroBadge", label: "Hero badge" },
   { key: "heroTitle", label: "Hero title" },
   { key: "heroHighlight", label: "Hero highlighted title" },
   { key: "heroDescription", label: "Hero description", multiline: true },
+  { key: "heroPrimaryLabel", label: "Hero primary button text" },
+  { key: "heroPrimaryHref", label: "Hero primary button link" },
+  { key: "heroSecondaryLabel", label: "Hero secondary button text" },
+  { key: "heroSecondaryHref", label: "Hero secondary button link" },
   { key: "missionTitle", label: "Mission title" },
   { key: "missionDescription", label: "Mission description", multiline: true },
   { key: "programsTitle", label: "Programs title" },
@@ -53,12 +72,49 @@ const fields: { key: keyof SiteContent; label: string; multiline?: boolean }[] =
   { key: "contactLocation", label: "Contact location" },
 ];
 
+const listLabels: Record<ListKey, string> = {
+  missionPillars: "Mission Cards",
+  programCards: "Program Cards",
+  whyFeatures: "Why Vihana Cards",
+  impactStats: "Impact Numbers",
+  impactNotes: "Impact Notes",
+  volunteerActions: "Volunteer Actions",
+};
+
+function uniqueId(prefix: string) {
+  return `${prefix}-${Date.now()}`;
+}
+
+function emptyItem(prefix: string): EditableItem {
+  return {
+    id: uniqueId(prefix),
+    title: "New item",
+    description: "Write description here.",
+    value: "",
+    linkLabel: "",
+    linkHref: "",
+  };
+}
+
+function emptyPage(): CmsPage {
+  return {
+    id: uniqueId("page"),
+    slug: "new-page",
+    title: "New Page",
+    description: "Short page description.",
+    body: "Write the page content here.",
+    buttonLabel: "Contact Us",
+    buttonHref: "/#volunteer",
+    published: true,
+  };
+}
+
 export default function AdminDashboard({
   initialContent,
   initialGalleryItems,
   initialMessages,
 }: AdminDashboardProps) {
-  const [tab, setTab] = useState<"content" | "gallery" | "messages">("content");
+  const [tab, setTab] = useState<Tab>("content");
   const [content, setContent] = useState(initialContent);
   const [galleryItems, setGalleryItems] = useState(initialGalleryItems);
   const [messages] = useState(initialMessages);
@@ -68,15 +124,19 @@ export default function AdminDashboard({
 
   const tabs = useMemo(
     () => [
-      { id: "content" as const, label: "Content", icon: Pencil },
+      { id: "content" as const, label: "Text", icon: Pencil },
+      { id: "media" as const, label: "Images", icon: ImagePlus },
+      { id: "navigation" as const, label: "Navigation", icon: Navigation },
+      { id: "sections" as const, label: "Cards", icon: LayoutList },
+      { id: "pages" as const, label: "Pages", icon: FileText },
       { id: "gallery" as const, label: "Gallery", icon: ImagePlus },
       { id: "messages" as const, label: "Messages", icon: Inbox },
     ],
     []
   );
 
-  async function saveContent(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  async function saveContent(event?: FormEvent<HTMLFormElement>) {
+    event?.preventDefault();
     setSaving(true);
     setStatus("");
 
@@ -89,7 +149,95 @@ export default function AdminDashboard({
     });
 
     setSaving(false);
-    setStatus(response.ok ? "Website content saved." : "Could not save content.");
+    setStatus(response.ok ? "Website saved." : "Could not save website.");
+  }
+
+  function updateContent(key: keyof SiteContent, value: string) {
+    setContent((current) => ({ ...current, [key]: value }));
+  }
+
+  function updateNavigation(index: number, key: keyof NavigationItem, value: string) {
+    setContent((current) => ({
+      ...current,
+      navigationItems: current.navigationItems.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [key]: value } : item
+      ),
+    }));
+  }
+
+  function addNavigationItem() {
+    setContent((current) => ({
+      ...current,
+      navigationItems: [...current.navigationItems, { label: "New Link", href: "/" }],
+    }));
+  }
+
+  function removeNavigationItem(index: number) {
+    setContent((current) => ({
+      ...current,
+      navigationItems: current.navigationItems.filter((_, itemIndex) => itemIndex !== index),
+    }));
+  }
+
+  function updateListItem(listKey: ListKey, index: number, key: keyof EditableItem, value: string) {
+    setContent((current) => ({
+      ...current,
+      [listKey]: current[listKey].map((item, itemIndex) =>
+        itemIndex === index ? { ...item, [key]: value } : item
+      ),
+    }));
+  }
+
+  function addListItem(listKey: ListKey) {
+    setContent((current) => ({
+      ...current,
+      [listKey]: [...current[listKey], emptyItem(listKey)],
+    }));
+  }
+
+  function removeListItem(listKey: ListKey, index: number) {
+    setContent((current) => ({
+      ...current,
+      [listKey]: current[listKey].filter((_, itemIndex) => itemIndex !== index),
+    }));
+  }
+
+  function updatePage(index: number, key: keyof CmsPage, value: string | boolean) {
+    setContent((current) => ({
+      ...current,
+      pages: current.pages.map((page, pageIndex) => (pageIndex === index ? { ...page, [key]: value } : page)),
+    }));
+  }
+
+  function addPage() {
+    setContent((current) => ({
+      ...current,
+      pages: [...current.pages, emptyPage()],
+    }));
+  }
+
+  function removePage(index: number) {
+    setContent((current) => ({
+      ...current,
+      pages: current.pages.filter((_, pageIndex) => pageIndex !== index),
+    }));
+  }
+
+  function handleImageUpload(event: ChangeEvent<HTMLInputElement>, callback: (value: string) => void) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (file.size > 700000) {
+      setStatus("Please choose a smaller image under 700 KB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => callback(String(reader.result || ""));
+    reader.readAsDataURL(file);
   }
 
   async function addGalleryItem(event: FormEvent<HTMLFormElement>) {
@@ -113,7 +261,6 @@ export default function AdminDashboard({
     });
 
     const result = (await response.json()) as { ok: boolean; item?: GalleryItem; message?: string };
-
     setSaving(false);
 
     if (!response.ok || !result.item) {
@@ -139,23 +286,6 @@ export default function AdminDashboard({
     }
   }
 
-  function handleImage(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    if (file.size > 700000) {
-      setStatus("Please choose a smaller image under 700 KB.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => setImagePreview(String(reader.result || ""));
-    reader.readAsDataURL(file);
-  }
-
   return (
     <div className="min-h-screen bg-stone-50 px-5 py-8">
       <div className="mx-auto max-w-7xl">
@@ -165,9 +295,15 @@ export default function AdminDashboard({
             <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-4xl font-bold">Vihana CMS</h1>
           </div>
 
-          <form action="/api/admin/logout" method="post">
-            <Button className="h-11 rounded-full bg-white px-6 text-slate-950 hover:bg-slate-200">Logout</Button>
-          </form>
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={() => saveContent()} disabled={saving} className="h-11 rounded-full bg-amber-400 px-6 text-slate-950 hover:bg-amber-300">
+              {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+              Save
+            </Button>
+            <form action="/api/admin/logout" method="post">
+              <Button className="h-11 rounded-full bg-white px-6 text-slate-950 hover:bg-slate-200">Logout</Button>
+            </form>
+          </div>
         </div>
 
         <div className="mt-6 flex flex-wrap gap-2">
@@ -194,20 +330,20 @@ export default function AdminDashboard({
         {tab === "content" ? (
           <form onSubmit={saveContent} className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
             <div className="grid gap-5 lg:grid-cols-2">
-              {fields.map((field) => (
+              {contentFields.map((field) => (
                 <label key={field.key} className={field.multiline ? "lg:col-span-2" : ""}>
                   <span className="text-sm font-bold text-slate-800">{field.label}</span>
                   {field.multiline ? (
                     <textarea
                       rows={4}
-                      value={content[field.key]}
-                      onChange={(event) => setContent((current) => ({ ...current, [field.key]: event.target.value }))}
+                      value={String(content[field.key])}
+                      onChange={(event) => updateContent(field.key, event.target.value)}
                       className="mt-2 w-full resize-none rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-teal-600 focus:bg-white"
                     />
                   ) : (
                     <input
-                      value={content[field.key]}
-                      onChange={(event) => setContent((current) => ({ ...current, [field.key]: event.target.value }))}
+                      value={String(content[field.key])}
+                      onChange={(event) => updateContent(field.key, event.target.value)}
                       className="mt-2 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600 focus:bg-white"
                     />
                   )}
@@ -217,47 +353,140 @@ export default function AdminDashboard({
 
             <Button disabled={saving} className="mt-6 h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
               {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-              Save Website Content
+              Save Text
             </Button>
           </form>
+        ) : null}
+
+        {tab === "media" ? (
+          <div className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-950">Hero Image</h2>
+            <p className="mt-2 text-slate-600">Upload the main image shown at the top of the homepage.</p>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(event) => handleImageUpload(event, (value) => updateContent("heroImageUrl", value))}
+              className="mt-5 w-full rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm"
+            />
+            {content.heroImageUrl ? (
+              <Image
+                src={content.heroImageUrl}
+                alt="Hero preview"
+                width={760}
+                height={520}
+                unoptimized
+                className="mt-5 max-h-[420px] w-full rounded-[8px] object-contain"
+              />
+            ) : null}
+          </div>
+        ) : null}
+
+        {tab === "navigation" ? (
+          <div className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-xl font-bold text-slate-950">Navigation Links</h2>
+              <Button onClick={addNavigationItem} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Link
+              </Button>
+            </div>
+            <div className="mt-5 grid gap-4">
+              {content.navigationItems.map((item, index) => (
+                <div key={`${item.label}-${index}`} className="grid gap-3 rounded-[8px] border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_1fr_auto]">
+                  <input value={item.label} onChange={(event) => updateNavigation(index, "label", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Label" />
+                  <input value={item.href} onChange={(event) => updateNavigation(index, "href", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="/page or #section" />
+                  <button onClick={() => removeNavigationItem(index)} className="inline-flex items-center justify-center rounded-[8px] px-4 text-sm font-bold text-rose-700">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {tab === "sections" ? (
+          <div className="mt-6 grid gap-6">
+            {(Object.keys(listLabels) as ListKey[]).map((listKey) => (
+              <section key={listKey} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex items-center justify-between gap-4">
+                  <h2 className="text-xl font-bold text-slate-950">{listLabels[listKey]}</h2>
+                  <Button onClick={() => addListItem(listKey)} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add
+                  </Button>
+                </div>
+                <div className="mt-5 grid gap-4">
+                  {content[listKey].map((item, index) => (
+                    <div key={item.id} className="grid gap-3 rounded-[8px] border border-slate-200 bg-slate-50 p-4 lg:grid-cols-2">
+                      <input value={item.title} onChange={(event) => updateListItem(listKey, index, "title", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Title" />
+                      <input value={item.value || ""} onChange={(event) => updateListItem(listKey, index, "value", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Number/value, if needed" />
+                      <textarea value={item.description} onChange={(event) => updateListItem(listKey, index, "description", event.target.value)} rows={3} className="rounded-[8px] border border-slate-200 px-4 py-3 lg:col-span-2" placeholder="Description" />
+                      <input value={item.linkLabel || ""} onChange={(event) => updateListItem(listKey, index, "linkLabel", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button text, if needed" />
+                      <div className="flex gap-3">
+                        <input value={item.linkHref || ""} onChange={(event) => updateListItem(listKey, index, "linkHref", event.target.value)} className="h-11 flex-1 rounded-[8px] border border-slate-200 px-4" placeholder="Button link, if needed" />
+                        <button onClick={() => removeListItem(listKey, index)} className="inline-flex h-11 w-11 items-center justify-center rounded-[8px] text-rose-700">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        ) : null}
+
+        {tab === "pages" ? (
+          <div className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-xl font-bold text-slate-950">Pages</h2>
+              <Button onClick={addPage} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Page
+              </Button>
+            </div>
+            <div className="mt-5 grid gap-5">
+              {content.pages.map((page, index) => (
+                <div key={page.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <input value={page.title} onChange={(event) => updatePage(index, "title", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Page title" />
+                    <input value={page.slug} onChange={(event) => updatePage(index, "slug", event.target.value.replace(/[^a-z0-9-]/g, "-"))} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="page-url" />
+                    <input value={page.description} onChange={(event) => updatePage(index, "description", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4 lg:col-span-2" placeholder="Short description" />
+                    <textarea value={page.body} onChange={(event) => updatePage(index, "body", event.target.value)} rows={7} className="rounded-[8px] border border-slate-200 px-4 py-3 lg:col-span-2" placeholder="Page content" />
+                    <input value={page.buttonLabel} onChange={(event) => updatePage(index, "buttonLabel", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button label" />
+                    <input value={page.buttonHref} onChange={(event) => updatePage(index, "buttonHref", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button link" />
+                  </div>
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <label className="inline-flex items-center gap-2 text-sm font-bold text-slate-700">
+                      <input type="checkbox" checked={page.published} onChange={(event) => updatePage(index, "published", event.target.checked)} />
+                      Published
+                    </label>
+                    <div className="flex gap-4">
+                      <a href={`/${page.slug}`} target="_blank" className="inline-flex items-center gap-2 text-sm font-bold text-teal-700">
+                        <LinkIcon className="h-4 w-4" />
+                        Open page
+                      </a>
+                      <button onClick={() => removePage(index)} className="inline-flex items-center gap-2 text-sm font-bold text-rose-700">
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         ) : null}
 
         {tab === "gallery" ? (
           <div className="mt-6 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
             <form onSubmit={addGalleryItem} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-bold text-slate-950">Add Gallery Item</h2>
-
-              <label className="mt-5 block">
-                <span className="text-sm font-bold text-slate-800">Title</span>
-                <input name="title" required className="mt-2 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
-              </label>
-
-              <label className="mt-4 block">
-                <span className="text-sm font-bold text-slate-800">Tag</span>
-                <input name="tag" placeholder="Education, Food, Health" className="mt-2 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
-              </label>
-
-              <label className="mt-4 block">
-                <span className="text-sm font-bold text-slate-800">Description</span>
-                <textarea name="description" required rows={4} className="mt-2 w-full resize-none rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-teal-600" />
-              </label>
-
-              <label className="mt-4 block">
-                <span className="text-sm font-bold text-slate-800">Upload image</span>
-                <input type="file" accept="image/*" onChange={handleImage} className="mt-2 w-full rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm" />
-              </label>
-
-              {imagePreview ? (
-                <Image
-                  src={imagePreview}
-                  alt="Preview"
-                  width={600}
-                  height={320}
-                  unoptimized
-                  className="mt-4 h-44 w-full rounded-[8px] object-cover"
-                />
-              ) : null}
-
+              <input name="title" required className="mt-5 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" placeholder="Title" />
+              <input name="tag" className="mt-4 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" placeholder="Tag" />
+              <textarea name="description" required rows={4} className="mt-4 w-full resize-none rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-teal-600" placeholder="Description" />
+              <input type="file" accept="image/*" onChange={(event) => handleImageUpload(event, setImagePreview)} className="mt-4 w-full rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm" />
+              {imagePreview ? <Image src={imagePreview} alt="Preview" width={600} height={320} unoptimized className="mt-4 h-44 w-full rounded-[8px] object-cover" /> : null}
               <Button disabled={saving} className="mt-5 h-12 w-full rounded-full bg-teal-700 text-base hover:bg-teal-800">
                 {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ImagePlus className="mr-2 h-5 w-5" />}
                 Add To Gallery
@@ -267,16 +496,7 @@ export default function AdminDashboard({
             <div className="grid gap-4 md:grid-cols-2">
               {galleryItems.map((item) => (
                 <div key={item.id} className="overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-sm">
-                  {item.imageUrl ? (
-                    <Image
-                      src={item.imageUrl}
-                      alt={item.title}
-                      width={600}
-                      height={320}
-                      unoptimized
-                      className="h-44 w-full object-cover"
-                    />
-                  ) : null}
+                  {item.imageUrl ? <Image src={item.imageUrl} alt={item.title} width={600} height={320} unoptimized className="h-44 w-full object-cover" /> : null}
                   <div className="p-5">
                     <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">{item.tag}</p>
                     <h3 className="mt-2 text-lg font-bold text-slate-950">{item.title}</h3>

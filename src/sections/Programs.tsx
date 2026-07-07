@@ -5,36 +5,8 @@ import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 import { SiteContent } from "@/lib/cmsContent";
 
-const programs = [
-  {
-    icon: GraduationCap,
-    title: "Education Support",
-    description:
-      "School kits, scholarships, digital access and mentoring that reduce barriers to learning.",
-    accent: "bg-sky-100 text-sky-700",
-  },
-  {
-    icon: Soup,
-    title: "Food and Nutrition",
-    description:
-      "Meal drives, ration support and nutrition-focused outreach for children and families.",
-    accent: "bg-amber-100 text-amber-700",
-  },
-  {
-    icon: HeartPulse,
-    title: "Health and Wellness",
-    description:
-      "Medical camps, wellness awareness and preventive care through trusted local partners.",
-    accent: "bg-rose-100 text-rose-700",
-  },
-  {
-    icon: Trees,
-    title: "Community and Environment",
-    description:
-      "Clean surroundings, tree plantation and civic initiatives that strengthen neighborhoods.",
-    accent: "bg-emerald-100 text-emerald-700",
-  },
-];
+const icons = [GraduationCap, Soup, HeartPulse, Trees];
+const accents = ["bg-sky-100 text-sky-700", "bg-amber-100 text-amber-700", "bg-rose-100 text-rose-700", "bg-emerald-100 text-emerald-700"];
 
 export default function Programs({ content }: { content: SiteContent }) {
   return (
@@ -57,13 +29,13 @@ export default function Programs({ content }: { content: SiteContent }) {
         </Reveal>
 
         <div className="mt-14 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {programs.map((program, index) => {
-            const Icon = program.icon;
+          {content.programCards.map((program, index) => {
+            const Icon = icons[index % icons.length];
 
             return (
               <Reveal key={program.title} delay={index * 0.06}>
                 <article className="group flex h-full flex-col rounded-[8px] border border-slate-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/8">
-                  <div className={`flex h-12 w-12 items-center justify-center rounded-[8px] ${program.accent}`}>
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-[8px] ${accents[index % accents.length]}`}>
                     <Icon className="h-6 w-6" />
                   </div>
 
@@ -72,10 +44,10 @@ export default function Programs({ content }: { content: SiteContent }) {
                   <p className="mt-3 flex-1 leading-7 text-slate-600">{program.description}</p>
 
                   <Link
-                    href="#volunteer"
+                    href={program.linkHref || "#volunteer"}
                     className="mt-7 inline-flex items-center text-sm font-bold text-teal-700 transition group-hover:text-teal-800"
                   >
-                    Support this program
+                    {program.linkLabel || "Support this program"}
                     <ArrowUpRight className="ml-2 h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
                 </article>
