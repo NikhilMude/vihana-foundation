@@ -241,7 +241,7 @@ export const defaultSiteContent: SiteContent = {
     { id: "faq", label: "FAQ", visible: true },
     { id: "gallery", label: "Gallery", visible: false },
     { id: "news", label: "News", visible: false },
-    { id: "newsletter", label: "Newsletter", visible: false },
+    { id: "newsletter", label: "Newsletter", visible: true },
     { id: "donate", label: "Donation Details", visible: true },
     { id: "volunteer", label: "Volunteer Form", visible: true },
   ],
@@ -500,10 +500,6 @@ function sectionShouldRender(section: SectionConfig, content: SiteContent, galle
 
   if (section.id === "news") {
     return content.newsItems.some((item) => item.imageUrl || !item.title.toLowerCase().includes("birthday kindness campaign"));
-  }
-
-  if (section.id === "newsletter") {
-    return false;
   }
 
   return true;

@@ -77,6 +77,7 @@ type AdminDashboardProps = {
 
 type Tab =
   | "content"
+  | "email"
   | "media"
   | "navigation"
   | "order"
@@ -243,6 +244,7 @@ export default function AdminDashboard({
   const tabs = useMemo(
     () => [
       { id: "content" as const, label: "Text", icon: Pencil },
+      { id: "email" as const, label: "Email Template", icon: Mail },
       { id: "media" as const, label: "Images", icon: ImagePlus },
       { id: "navigation" as const, label: "Navigation", icon: Navigation },
       { id: "order" as const, label: "Order", icon: Settings },
@@ -575,6 +577,47 @@ export default function AdminDashboard({
               {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
               Save Text
             </Button>
+          </form>
+        ) : null}
+
+        {tab === "email" ? (
+          <form onSubmit={saveContent} className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="max-w-4xl">
+              <h2 className="text-xl font-bold text-slate-950">Newsletter Email Template</h2>
+              <p className="mt-2 leading-7 text-slate-600">
+                This is the email sent from the Newsletter tab to all subscribers.
+              </p>
+
+              <label className="mt-6 block">
+                <span className="text-sm font-bold text-slate-800">Email subject</span>
+                <input
+                  value={content.newsletterEmailSubject}
+                  onChange={(event) => updateContent("newsletterEmailSubject", event.target.value)}
+                  className="mt-2 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600 focus:bg-white"
+                />
+              </label>
+
+              <label className="mt-5 block">
+                <span className="text-sm font-bold text-slate-800">Email body</span>
+                <textarea
+                  rows={12}
+                  value={content.newsletterEmailBody}
+                  onChange={(event) => updateContent("newsletterEmailBody", event.target.value)}
+                  className="mt-2 w-full resize-y rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 leading-7 outline-none focus:border-teal-600 focus:bg-white"
+                />
+              </label>
+
+              <div className="mt-6 rounded-[8px] bg-slate-50 p-5">
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-slate-500">Preview</p>
+                <h3 className="mt-3 text-lg font-bold text-slate-950">{content.newsletterEmailSubject}</h3>
+                <p className="mt-3 whitespace-pre-line leading-7 text-slate-700">{content.newsletterEmailBody}</p>
+              </div>
+
+              <Button disabled={saving} className="mt-6 h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
+                {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+                Save Email Template
+              </Button>
+            </div>
           </form>
         ) : null}
 
