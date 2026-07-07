@@ -101,6 +101,11 @@ export type SiteContent = {
   panNumber: string;
   taxExemptionNote: string;
   annualReportHref: string;
+  receiptTitle: string;
+  receiptSubtitle: string;
+  receiptLegalNote: string;
+  receiptFooterNote: string;
+  receiptSignatureName: string;
   founderStory: string;
   volunteerTitle: string;
   volunteerEyebrow: string;
@@ -251,6 +256,12 @@ export const defaultSiteContent: SiteContent = {
   panNumber: "",
   taxExemptionNote: "",
   annualReportHref: "",
+  receiptTitle: "Donation Receipt",
+  receiptSubtitle: "Provisional acknowledgement for your contribution",
+  receiptLegalNote:
+    "This receipt is a provisional acknowledgement generated from website records. Official tax receipts depend on verified payment, registration and compliance setup.",
+  receiptFooterNote: "Thank you for supporting Vihana Foundation.",
+  receiptSignatureName: "Vihana Foundation",
   founderStory:
     "Vihana Foundation was created as a family-led act of gratitude, inspired by Vihana's birthday and the belief that personal celebrations can become meaningful support for children. The foundation is being shaped to support education, nutrition, healthcare and community care with transparency, dignity and warmth.",
   volunteerTitle: "Help make Vihana's birthday a reason for many children to smile.",
@@ -312,7 +323,7 @@ export const defaultSiteContent: SiteContent = {
     "A donation intent was submitted.\n\nName: {{name}}\nEmail: {{email}}\nPhone: {{phone}}\nAmount: INR {{amount}}\nFrequency: {{frequency}}\nPurpose: {{purpose}}\nMethod: {{method}}\nReference: {{transactionId}}\nReceipt required: {{receiptRequired}}\nReceipt number: {{receiptNumber}}\nReceipt status: {{receiptStatus}}\nPAN: {{pan}}\nAddress: {{address}}\n\nMessage:\n{{message}}\n\nSubmitted at: {{createdAt}}",
   donationVisitorEmailSubject: "Thank you for supporting Vihana Foundation",
   donationVisitorEmailBody:
-    "Dear {{name}},\n\nThank you for supporting Vihana Foundation.\n\nWe received your {{frequency}} donation intent for INR {{amount}} toward {{purpose}}.\n\nReceipt number: {{receiptNumber}}\nReceipt status: {{receiptStatus}}\nIssued at: {{receiptIssuedAt}}\n\nPayment method: {{method}}\nTransaction/reference: {{transactionId}}\n\nThis is a provisional acknowledgement until verified payment integration and official receipts are configured.\n\nWith gratitude,\nVihana Foundation",
+    "Dear {{name}},\n\nThank you for supporting Vihana Foundation.\n\nWe received your {{frequency}} donation intent for INR {{amount}} toward {{purpose}}.\n\nReceipt number: {{receiptNumber}}\nReceipt status: {{receiptStatus}}\nIssued at: {{receiptIssuedAt}}\n\nDownload PDF receipt: {{receiptDownloadUrl}}\n\nPayment method: {{method}}\nTransaction/reference: {{transactionId}}\n\nThis is a provisional acknowledgement until verified payment integration and official receipts are configured.\n\nWith gratitude,\nVihana Foundation",
   donorWelcomeEmailSubject: "Your Vihana Foundation donor account is ready",
   donorWelcomeEmailBody:
     "Dear {{name}},\n\nYour Vihana Foundation donor account has been created successfully.\n\nYou can use it to keep donation history and receipt information in one place.\n\nWith gratitude,\nVihana Foundation",

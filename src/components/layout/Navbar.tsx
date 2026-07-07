@@ -12,6 +12,7 @@ import { NavigationItem, SiteContent } from "@/lib/cmsContent";
 export default function Navbar({ content, navigation }: { content: SiteContent; navigation: NavigationItem[] }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [donorLabel, setDonorLabel] = useState("Donor Login");
   const menuNavigation = navigation.filter((item) => item.href !== "/donor" && item.href !== "#donate" && item.href !== "/#donate");
 
   useEffect(() => {
@@ -21,6 +22,25 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
     window.addEventListener("scroll", onScroll);
 
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    fetch("/api/donor/session", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((result: { authenticated?: boolean; name?: string }) => {
+        if (!mounted || !result.authenticated) {
+          return;
+        }
+
+        setDonorLabel("My Account");
+      })
+      .catch(() => undefined);
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   return (
@@ -50,7 +70,7 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
           <Button asChild variant="outline" className="h-11 rounded-full border-teal-200 bg-white/80 px-5 text-teal-800 shadow-sm hover:bg-teal-50">
             <SmartNavLink href="/donor">
               <UserRound className="mr-2 h-4 w-4" />
-              Donor Login
+              {donorLabel}
             </SmartNavLink>
           </Button>
 
@@ -94,7 +114,7 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
             <Button asChild variant="outline" className="mt-4 h-12 rounded-full border-teal-200 bg-teal-50 text-base text-teal-800 hover:bg-teal-100">
               <SmartNavLink href="/donor" onClick={() => setOpen(false)}>
                 <UserRound className="mr-2 h-4 w-4" />
-                Donor Login
+                {donorLabel}
               </SmartNavLink>
             </Button>
 

@@ -76,39 +76,6 @@ function downloadCsv(filename: string, rows: Record<string, string | number | un
   URL.revokeObjectURL(url);
 }
 
-function downloadReceipt(donor: Donor, donation: Donation) {
-  const receipt = [
-    "Vihana Foundation",
-    "Donation Receipt",
-    "",
-    `Receipt number: ${donation.receiptNumber || "Pending"}`,
-    `Receipt status: ${donation.receiptStatus || "Provisional receipt generated"}`,
-    `Receipt date: ${formatDate(donation.receiptIssuedAt || donation.createdAt)}`,
-    "",
-    `Donor name: ${donor.name}`,
-    `Email: ${donor.email}`,
-    `Phone: ${donor.phone || "Not added"}`,
-    `PAN: ${donor.pan || "Not added"}`,
-    `Address: ${donor.address || "Not added"}`,
-    "",
-    `Amount: INR ${Number(toNumber(donation.amount)).toLocaleString("en-IN")}`,
-    `Purpose: ${donation.purpose || "General Fund"}`,
-    `Frequency: ${donation.frequency || "One Time"}`,
-    `Payment method: ${donation.method || "Not recorded"}`,
-    `Transaction/reference: ${donation.transactionId || "Not recorded"}`,
-    "",
-    "Note: This is a provisional acknowledgement generated from the website records. Official tax receipts depend on verified payment, registration and compliance setup.",
-  ].join("\n");
-  const blob = new Blob([receipt], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = `${donation.receiptNumber || donation.id || "vihana-receipt"}.txt`;
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
 export default function DonorPortal({ donor, donations }: DonorPortalProps) {
   const [mode, setMode] = useState<"login" | "register">(donor ? "login" : "register");
   const [status, setStatus] = useState("");
@@ -246,9 +213,11 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
                         <h4 className="mt-1 font-bold text-slate-950">{donation.receiptNumber || "Receipt pending"}</h4>
                         <p className="mt-1 text-sm text-slate-500">{donation.receiptStatus || "Provisional receipt generated"}</p>
                       </div>
-                      <Button type="button" variant="outline" onClick={() => downloadReceipt(donor, donation)} className="h-10 rounded-full">
-                        <Download className="mr-2 h-4 w-4" />
-                        Receipt
+                      <Button asChild type="button" variant="outline" className="h-10 rounded-full">
+                        <a href={`/api/donor/receipt?id=${encodeURIComponent(donation.id)}`}>
+                          <Download className="mr-2 h-4 w-4" />
+                          PDF Receipt
+                        </a>
                       </Button>
                     </div>
                     <p className="mt-3 text-xs leading-5 text-slate-500">

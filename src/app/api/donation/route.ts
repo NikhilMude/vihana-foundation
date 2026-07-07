@@ -77,27 +77,8 @@ export async function POST(request: Request) {
     const generatedReceiptNumber = receiptNumber();
     const receiptIssuedAt = createdAt;
     const receiptStatus = receiptRequired === "Yes" ? "Provisional receipt generated" : "Receipt not requested";
-    const templateValues = {
-      name,
-      email,
-      phone: phone || "Not provided",
-      amount,
-      method,
-      transactionId,
-      donorType,
-      frequency,
-      purpose,
-      pan: pan || "Not provided",
-      address: address || "Not provided",
-      receiptRequired,
-      receiptNumber: generatedReceiptNumber,
-      receiptStatus,
-      receiptIssuedAt: new Date(receiptIssuedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
-      message: message || "No message",
-      createdAt: new Date(createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
-    };
 
-    await addDocument("donationIntents", {
+    const donationRecord = await addDocument("donationIntents", {
       name,
       email,
       phone,
@@ -118,6 +99,27 @@ export async function POST(request: Request) {
       receiptIssuedAt,
       createdAt,
     });
+    const receiptDownloadUrl = new URL(`/api/donor/receipt?id=${donationRecord.id}`, request.url).toString();
+    const templateValues = {
+      name,
+      email,
+      phone: phone || "Not provided",
+      amount,
+      method,
+      transactionId,
+      donorType,
+      frequency,
+      purpose,
+      pan: pan || "Not provided",
+      address: address || "Not provided",
+      receiptRequired,
+      receiptNumber: generatedReceiptNumber,
+      receiptStatus,
+      receiptIssuedAt: new Date(receiptIssuedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+      receiptDownloadUrl,
+      message: message || "No message",
+      createdAt: new Date(createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+    };
 
     await sendEmail({
       to: email,
