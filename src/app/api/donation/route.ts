@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 
 import { getAuthenticatedDonorEmail } from "@/lib/donorAuth";
 import { addDocument } from "@/lib/firestoreAdmin";
-import { sendEmail } from "@/lib/email";
+import { renderEmailTemplate, sendEmail, textToEmailHtml } from "@/lib/email";
+import { getSiteContent } from "@/lib/siteData";
 
 export const runtime = "nodejs";
 
@@ -64,6 +65,23 @@ export async function POST(request: Request) {
     }
 
     const createdAt = new Date().toISOString();
+    const content = await getSiteContent();
+    const templateValues = {
+      name,
+      email,
+      phone: phone || "Not provided",
+      amount,
+      method,
+      transactionId,
+      donorType,
+      frequency,
+      purpose,
+      pan: pan || "Not provided",
+      address: address || "Not provided",
+      receiptRequired,
+      message: message || "No message",
+      createdAt: new Date(createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+    };
 
     await addDocument("donationIntents", {
       name,
@@ -86,15 +104,16 @@ export async function POST(request: Request) {
 
     await sendEmail({
       to: email,
-      subject: "Thank you for supporting Vihana Foundation",
-      html: `
-        <p>Dear ${name},</p>
-        <p>Thank you for supporting Vihana Foundation.</p>
-        <p>We received your ${frequency.toLowerCase()} donation intent for <strong>INR ${amount}</strong> toward <strong>${purpose}</strong>.</p>
-        <p>Payment method: <strong>${method}</strong></p>
-        <p>Transaction/reference: ${transactionId}</p>
-        <p>This is a test-mode acknowledgement until verified payment integration and official receipts are configured.</p>
-      `,
+      from: content.emailFrom,
+      subject: renderEmailTemplate(content.donationVisitorEmailSubject, templateValues),
+      html: textToEmailHtml(renderEmailTemplate(content.donationVisitorEmailBody, templateValues)),
+    });
+
+    await sendEmail({
+      to: content.donationNotificationEmail || content.contactEmail,
+      from: content.emailFrom,
+      subject: renderEmailTemplate(content.donationAdminEmailSubject, templateValues),
+      html: textToEmailHtml(renderEmailTemplate(content.donationAdminEmailBody, templateValues)),
     });
 
     return NextResponse.json({ ok: true });

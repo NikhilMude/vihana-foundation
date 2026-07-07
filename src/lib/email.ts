@@ -1,12 +1,33 @@
 type EmailInput = {
   to: string;
+  from?: string;
   subject: string;
   html: string;
 };
 
-export async function sendEmail({ to, subject, html }: EmailInput) {
+export function renderEmailTemplate(template: string, values: Record<string, string | number | undefined>) {
+  return template.replace(/\{\{\s*([\w]+)\s*\}\}/g, (_, key: string) => String(values[key] ?? ""));
+}
+
+export function textToEmailHtml(value: string) {
+  return value
+    .split("\n")
+    .map((line) => `<p>${escapeHtml(line) || "&nbsp;"}</p>`)
+    .join("");
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+export async function sendEmail({ to, from: selectedFrom, subject, html }: EmailInput) {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM || "Vihana Foundation <onboarding@resend.dev>";
+  const from = selectedFrom || process.env.EMAIL_FROM || "Vihana Foundation <onboarding@resend.dev>";
 
   if (!apiKey) {
     return { ok: false, skipped: true };

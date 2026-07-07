@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { isAdminAuthenticated } from "@/lib/adminAuth";
 import { sendEmail } from "@/lib/email";
 import { addDocument, listDocuments } from "@/lib/firestoreAdmin";
+import { getSiteContent } from "@/lib/siteData";
 
 export const runtime = "nodejs";
 
@@ -18,6 +19,7 @@ export async function POST(request: Request) {
 
   const subject = String(payload.subject || "").trim();
   const body = String(payload.body || "").trim();
+  const content = await getSiteContent();
 
   if (!subject || !body) {
     return NextResponse.json({ ok: false, message: "Subject and body are required." }, { status: 400 });
@@ -38,6 +40,7 @@ export async function POST(request: Request) {
   for (const email of emails) {
     const result = await sendEmail({
       to: email,
+      from: content.emailFrom,
       subject,
       html: body
         .split("\n")

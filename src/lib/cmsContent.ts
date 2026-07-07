@@ -141,6 +141,25 @@ export type SiteContent = {
   newsletterDescription: string;
   newsletterPlaceholder: string;
   newsletterButtonText: string;
+  emailFrom: string;
+  contactNotificationEmail: string;
+  volunteerNotificationEmail: string;
+  donationNotificationEmail: string;
+  donorNotificationEmail: string;
+  contactAdminEmailSubject: string;
+  contactAdminEmailBody: string;
+  contactVisitorEmailSubject: string;
+  contactVisitorEmailBody: string;
+  donationAdminEmailSubject: string;
+  donationAdminEmailBody: string;
+  donationVisitorEmailSubject: string;
+  donationVisitorEmailBody: string;
+  donorWelcomeEmailSubject: string;
+  donorWelcomeEmailBody: string;
+  donorAdminEmailSubject: string;
+  donorAdminEmailBody: string;
+  newsletterWelcomeEmailSubject: string;
+  newsletterWelcomeEmailBody: string;
   newsletterEmailSubject: string;
   newsletterEmailBody: string;
   navigationItems: NavigationItem[];
@@ -277,6 +296,32 @@ export const defaultSiteContent: SiteContent = {
     "Receive updates about campaigns, volunteer opportunities and stories of impact.",
   newsletterPlaceholder: "Email address",
   newsletterButtonText: "Subscribe",
+  emailFrom: "Vihana Foundation <support@vihanafoundation.org>",
+  contactNotificationEmail: "contact@vihanafoundation.org",
+  volunteerNotificationEmail: "volunteer@vihanafoundation.org",
+  donationNotificationEmail: "donate@vihanafoundation.org",
+  donorNotificationEmail: "support@vihanafoundation.org",
+  contactAdminEmailSubject: "New {{interest}} enquiry from {{name}}",
+  contactAdminEmailBody:
+    "New website enquiry received.\n\nName: {{name}}\nEmail: {{email}}\nPhone: {{phone}}\nInterest: {{interest}}\n\nMessage:\n{{message}}\n\nSubmitted at: {{createdAt}}",
+  contactVisitorEmailSubject: "We received your message - Vihana Foundation",
+  contactVisitorEmailBody:
+    "Dear {{name}},\n\nThank you for reaching out to Vihana Foundation. We received your message and will review it soon.\n\nYour interest: {{interest}}\n\nYour message:\n{{message}}\n\nWith gratitude,\nVihana Foundation",
+  donationAdminEmailSubject: "New donation intent from {{name}}",
+  donationAdminEmailBody:
+    "A donation intent was submitted.\n\nName: {{name}}\nEmail: {{email}}\nPhone: {{phone}}\nAmount: INR {{amount}}\nFrequency: {{frequency}}\nPurpose: {{purpose}}\nMethod: {{method}}\nReference: {{transactionId}}\nReceipt required: {{receiptRequired}}\nPAN: {{pan}}\nAddress: {{address}}\n\nMessage:\n{{message}}\n\nSubmitted at: {{createdAt}}",
+  donationVisitorEmailSubject: "Thank you for supporting Vihana Foundation",
+  donationVisitorEmailBody:
+    "Dear {{name}},\n\nThank you for supporting Vihana Foundation.\n\nWe received your {{frequency}} donation intent for INR {{amount}} toward {{purpose}}.\n\nPayment method: {{method}}\nTransaction/reference: {{transactionId}}\n\nThis is a test-mode acknowledgement until verified payment integration and official receipts are configured.\n\nWith gratitude,\nVihana Foundation",
+  donorWelcomeEmailSubject: "Your Vihana Foundation donor account is ready",
+  donorWelcomeEmailBody:
+    "Dear {{name}},\n\nYour Vihana Foundation donor account has been created successfully.\n\nYou can use it to keep donation history and receipt information in one place.\n\nWith gratitude,\nVihana Foundation",
+  donorAdminEmailSubject: "New donor account created - {{name}}",
+  donorAdminEmailBody:
+    "A donor account was created.\n\nName: {{name}}\nEmail: {{email}}\nPhone: {{phone}}\nDonor type: {{donorType}}\nPAN: {{pan}}\nAddress: {{address}}\n\nCreated at: {{createdAt}}",
+  newsletterWelcomeEmailSubject: "You are subscribed to Vihana Foundation updates",
+  newsletterWelcomeEmailBody:
+    "Thank you for subscribing to Vihana Foundation updates.\n\nWe will share meaningful updates about campaigns, volunteer opportunities and stories of impact.",
   newsletterEmailSubject: "Vihana Foundation Update",
   newsletterEmailBody:
     "Dear supporter,\n\nThank you for being part of the Vihana Foundation community.\n\nWe are grateful for your kindness and support.\n\nWith gratitude,\nVihana Foundation",

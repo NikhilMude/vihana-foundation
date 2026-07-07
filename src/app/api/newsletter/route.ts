@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { addDocument } from "@/lib/firestoreAdmin";
-import { sendEmail } from "@/lib/email";
+import { renderEmailTemplate, sendEmail, textToEmailHtml } from "@/lib/email";
+import { getSiteContent } from "@/lib/siteData";
 
 export const runtime = "nodejs";
 
@@ -28,13 +29,14 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     });
 
+    const content = await getSiteContent();
+    const templateValues = { email, createdAt: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) };
+
     await sendEmail({
       to: email,
-      subject: "You are subscribed to Vihana Foundation updates",
-      html: `
-        <p>Thank you for subscribing to Vihana Foundation updates.</p>
-        <p>We will share meaningful updates about campaigns, volunteer opportunities and stories of impact.</p>
-      `,
+      from: content.emailFrom,
+      subject: renderEmailTemplate(content.newsletterWelcomeEmailSubject, templateValues),
+      html: textToEmailHtml(renderEmailTemplate(content.newsletterWelcomeEmailBody, templateValues)),
     });
 
     return NextResponse.json({ ok: true });

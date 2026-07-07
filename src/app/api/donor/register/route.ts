@@ -8,7 +8,9 @@ import {
   hashPassword,
   saveDonorAccount,
 } from "@/lib/donorAuth";
+import { renderEmailTemplate, sendEmail, textToEmailHtml } from "@/lib/email";
 import { getDocument } from "@/lib/firestoreAdmin";
+import { getSiteContent } from "@/lib/siteData";
 
 export const runtime = "nodejs";
 
@@ -63,6 +65,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: "Account already exists. Please login." }, { status: 409 });
     }
 
+    const createdAt = new Date().toISOString();
+
     await saveDonorAccount({
       id,
       name,
@@ -72,7 +76,32 @@ export async function POST(request: Request) {
       pan,
       address,
       passwordHash: hashPassword(password),
-      createdAt: new Date().toISOString(),
+      createdAt,
+    });
+
+    const content = await getSiteContent();
+    const templateValues = {
+      name,
+      email,
+      phone: phone || "Not provided",
+      donorType,
+      pan: pan || "Not provided",
+      address: address || "Not provided",
+      createdAt: new Date(createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+    };
+
+    await sendEmail({
+      to: email,
+      from: content.emailFrom,
+      subject: renderEmailTemplate(content.donorWelcomeEmailSubject, templateValues),
+      html: textToEmailHtml(renderEmailTemplate(content.donorWelcomeEmailBody, templateValues)),
+    });
+
+    await sendEmail({
+      to: content.donorNotificationEmail || content.contactEmail,
+      from: content.emailFrom,
+      subject: renderEmailTemplate(content.donorAdminEmailSubject, templateValues),
+      html: textToEmailHtml(renderEmailTemplate(content.donorAdminEmailBody, templateValues)),
     });
 
     const cookieStore = await cookies();

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { sendEmail } from "@/lib/email";
+import { renderEmailTemplate, sendEmail, textToEmailHtml } from "@/lib/email";
 import { getSiteContent } from "@/lib/siteData";
 
 const messageTypes = new Set(["Birthday Campaign", "Volunteer", "Donation", "Partnership", "General"]);
@@ -20,15 +20,6 @@ function clean(value: unknown) {
 
 function isEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }
 
 export async function POST(request: Request) {
@@ -90,36 +81,34 @@ export async function POST(request: Request) {
     }
 
     const content = await getSiteContent();
-    const adminEmail = process.env.CONTACT_EMAIL_TO || content.contactEmail;
-    const safeName = escapeHtml(name);
-    const safeEmail = escapeHtml(email);
-    const safePhone = escapeHtml(phone || "Not provided");
-    const safeInterest = escapeHtml(interest);
-    const safeMessage = escapeHtml(message).replace(/\n/g, "<br />");
+    const adminEmail =
+      process.env.CONTACT_EMAIL_TO ||
+      (interest === "Volunteer"
+        ? content.volunteerNotificationEmail
+        : interest === "Donation"
+          ? content.donationNotificationEmail
+          : content.contactNotificationEmail || content.contactEmail);
+    const templateValues = {
+      name,
+      email,
+      phone: phone || "Not provided",
+      interest,
+      message,
+      createdAt: new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
+    };
 
     const adminEmailResult = await sendEmail({
       to: adminEmail,
-      subject: `New Vihana Foundation message from ${name}`,
-      html: `
-        <h2>New website message</h2>
-        <p><strong>Name:</strong> ${safeName}</p>
-        <p><strong>Email:</strong> ${safeEmail}</p>
-        <p><strong>Phone:</strong> ${safePhone}</p>
-        <p><strong>Interest:</strong> ${safeInterest}</p>
-        <p><strong>Message:</strong><br />${safeMessage}</p>
-      `,
+      from: content.emailFrom,
+      subject: renderEmailTemplate(content.contactAdminEmailSubject, templateValues),
+      html: textToEmailHtml(renderEmailTemplate(content.contactAdminEmailBody, templateValues)),
     });
 
     const visitorEmailResult = await sendEmail({
       to: email,
-      subject: "We received your message - Vihana Foundation",
-      html: `
-        <p>Dear ${safeName},</p>
-        <p>Thank you for reaching out to Vihana Foundation. We received your message and will review it soon.</p>
-        <p><strong>Your interest:</strong> ${safeInterest}</p>
-        <p><strong>Your message:</strong><br />${safeMessage}</p>
-        <p>With gratitude,<br />Vihana Foundation</p>
-      `,
+      from: content.emailFrom,
+      subject: renderEmailTemplate(content.contactVisitorEmailSubject, templateValues),
+      html: textToEmailHtml(renderEmailTemplate(content.contactVisitorEmailBody, templateValues)),
     });
 
     const emailSent = adminEmailResult.ok && visitorEmailResult.ok;

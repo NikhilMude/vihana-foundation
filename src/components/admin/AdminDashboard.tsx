@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import {
   FileText,
   ImagePlus,
@@ -99,6 +99,7 @@ type AdminDashboardProps = {
 
 type Tab =
   | "overview"
+  | "pageStudio"
   | "content"
   | "email"
   | "media"
@@ -205,6 +206,25 @@ const contentFields: { key: keyof SiteContent; label: string; multiline?: boolea
   { key: "newsletterDescription", label: "Newsletter description", multiline: true },
   { key: "newsletterPlaceholder", label: "Newsletter input placeholder" },
   { key: "newsletterButtonText", label: "Newsletter button text" },
+  { key: "emailFrom", label: "Email sender to use" },
+  { key: "contactNotificationEmail", label: "Contact enquiry inbox" },
+  { key: "volunteerNotificationEmail", label: "Volunteer enquiry inbox" },
+  { key: "donationNotificationEmail", label: "Donation notification inbox" },
+  { key: "donorNotificationEmail", label: "Donor account notification inbox" },
+  { key: "contactAdminEmailSubject", label: "Contact admin email subject" },
+  { key: "contactAdminEmailBody", label: "Contact admin email body", multiline: true },
+  { key: "contactVisitorEmailSubject", label: "Contact visitor email subject" },
+  { key: "contactVisitorEmailBody", label: "Contact visitor email body", multiline: true },
+  { key: "donationAdminEmailSubject", label: "Donation admin email subject" },
+  { key: "donationAdminEmailBody", label: "Donation admin email body", multiline: true },
+  { key: "donationVisitorEmailSubject", label: "Donation visitor email subject" },
+  { key: "donationVisitorEmailBody", label: "Donation visitor email body", multiline: true },
+  { key: "donorWelcomeEmailSubject", label: "Donor welcome email subject" },
+  { key: "donorWelcomeEmailBody", label: "Donor welcome email body", multiline: true },
+  { key: "donorAdminEmailSubject", label: "Donor admin email subject" },
+  { key: "donorAdminEmailBody", label: "Donor admin email body", multiline: true },
+  { key: "newsletterWelcomeEmailSubject", label: "Newsletter welcome email subject" },
+  { key: "newsletterWelcomeEmailBody", label: "Newsletter welcome email body", multiline: true },
   { key: "newsletterEmailSubject", label: "Newsletter email subject" },
   { key: "newsletterEmailBody", label: "Newsletter email body", multiline: true },
   { key: "upiId", label: "UPI ID" },
@@ -256,6 +276,7 @@ const listHelp: Record<ListKey, { first: string; second: string; body: keyof Edi
 };
 
 const quickActions: { tab: Tab; title: string; description: string; icon: typeof Pencil }[] = [
+  { tab: "pageStudio", title: "Page Studio", description: "Start here to edit the website page by page.", icon: LayoutList },
   { tab: "content", title: "Edit Website Text", description: "Hero, mission, donate, contact, footer and SEO text.", icon: Pencil },
   { tab: "pages", title: "Edit Pages", description: "About, Contact, Legal pages and any new page.", icon: FileText },
   { tab: "media", title: "Change Images", description: "Logo, hero image, mission image and donation image.", icon: ImagePlus },
@@ -404,6 +425,25 @@ const contentGroups: {
       "newsletterDescription",
       "newsletterPlaceholder",
       "newsletterButtonText",
+      "emailFrom",
+      "contactNotificationEmail",
+      "volunteerNotificationEmail",
+      "donationNotificationEmail",
+      "donorNotificationEmail",
+      "contactAdminEmailSubject",
+      "contactAdminEmailBody",
+      "contactVisitorEmailSubject",
+      "contactVisitorEmailBody",
+      "donationAdminEmailSubject",
+      "donationAdminEmailBody",
+      "donationVisitorEmailSubject",
+      "donationVisitorEmailBody",
+      "donorWelcomeEmailSubject",
+      "donorWelcomeEmailBody",
+      "donorAdminEmailSubject",
+      "donorAdminEmailBody",
+      "newsletterWelcomeEmailSubject",
+      "newsletterWelcomeEmailBody",
       "newsletterEmailSubject",
       "newsletterEmailBody",
     ],
@@ -413,6 +453,192 @@ const contentGroups: {
     label: "SEO",
     description: "Google/social sharing metadata.",
     fields: ["metaTitle", "metaDescription", "metaKeywords", "ogImageUrl"],
+  },
+];
+
+const pageWorkspaces: {
+  id: string;
+  title: string;
+  description: string;
+  guide: string[];
+  actions: {
+    label: string;
+    tab: Tab;
+    contentGroup?: string;
+    pageSlug?: string;
+    listKey?: ListKey | "featured";
+  }[];
+}[] = [
+  {
+    id: "home",
+    title: "Home Page",
+    description: "Hero, homepage message, main image, section order and first donation paths.",
+    guide: ["Edit the hero headline and buttons.", "Replace the homepage hero image.", "Show, hide or reorder homepage sections."],
+    actions: [
+      { label: "Edit Home Text", tab: "content", contentGroup: "home" },
+      { label: "Change Home Images", tab: "media" },
+      { label: "Homepage Order", tab: "order" },
+    ],
+  },
+  {
+    id: "about",
+    title: "About Vihana",
+    description: "Foundation story, mission language, founder note and About page content.",
+    guide: ["Update the mission and founder story.", "Edit the About page body.", "Change the mission story image."],
+    actions: [
+      { label: "Mission Text", tab: "content", contentGroup: "mission" },
+      { label: "About Page", tab: "pages", pageSlug: "about-vihana" },
+      { label: "Mission Image", tab: "media" },
+    ],
+  },
+  {
+    id: "programs",
+    title: "Programs, Impact & Gallery",
+    description: "Program cards, impact numbers, news, events, reports and gallery photos.",
+    guide: ["Update program and impact headings.", "Edit cards, FAQs, testimonials, news and reports.", "Add real photos to the gallery."],
+    actions: [
+      { label: "Programs Text", tab: "content", contentGroup: "programs" },
+      { label: "Cards & FAQs", tab: "sections" },
+      { label: "Gallery Photos", tab: "gallery" },
+    ],
+  },
+  {
+    id: "donate",
+    title: "Donate Page",
+    description: "Donation copy, UPI, bank details, legal trust signals and donation reports.",
+    guide: ["Update donation text and payment details.", "Review transaction reports.", "Keep legal trust information accurate."],
+    actions: [
+      { label: "Donate Text", tab: "content", contentGroup: "donate" },
+      { label: "Donation Image", tab: "media" },
+      { label: "Donation Reports", tab: "donations" },
+    ],
+  },
+  {
+    id: "contact",
+    title: "Contact & Volunteer",
+    description: "Contact details, WhatsApp, volunteer copy, footer CTA and received messages.",
+    guide: ["Update email, phone, location and WhatsApp.", "Read volunteer/contact submissions.", "Edit the Contact page if needed."],
+    actions: [
+      { label: "Contact Text", tab: "content", contentGroup: "contact" },
+      { label: "Contact Page", tab: "pages", pageSlug: "contact-us" },
+      { label: "Messages", tab: "messages" },
+    ],
+  },
+  {
+    id: "legal",
+    title: "Legal Pages",
+    description: "Privacy Policy, Terms, Cookie Policy, Disclaimer and Refund Policy pages.",
+    guide: ["Open each legal page.", "Update placeholders before public launch.", "Keep donation policy language legally reviewed."],
+    actions: [
+      { label: "Privacy Policy", tab: "pages", pageSlug: "privacy-policy" },
+      { label: "Terms", tab: "pages", pageSlug: "terms-and-conditions" },
+      { label: "Refund Policy", tab: "pages", pageSlug: "refund-and-cancellation-policy" },
+    ],
+  },
+  {
+    id: "newsletter",
+    title: "Newsletter",
+    description: "Newsletter website section, email template, subscribers and send controls.",
+    guide: ["Edit website newsletter text.", "Edit the outgoing email template.", "Send only after checking the preview."],
+    actions: [
+      { label: "Newsletter Text", tab: "content", contentGroup: "news" },
+      { label: "Email Template", tab: "email" },
+      { label: "Subscribers", tab: "subscribers" },
+    ],
+  },
+  {
+    id: "navigation",
+    title: "Menu, Footer & Social",
+    description: "Website navigation, social media icons, footer links and SEO metadata.",
+    guide: ["Update menu labels and links.", "Add social accounts and icons.", "Update SEO title, description and share image."],
+    actions: [
+      { label: "Menu & Social", tab: "navigation" },
+      { label: "SEO", tab: "content", contentGroup: "seo" },
+      { label: "Images", tab: "media" },
+    ],
+  },
+];
+
+const emailTemplateComposers: {
+  id: string;
+  title: string;
+  description: string;
+  subjectKey: keyof SiteContent;
+  bodyKey: keyof SiteContent;
+  sentTo: string;
+  placeholders: string[];
+}[] = [
+  {
+    id: "contact-admin",
+    title: "Admin alert: contact / volunteer enquiry",
+    description: "Sent to the selected internal inbox when someone submits the contact or volunteer form.",
+    subjectKey: "contactAdminEmailSubject",
+    bodyKey: "contactAdminEmailBody",
+    sentTo: "Contact, volunteer or donation inbox based on enquiry type",
+    placeholders: ["{{name}}", "{{email}}", "{{phone}}", "{{interest}}", "{{message}}", "{{createdAt}}"],
+  },
+  {
+    id: "contact-visitor",
+    title: "Visitor reply: contact / volunteer enquiry",
+    description: "Sent to the person who submitted the contact or volunteer form.",
+    subjectKey: "contactVisitorEmailSubject",
+    bodyKey: "contactVisitorEmailBody",
+    sentTo: "Website visitor",
+    placeholders: ["{{name}}", "{{email}}", "{{phone}}", "{{interest}}", "{{message}}"],
+  },
+  {
+    id: "donation-admin",
+    title: "Admin alert: donation intent",
+    description: "Sent to the donation inbox when a donation intent or transaction reference is submitted.",
+    subjectKey: "donationAdminEmailSubject",
+    bodyKey: "donationAdminEmailBody",
+    sentTo: "Donation inbox",
+    placeholders: ["{{name}}", "{{email}}", "{{phone}}", "{{amount}}", "{{frequency}}", "{{purpose}}", "{{method}}", "{{transactionId}}", "{{receiptRequired}}", "{{pan}}", "{{address}}", "{{message}}", "{{createdAt}}"],
+  },
+  {
+    id: "donation-visitor",
+    title: "Donor reply: donation acknowledgement",
+    description: "Sent to the donor after they submit donation details.",
+    subjectKey: "donationVisitorEmailSubject",
+    bodyKey: "donationVisitorEmailBody",
+    sentTo: "Donor",
+    placeholders: ["{{name}}", "{{amount}}", "{{frequency}}", "{{purpose}}", "{{method}}", "{{transactionId}}"],
+  },
+  {
+    id: "donor-welcome",
+    title: "Donor account welcome",
+    description: "Sent when a donor creates an account.",
+    subjectKey: "donorWelcomeEmailSubject",
+    bodyKey: "donorWelcomeEmailBody",
+    sentTo: "Donor account email",
+    placeholders: ["{{name}}", "{{email}}", "{{phone}}", "{{donorType}}"],
+  },
+  {
+    id: "donor-admin",
+    title: "Admin alert: donor account created",
+    description: "Sent internally when a donor account is created.",
+    subjectKey: "donorAdminEmailSubject",
+    bodyKey: "donorAdminEmailBody",
+    sentTo: "Donor notification inbox",
+    placeholders: ["{{name}}", "{{email}}", "{{phone}}", "{{donorType}}", "{{pan}}", "{{address}}", "{{createdAt}}"],
+  },
+  {
+    id: "newsletter-welcome",
+    title: "Newsletter welcome email",
+    description: "Sent when someone subscribes to the newsletter.",
+    subjectKey: "newsletterWelcomeEmailSubject",
+    bodyKey: "newsletterWelcomeEmailBody",
+    sentTo: "Subscriber",
+    placeholders: ["{{email}}", "{{createdAt}}"],
+  },
+  {
+    id: "newsletter-campaign",
+    title: "Newsletter campaign",
+    description: "This is the campaign template sent from the Newsletter tab to all subscribers.",
+    subjectKey: "newsletterEmailSubject",
+    bodyKey: "newsletterEmailBody",
+    sentTo: "All subscribers",
+    placeholders: [],
   },
 ];
 
@@ -495,7 +721,7 @@ export default function AdminDashboard({
   initialDonors,
   initialSubscribers,
 }: AdminDashboardProps) {
-  const [tab, setTab] = useState<Tab>("overview");
+  const [tab, setTab] = useState<Tab>("pageStudio");
   const [content, setContent] = useState(initialContent);
   const [galleryItems, setGalleryItems] = useState(initialGalleryItems);
   const [messages] = useState(initialMessages);
@@ -508,12 +734,15 @@ export default function AdminDashboard({
   const [imagePreview, setImagePreview] = useState("");
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [contentGroup, setContentGroup] = useState(contentGroups[0].id);
   const [activePageId, setActivePageId] = useState(initialContent.pages[0]?.id || "");
+  const [activeListKey, setActiveListKey] = useState<ListKey | "featured" | "all">("all");
 
   const tabs = useMemo(
     () => [
       { id: "overview" as const, label: "Dashboard", icon: Settings },
+      { id: "pageStudio" as const, label: "Page Studio", icon: LayoutList },
       { id: "content" as const, label: "Website Text", icon: Pencil },
       { id: "pages" as const, label: "Pages", icon: FileText },
       { id: "sections" as const, label: "Section Cards", icon: LayoutList },
@@ -521,7 +750,7 @@ export default function AdminDashboard({
       { id: "gallery" as const, label: "Gallery", icon: ImagePlus },
       { id: "navigation" as const, label: "Menu & Social", icon: Navigation },
       { id: "order" as const, label: "Homepage Order", icon: Settings },
-      { id: "email" as const, label: "Email Template", icon: Mail },
+      { id: "email" as const, label: "Email Composer", icon: Mail },
       { id: "donations" as const, label: "Donations", icon: BadgeIndianRupee },
       { id: "donors" as const, label: "Donors", icon: Users },
       { id: "messages" as const, label: "Messages", icon: Inbox },
@@ -535,6 +764,7 @@ export default function AdminDashboard({
   const activePageIndex = content.pages.findIndex((page) => page.id === activePageId);
   const safeActivePageIndex = activePageIndex >= 0 ? activePageIndex : 0;
   const activePage = content.pages[safeActivePageIndex];
+  const visibleListKeys = activeListKey === "all" || activeListKey === "featured" ? (Object.keys(listLabels) as ListKey[]) : [activeListKey];
   const cmsSearchResults = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
@@ -584,6 +814,28 @@ export default function AdminDashboard({
       }
     });
 
+    if (
+      matches(
+        "Featured Impact Story",
+        content.featuredStory.title,
+        content.featuredStory.name,
+        content.featuredStory.description,
+        content.featuredStory.linkLabel,
+        content.featuredStory.linkHref
+      )
+    ) {
+      results.push({
+        id: "featured-story",
+        title: content.featuredStory.title || "Featured Impact Story",
+        description: "Section Cards / Featured Impact Story",
+        tab: "sections",
+        action: () => {
+          setActiveListKey("featured");
+          setTab("sections");
+        },
+      });
+    }
+
     (Object.keys(listLabels) as ListKey[]).forEach((listKey) => {
       content[listKey].forEach((item, index) => {
         if (
@@ -608,7 +860,10 @@ export default function AdminDashboard({
             title: item.title || item.name || item.question || listLabels[listKey],
             description: `Section Cards / ${listLabels[listKey]}`,
             tab: "sections",
-            action: () => setTab("sections"),
+            action: () => {
+              setActiveListKey(listKey);
+              setTab("sections");
+            },
           });
         }
       });
@@ -731,6 +986,53 @@ export default function AdminDashboard({
     return { total, receiptCount, monthlyCount, uniqueDonors, byPurpose, byMethod };
   }, [donations]);
 
+  useEffect(() => {
+    if (!hasUnsavedChanges) {
+      return;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  function markUnsaved(message = "You have unsaved changes. Click Save Changes to publish them.") {
+    setHasUnsavedChanges(true);
+    setStatus(message);
+  }
+
+  function changeTab(nextTab: Tab) {
+    if (hasUnsavedChanges && nextTab !== tab && !window.confirm("You have unsaved changes. Switch sections without saving?")) {
+      return;
+    }
+
+    setTab(nextTab);
+  }
+
+  function openWorkspaceAction(action: (typeof pageWorkspaces)[number]["actions"][number]) {
+    if (action.contentGroup) {
+      setContentGroup(action.contentGroup);
+    }
+
+    if (action.pageSlug) {
+      const page = content.pages.find((item) => item.slug === action.pageSlug);
+      if (page) {
+        setActivePageId(page.id);
+      }
+    }
+
+    if (action.listKey) {
+      setActiveListKey(action.listKey);
+    }
+
+    changeTab(action.tab);
+  }
+
   async function persistContent(
     nextContent: SiteContent,
     successMessage = "Website saved.",
@@ -748,6 +1050,9 @@ export default function AdminDashboard({
     });
 
     setSaving(false);
+    if (response.ok) {
+      setHasUnsavedChanges(false);
+    }
     setStatus(response.ok ? successMessage : "Could not save website.");
   }
 
@@ -758,6 +1063,7 @@ export default function AdminDashboard({
 
   function updateContent(key: keyof SiteContent, value: string) {
     setContent((current) => ({ ...current, [key]: value }));
+    markUnsaved();
   }
 
   function updateNavigation(index: number, key: keyof NavigationItem, value: string) {
@@ -767,6 +1073,7 @@ export default function AdminDashboard({
         itemIndex === index ? { ...item, [key]: value } : item
       ),
     }));
+    markUnsaved();
   }
 
   function addNavigationItem() {
@@ -774,15 +1081,19 @@ export default function AdminDashboard({
       ...current,
       navigationItems: [...current.navigationItems, { label: "New Link", href: "/" }],
     }));
-    setStatus("Navigation updated. Click Save to publish it.");
+    markUnsaved("Navigation updated. Click Save to publish it.");
   }
 
   function removeNavigationItem(index: number) {
+    if (!window.confirm("Delete this navigation link?")) {
+      return;
+    }
+
     setContent((current) => ({
       ...current,
       navigationItems: current.navigationItems.filter((_, itemIndex) => itemIndex !== index),
     }));
-    setStatus("Navigation updated. Click Save to publish it.");
+    markUnsaved("Navigation updated. Click Save to publish it.");
   }
 
   function moveNavigationItem(index: number, direction: -1 | 1) {
@@ -807,6 +1118,7 @@ export default function AdminDashboard({
         itemIndex === index ? { ...item, [key]: value } : item
       ),
     }));
+    markUnsaved();
   }
 
   function addSocialLink() {
@@ -814,15 +1126,19 @@ export default function AdminDashboard({
       ...current,
       socialLinks: [...current.socialLinks, emptySocialLink()],
     }));
-    setStatus("Social links updated. Click Save to publish it.");
+    markUnsaved("Social links updated. Click Save to publish it.");
   }
 
   function removeSocialLink(index: number) {
+    if (!window.confirm("Delete this social media link?")) {
+      return;
+    }
+
     setContent((current) => ({
       ...current,
       socialLinks: current.socialLinks.filter((_, itemIndex) => itemIndex !== index),
     }));
-    setStatus("Social links updated. Click Save to publish it.");
+    markUnsaved("Social links updated. Click Save to publish it.");
   }
 
   function applySocialPreset(index: number, label: string) {
@@ -832,7 +1148,7 @@ export default function AdminDashboard({
         itemIndex === index ? { ...item, label, iconImageUrl: "" } : item
       ),
     }));
-    setStatus("Social icon selected. Click Save to publish it.");
+    markUnsaved("Social icon selected. Click Save to publish it.");
   }
 
   function updateSectionConfig(index: number, key: keyof SectionConfig, value: string | boolean) {
@@ -842,6 +1158,7 @@ export default function AdminDashboard({
         sectionIndex === index ? { ...section, [key]: value } : section
       ),
     }));
+    markUnsaved();
   }
 
   function moveSection(index: number, direction: -1 | 1) {
@@ -866,6 +1183,7 @@ export default function AdminDashboard({
         itemIndex === index ? { ...item, [key]: value } : item
       ),
     }));
+    markUnsaved();
   }
 
   function addListItem(listKey: ListKey) {
@@ -873,15 +1191,20 @@ export default function AdminDashboard({
       ...current,
       [listKey]: [...current[listKey], emptyItem(listKey)],
     }));
-    setStatus("Card list updated. Click Save to publish it.");
+    setActiveListKey(listKey);
+    markUnsaved("Card list updated. Click Save to publish it.");
   }
 
   function removeListItem(listKey: ListKey, index: number) {
+    if (!window.confirm(`Delete this item from ${listLabels[listKey]}?`)) {
+      return;
+    }
+
     setContent((current) => ({
       ...current,
       [listKey]: current[listKey].filter((_, itemIndex) => itemIndex !== index),
     }));
-    setStatus("Card list updated. Click Save to publish it.");
+    markUnsaved("Card list updated. Click Save to publish it.");
   }
 
   function moveListItem(listKey: ListKey, index: number, direction: -1 | 1) {
@@ -908,6 +1231,7 @@ export default function AdminDashboard({
         [key]: value,
       },
     }));
+    markUnsaved();
   }
 
   function updatePage(index: number, key: keyof CmsPage, value: string | boolean) {
@@ -915,6 +1239,7 @@ export default function AdminDashboard({
       ...current,
       pages: current.pages.map((page, pageIndex) => (pageIndex === index ? { ...page, [key]: value } : page)),
     }));
+    markUnsaved();
   }
 
   function addPage() {
@@ -925,10 +1250,14 @@ export default function AdminDashboard({
       pages: [...current.pages, page],
     }));
     setActivePageId(page.id);
-    setStatus("Page list updated. Click Save to publish it.");
+    markUnsaved("Page list updated. Click Save to publish it.");
   }
 
   function removePage(index: number) {
+    if (!window.confirm("Delete this page? This cannot be undone after saving.")) {
+      return;
+    }
+
     const nextActivePage = content.pages[index - 1] || content.pages[index + 1];
 
     setContent((current) => ({
@@ -936,7 +1265,7 @@ export default function AdminDashboard({
       pages: current.pages.filter((_, pageIndex) => pageIndex !== index),
     }));
     setActivePageId(nextActivePage?.id || "");
-    setStatus("Page list updated. Click Save to publish it.");
+    markUnsaved("Page list updated. Click Save to publish it.");
   }
 
   function handleImageUpload(event: ChangeEvent<HTMLInputElement>, callback: (value: string) => void) {
@@ -1008,6 +1337,10 @@ export default function AdminDashboard({
   }
 
   async function deleteGalleryItem(id: string) {
+    if (!window.confirm("Delete this gallery image?")) {
+      return;
+    }
+
     setStatus("");
     const response = await fetch(`/api/admin/gallery?id=${id}`, {
       method: "DELETE",
@@ -1073,6 +1406,7 @@ export default function AdminDashboard({
 
           <div className="flex flex-wrap items-center gap-3">
             {status ? <p className="rounded-full bg-amber-50 px-4 py-2 text-sm font-bold text-amber-800">{status}</p> : null}
+            {hasUnsavedChanges ? <p className="rounded-full bg-rose-50 px-4 py-2 text-sm font-bold text-rose-700">Unsaved changes</p> : null}
             <a href="/" target="_blank" className="inline-flex h-11 items-center rounded-full border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50">
               View Site
             </a>
@@ -1163,7 +1497,7 @@ export default function AdminDashboard({
               <button
                 type="button"
                 key={item.id}
-                onClick={() => setTab(item.id)}
+                onClick={() => changeTab(item.id)}
                 className={`inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-bold transition ${
                   tab === item.id ? "bg-teal-700 text-white shadow-sm" : "bg-slate-50 text-slate-700 hover:bg-teal-50 hover:text-teal-800"
                 }`}
@@ -1175,6 +1509,67 @@ export default function AdminDashboard({
           })}
           </div>
         </div>
+
+        {tab === "pageStudio" ? (
+          <div className="mt-6 grid gap-6">
+            <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+              <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-[0.22em] text-teal-700">Page-by-page CMS</p>
+                  <h2 className="mt-2 text-2xl font-bold text-slate-950">Choose the website area you want to update</h2>
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                    These cards group the CMS by real website pages and admin jobs. Use them when you are not sure which technical tab contains the content.
+                  </p>
+                </div>
+                <Button type="button" onClick={() => saveContent()} disabled={saving} className="h-11 rounded-full bg-teal-700 px-6 hover:bg-teal-800">
+                  {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+                  Save Changes
+                </Button>
+              </div>
+
+              <div className="mt-6 grid gap-4 lg:grid-cols-2">
+                {pageWorkspaces.map((workspace) => (
+                  <article key={workspace.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-xl font-black text-slate-950">{workspace.title}</h3>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">{workspace.description}</p>
+                      </div>
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] bg-white text-teal-700 shadow-sm">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                    </div>
+
+                    <div className="mt-4 rounded-[8px] bg-white p-4">
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Guide</p>
+                      <ul className="mt-3 grid gap-2">
+                        {workspace.guide.map((item) => (
+                          <li key={item} className="flex gap-2 text-sm leading-6 text-slate-700">
+                            <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-amber-400" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {workspace.actions.map((action) => (
+                        <button
+                          key={action.label}
+                          type="button"
+                          onClick={() => openWorkspaceAction(action)}
+                          className="rounded-full bg-white px-4 py-2 text-sm font-bold text-teal-800 shadow-sm transition hover:bg-teal-700 hover:text-white"
+                        >
+                          {action.label}
+                        </button>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </div>
+        ) : null}
 
         {tab === "overview" ? (
           <div className="mt-6 grid gap-6">
@@ -1201,7 +1596,7 @@ export default function AdminDashboard({
                     <button
                       key={action.title}
                       type="button"
-                      onClick={() => setTab(action.tab)}
+                      onClick={() => changeTab(action.tab)}
                       className="rounded-[8px] border border-slate-200 bg-slate-50 p-5 text-left transition hover:-translate-y-0.5 hover:border-teal-200 hover:bg-teal-50 hover:shadow-sm"
                     >
                       <div className="flex h-11 w-11 items-center justify-center rounded-[8px] bg-white text-teal-700 shadow-sm">
@@ -1296,41 +1691,96 @@ export default function AdminDashboard({
 
         {tab === "email" ? (
           <form onSubmit={saveContent} className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="max-w-4xl">
-              <h2 className="text-xl font-bold text-slate-950">Newsletter Email Template</h2>
-              <p className="mt-2 leading-7 text-slate-600">
-                This is the email sent from the Newsletter tab to all subscribers.
-              </p>
-
-              <label className="mt-6 block">
-                <span className="text-sm font-bold text-slate-800">Email subject</span>
-                <input
-                  value={content.newsletterEmailSubject}
-                  onChange={(event) => updateContent("newsletterEmailSubject", event.target.value)}
-                  className="mt-2 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600 focus:bg-white"
-                />
-              </label>
-
-              <label className="mt-5 block">
-                <span className="text-sm font-bold text-slate-800">Email body</span>
-                <textarea
-                  rows={12}
-                  value={content.newsletterEmailBody}
-                  onChange={(event) => updateContent("newsletterEmailBody", event.target.value)}
-                  className="mt-2 w-full resize-y rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 leading-7 outline-none focus:border-teal-600 focus:bg-white"
-                />
-              </label>
-
-              <div className="mt-6 rounded-[8px] bg-slate-50 p-5">
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-slate-500">Preview</p>
-                <h3 className="mt-3 text-lg font-bold text-slate-950">{content.newsletterEmailSubject}</h3>
-                <p className="mt-3 whitespace-pre-line leading-7 text-slate-700">{content.newsletterEmailBody}</p>
+            <div className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-start">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-950">Email Template Composer</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                  Edit every automatic email and choose which foundation inbox receives each type of enquiry.
+                </p>
               </div>
-
-              <Button type="submit" disabled={saving} className="mt-6 h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
+              <Button type="submit" disabled={saving} className="h-11 rounded-full bg-teal-700 px-6 hover:bg-teal-800">
                 {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-                Save Email Template
+                Save Email Settings
               </Button>
+            </div>
+
+            <section className="mt-5 rounded-[8px] bg-teal-50 p-4">
+              <h3 className="font-black text-teal-950">Sending settings</h3>
+              <p className="mt-1 text-sm leading-6 text-teal-800">
+                The sender must be verified in Resend. Your current aliases are added as editable defaults.
+              </p>
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                {[
+                  ["emailFrom", "Sender email to use"],
+                  ["contactNotificationEmail", "General contact inbox"],
+                  ["volunteerNotificationEmail", "Volunteer enquiry inbox"],
+                  ["donationNotificationEmail", "Donation inbox"],
+                  ["donorNotificationEmail", "Donor account inbox"],
+                ].map(([key, label]) => (
+                  <label key={key}>
+                    <span className="text-sm font-bold text-slate-800">{label}</span>
+                    <input
+                      value={String(content[key as keyof SiteContent] || "")}
+                      onChange={(event) => updateContent(key as keyof SiteContent, event.target.value)}
+                      className="mt-2 h-12 w-full rounded-[8px] border border-teal-100 bg-white px-4 outline-none focus:border-teal-600"
+                    />
+                  </label>
+                ))}
+              </div>
+            </section>
+
+            <div className="mt-5 grid gap-5">
+              {emailTemplateComposers.map((template) => (
+                <section key={template.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-5">
+                  <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-start">
+                    <div>
+                      <h3 className="text-xl font-black text-slate-950">{template.title}</h3>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">{template.description}</p>
+                      <p className="mt-2 text-xs font-bold uppercase tracking-[0.16em] text-teal-700">Sent to: {template.sentTo}</p>
+                    </div>
+                    {template.placeholders.length ? (
+                      <div className="rounded-[8px] bg-white p-3 lg:max-w-md">
+                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Available placeholders</p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {template.placeholders.map((placeholder) => (
+                            <code key={placeholder} className="rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-700">
+                              {placeholder}
+                            </code>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_0.8fr]">
+                    <div className="grid gap-4">
+                      <label>
+                        <span className="text-sm font-bold text-slate-800">Subject</span>
+                        <input
+                          value={String(content[template.subjectKey] || "")}
+                          onChange={(event) => updateContent(template.subjectKey, event.target.value)}
+                          className="mt-2 h-12 w-full rounded-[8px] border border-slate-200 bg-white px-4 outline-none focus:border-teal-600"
+                        />
+                      </label>
+                      <label>
+                        <span className="text-sm font-bold text-slate-800">Email body</span>
+                        <textarea
+                          rows={8}
+                          value={String(content[template.bodyKey] || "")}
+                          onChange={(event) => updateContent(template.bodyKey, event.target.value)}
+                          className="mt-2 w-full resize-y rounded-[8px] border border-slate-200 bg-white px-4 py-3 leading-7 outline-none focus:border-teal-600"
+                        />
+                      </label>
+                    </div>
+
+                    <div className="rounded-[8px] bg-white p-4">
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Preview</p>
+                      <h4 className="mt-3 font-bold text-slate-950">{String(content[template.subjectKey] || "")}</h4>
+                      <p className="mt-3 whitespace-pre-line text-sm leading-7 text-slate-700">{String(content[template.bodyKey] || "")}</p>
+                    </div>
+                  </div>
+                </section>
+              ))}
             </div>
           </form>
         ) : null}
@@ -1583,6 +2033,38 @@ export default function AdminDashboard({
         {tab === "sections" ? (
           <div className="mt-6 grid gap-6">
             <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-950">Section Cards Filter</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">Show only the group you want to edit, or show everything.</p>
+                </div>
+                <Button type="button" onClick={() => saveContent()} disabled={saving} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
+                  {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                  Save Cards
+                </Button>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {[
+                  { key: "all" as const, label: "All" },
+                  { key: "featured" as const, label: "Featured Story" },
+                  ...(Object.keys(listLabels) as ListKey[]).map((key) => ({ key, label: listLabels[key] })),
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    type="button"
+                    onClick={() => setActiveListKey(item.key)}
+                    className={`rounded-full px-4 py-2 text-sm font-bold transition ${
+                      activeListKey === item.key ? "bg-teal-700 text-white" : "bg-slate-50 text-slate-700 hover:bg-teal-50 hover:text-teal-800"
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            {activeListKey === "all" || activeListKey === "featured" ? (
+            <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-bold text-slate-950">Featured Impact Story</h2>
               <div className="mt-5 grid gap-3 lg:grid-cols-2">
                 <input value={content.featuredStory.name || ""} onChange={(event) => updateFeaturedStory("name", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Child/person name" />
@@ -1593,8 +2075,9 @@ export default function AdminDashboard({
                 <input type="file" accept="image/*" onChange={(event) => handleImageUpload(event, (value) => updateFeaturedStory("imageUrl", value))} className="rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm lg:col-span-2" />
               </div>
             </section>
+            ) : null}
 
-            {(Object.keys(listLabels) as ListKey[]).map((listKey) => (
+            {visibleListKeys.map((listKey) => (
               <section key={listKey} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex items-center justify-between gap-4">
                   <div>
