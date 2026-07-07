@@ -26,5 +26,11 @@ export async function sendEmail({ to, subject, html }: EmailInput) {
     }),
   });
 
-  return { ok: response.ok, skipped: false };
+  if (!response.ok) {
+    const error = await response.text();
+
+    return { ok: false, skipped: false, status: response.status, error };
+  }
+
+  return { ok: true, skipped: false, status: response.status };
 }

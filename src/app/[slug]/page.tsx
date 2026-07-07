@@ -1,8 +1,7 @@
-import Link from "next/link";
 import Image from "next/image";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import VisitTracker from "@/components/analytics/VisitTracker";
 import Footer from "@/components/layout/Footer";
@@ -44,24 +43,19 @@ export default async function CmsPage({ params }: PageProps) {
       <Navbar content={content} navigation={content.navigationItems} />
       <VisitTracker />
 
-      <main className="pt-20 sm:pt-28">
-        <section className="py-10 sm:py-20">
+      <main className="pt-16 sm:pt-20">
+        <section className="py-7 sm:py-12">
           <Container>
-            <Link href="/" className="inline-flex items-center gap-2 text-sm font-bold text-teal-700">
-              <ArrowLeft className="h-4 w-4" />
-              Back to home
-            </Link>
-
-            <div className="mt-6 max-w-4xl sm:mt-8">
+            <div className="max-w-4xl">
               <h1 className="font-[family-name:var(--font-playfair)] text-[2.5rem] font-bold leading-tight text-slate-950 sm:text-6xl">
                 {page.title}
               </h1>
 
-              <p className="mt-4 text-base leading-7 text-slate-600 sm:mt-6 sm:text-xl sm:leading-8">{page.description}</p>
+              <p className="mt-3 text-base leading-7 text-slate-600 sm:mt-5 sm:text-xl sm:leading-8">{page.description}</p>
             </div>
 
             {page.imageUrl ? (
-              <div className="mt-8 overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-sm sm:mt-12">
+              <div className="mt-6 overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-sm sm:mt-8">
                 <Image
                   src={page.imageUrl}
                   alt={page.title}
@@ -74,7 +68,7 @@ export default async function CmsPage({ params }: PageProps) {
               </div>
             ) : null}
 
-            <article className="mt-6 max-w-4xl rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:mt-10 sm:p-10">
+            <article className="mt-6 max-w-4xl rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:mt-8 sm:p-8">
               <div className="whitespace-pre-line text-base leading-8 text-slate-700 sm:text-lg sm:leading-9">{page.body}</div>
 
               {page.buttonLabel && page.buttonHref ? (

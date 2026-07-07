@@ -12,11 +12,13 @@ type Status = "idle" | "loading" | "success" | "error";
 export default function ContactForm() {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setStatus("loading");
     setError("");
+    setSuccessMessage("");
 
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -39,7 +41,7 @@ export default function ContactForm() {
         body: JSON.stringify(payload),
       });
 
-      const result = (await response.json()) as { ok: boolean; message?: string };
+      const result = (await response.json()) as { ok: boolean; message?: string; emailSent?: boolean; emailMessage?: string };
 
       if (!response.ok || !result.ok) {
         throw new Error(result.message || "Please try again.");
@@ -47,6 +49,7 @@ export default function ContactForm() {
 
       form.reset();
       setStatus("success");
+      setSuccessMessage(result.emailMessage || "Thank you. We received your message.");
     } catch (requestError) {
       setStatus("error");
       setError(requestError instanceof Error ? requestError.message : "Please try again.");
@@ -140,7 +143,7 @@ export default function ContactForm() {
       {status === "success" ? (
         <div className="mt-5 flex items-center gap-2 rounded-[8px] bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
           <CheckCircle2 className="h-5 w-5" />
-          Thank you. We received your message.
+          {successMessage || "Thank you. We received your message."}
         </div>
       ) : null}
 
