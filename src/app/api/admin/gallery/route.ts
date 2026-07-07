@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { isAdminAuthenticated } from "@/lib/adminAuth";
 import { addDocument, deleteDocument } from "@/lib/firestoreAdmin";
-import { getGalleryItems } from "@/lib/siteData";
+import { getGalleryItems, invalidateSiteDataCache } from "@/lib/siteData";
 
 export const runtime = "nodejs";
 
@@ -11,7 +11,7 @@ export async function GET() {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
-  return NextResponse.json({ ok: true, items: await getGalleryItems() });
+  return NextResponse.json({ ok: true, items: await getGalleryItems({ fresh: true }) });
 }
 
 export async function POST(request: Request) {
@@ -46,6 +46,7 @@ export async function POST(request: Request) {
     imageUrl,
     createdAt: new Date().toISOString(),
   });
+  invalidateSiteDataCache();
 
   return NextResponse.json({ ok: true, item });
 }
@@ -63,6 +64,7 @@ export async function DELETE(request: Request) {
   }
 
   await deleteDocument(`galleryItems/${id}`);
+  invalidateSiteDataCache();
 
   return NextResponse.json({ ok: true });
 }

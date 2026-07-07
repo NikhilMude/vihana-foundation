@@ -53,8 +53,8 @@ export default async function AdminDashboardPage() {
 
   return (
     <AdminDashboard
-      initialContent={await getSiteContent()}
-      initialGalleryItems={await getGalleryItems()}
+      initialContent={await getSiteContent({ fresh: true })}
+      initialGalleryItems={await getGalleryItems({ fresh: true })}
       initialMessages={messages}
       initialVisitors={visitors}
       visitorCount={visitorStats.total}

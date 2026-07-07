@@ -32,6 +32,10 @@ function getSocialMark(label: string) {
   return "";
 }
 
+function normalizeHref(href: string) {
+  return href.startsWith("#") ? `/${href}` : href;
+}
+
 export default function Footer({
   content,
   navigation,
@@ -103,7 +107,7 @@ export default function Footer({
               {navigation.map((item) => (
                 <Link
                   key={item.label}
-                  href={item.href}
+                  href={normalizeHref(item.href)}
                   className="text-sm text-slate-400 transition hover:text-white"
                 >
                   {item.label}

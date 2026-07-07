@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { isAdminAuthenticated } from "@/lib/adminAuth";
 import { mergeSiteContent, SiteContent } from "@/lib/cmsContent";
-import { getSiteContent } from "@/lib/siteData";
+import { getSiteContent, invalidateSiteDataCache } from "@/lib/siteData";
 import { setDocument } from "@/lib/firestoreAdmin";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ export async function GET() {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
-  return NextResponse.json({ ok: true, content: await getSiteContent() });
+  return NextResponse.json({ ok: true, content: await getSiteContent({ fresh: true }) });
 }
 
 export async function PUT(request: Request) {
@@ -27,6 +27,7 @@ export async function PUT(request: Request) {
     data: JSON.stringify(merged),
     updatedAt: new Date().toISOString(),
   });
+  invalidateSiteDataCache();
 
   return NextResponse.json({ ok: true, content: merged });
 }

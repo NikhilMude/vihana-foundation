@@ -55,16 +55,18 @@ export default function Hero({ content }: { content: SiteContent }) {
         </div>
 
         <div className="relative z-10 mx-auto w-full max-w-[26rem] lg:max-w-none">
-          <div className="relative overflow-hidden rounded-[8px] border border-white/70 bg-white p-2 shadow-2xl shadow-slate-900/15">
-            <div className="absolute inset-x-8 -bottom-10 h-24 rounded-full bg-teal-500/20 blur-3xl" />
+          <div className="relative overflow-hidden rounded-[8px] border border-white/80 bg-[#fffdf8] p-2 shadow-2xl shadow-teal-950/10">
             <Image
               src={content.heroImageUrl || "/illustrations/hero.png"}
               alt="Children supported by Vihana Foundation programs"
               width={760}
               height={760}
               priority
-              className="relative aspect-[4/3] w-full rounded-[8px] object-cover"
+              unoptimized={content.heroImageUrl.startsWith("data:")}
+              className="relative aspect-[4/3] w-full rounded-[8px] object-cover saturate-[0.92]"
             />
+            <div className="pointer-events-none absolute inset-2 rounded-[8px] bg-[linear-gradient(135deg,rgba(13,148,136,0.22),rgba(255,255,255,0)_42%,rgba(251,191,36,0.16))]" />
+            <div className="pointer-events-none absolute inset-x-2 bottom-2 h-1/3 rounded-b-[8px] bg-[linear-gradient(180deg,rgba(255,255,255,0),rgba(248,250,252,0.26))]" />
           </div>
 
           <div className="-mt-8 grid grid-cols-2 gap-3 px-4 sm:gap-4">
