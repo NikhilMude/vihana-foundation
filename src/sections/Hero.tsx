@@ -1,7 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowRight, CheckCircle2, Gift, HeartHandshake } from "lucide-react";
 
+import SmartNavLink from "@/components/layout/SmartNavLink";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { SiteContent } from "@/lib/cmsContent";
@@ -30,17 +30,17 @@ export default function Hero({ content }: { content: SiteContent }) {
 
           <div className="mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:justify-center lg:justify-start">
             <Button asChild size="lg" className="h-12 w-full rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800 sm:w-auto">
-              <Link href={content.heroPrimaryHref}>
+              <SmartNavLink href={content.heroPrimaryHref}>
                 <HeartHandshake className="mr-2 h-5 w-5" />
                 {content.heroPrimaryLabel}
-              </Link>
+              </SmartNavLink>
             </Button>
 
             <Button asChild variant="outline" size="lg" className="h-12 w-full rounded-full border-slate-300 bg-white/80 px-7 text-base hover:bg-white sm:w-auto">
-              <Link href={content.heroSecondaryHref}>
+              <SmartNavLink href={content.heroSecondaryHref}>
                 {content.heroSecondaryLabel}
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
+              </SmartNavLink>
             </Button>
           </div>
 

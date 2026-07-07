@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
+import SmartNavLink from "@/components/layout/SmartNavLink";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
@@ -24,10 +24,10 @@ export default function ReusableCta({ content }: { content: SiteContent }) {
               </div>
 
               <Button asChild className="h-12 w-full rounded-full bg-white px-7 text-base text-slate-950 hover:bg-amber-100 sm:w-fit">
-                <Link href={content.ctaButtonHref}>
+                <SmartNavLink href={content.ctaButtonHref}>
                   {content.ctaButtonText}
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
+                </SmartNavLink>
               </Button>
             </div>
           </div>

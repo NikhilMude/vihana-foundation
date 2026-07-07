@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { MouseEvent, ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { CSSProperties, MouseEvent, ReactNode, forwardRef } from "react";
+
+import { setPendingSection } from "@/components/layout/HashScrollManager";
 
 type SmartNavLinkProps = {
   href: string;
   className?: string;
+  style?: CSSProperties;
   children: ReactNode;
   onClick?: () => void;
   title?: string;
@@ -27,55 +30,70 @@ function getSectionId(href: string) {
   return normalizedHref.replace("/#", "");
 }
 
-export default function SmartNavLink({
-  href,
-  className,
-  children,
-  onClick,
-  title,
-  "aria-label": ariaLabel,
-}: SmartNavLinkProps) {
+function isExternalHref(href: string) {
+  return /^(https?:|mailto:|tel:|data:)/.test(href);
+}
+
+const SmartNavLink = forwardRef<HTMLAnchorElement, SmartNavLinkProps>(function SmartNavLink(
+  {
+    href,
+    className,
+    style,
+    children,
+    onClick,
+    title,
+    "aria-label": ariaLabel,
+  },
+  ref
+) {
   const pathname = usePathname();
+  const router = useRouter();
   const normalizedHref = normalizeHref(href);
   const sectionId = getSectionId(normalizedHref);
 
-  function handleSamePageSection(event: MouseEvent<HTMLAnchorElement>) {
-    if (!sectionId || pathname !== "/") {
-      onClick?.();
-      return;
-    }
+  if (isExternalHref(normalizedHref)) {
+    return (
+      <a ref={ref} href={normalizedHref} className={className} style={style} onClick={onClick} title={title} aria-label={ariaLabel}>
+        {children}
+      </a>
+    );
+  }
 
-    const section = document.getElementById(sectionId);
-
-    if (!section) {
+  function handleClick(event: MouseEvent<HTMLAnchorElement>) {
+    if (!sectionId) {
       onClick?.();
       return;
     }
 
     event.preventDefault();
     onClick?.();
-    section.scrollIntoView({ behavior: "smooth", block: "start" });
-    window.history.pushState(null, "", normalizedHref);
-  }
 
-  if (sectionId && pathname !== "/") {
-    return (
-      <a href={normalizedHref} className={className} onClick={onClick} title={title} aria-label={ariaLabel}>
-        {children}
-      </a>
-    );
+    const section = document.getElementById(sectionId);
+
+    if (pathname === "/" && section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+      window.history.pushState(null, "", normalizedHref);
+      return;
+    }
+
+    setPendingSection(sectionId);
+    router.push(normalizedHref, { scroll: false });
   }
 
   return (
     <Link
       href={normalizedHref}
       prefetch
+      ref={ref}
       className={className}
-      onClick={handleSamePageSection}
+      style={style}
+      onClick={handleClick}
       title={title}
       aria-label={ariaLabel}
     >
       {children}
     </Link>
   );
-}
+});
+
+export default SmartNavLink;

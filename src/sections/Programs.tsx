@@ -1,7 +1,7 @@
-import Link from "next/link";
 import Image from "next/image";
 import { ArrowUpRight, GraduationCap, HeartPulse, Soup, Trees } from "lucide-react";
 
+import SmartNavLink from "@/components/layout/SmartNavLink";
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 import { SiteContent } from "@/lib/cmsContent";
@@ -57,13 +57,13 @@ export default function Programs({ content }: { content: SiteContent }) {
 
                     <p className="mt-2 flex-1 text-sm leading-6 text-slate-600 sm:mt-3 sm:text-base sm:leading-7">{program.description}</p>
 
-                    <Link
+                    <SmartNavLink
                       href={program.linkHref || "#volunteer"}
                       className="mt-7 inline-flex items-center text-sm font-bold text-teal-700 transition group-hover:text-teal-800"
                     >
                       {program.linkLabel || "Support this program"}
                       <ArrowUpRight className="ml-2 h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                    </Link>
+                    </SmartNavLink>
                   </div>
                 </article>
               </Reveal>

@@ -1,7 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowUpRight, CalendarDays, MapPin } from "lucide-react";
 
+import SmartNavLink from "@/components/layout/SmartNavLink";
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 import { SiteContent } from "@/lib/cmsContent";
@@ -48,10 +48,10 @@ export default function Events({ content }: { content: SiteContent }) {
                     </p>
                   ) : null}
                   {item.linkHref ? (
-                    <Link href={item.linkHref} className="mt-5 inline-flex items-center text-sm font-bold text-teal-700">
+                    <SmartNavLink href={item.linkHref} className="mt-5 inline-flex items-center text-sm font-bold text-teal-700">
                       {item.linkLabel || "Learn More"}
                       <ArrowUpRight className="ml-2 h-4 w-4" />
-                    </Link>
+                    </SmartNavLink>
                   ) : null}
                 </div>
               </article>

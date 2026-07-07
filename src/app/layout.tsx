@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+import HashScrollManager from "@/components/layout/HashScrollManager";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://vihanafoundation.org"),
   title: "Vihana Foundation | Every Birthday. A Thousand Smiles.",
@@ -25,7 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <HashScrollManager />
+        {children}
+      </body>
     </html>
   );
 }

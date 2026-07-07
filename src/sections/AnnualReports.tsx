@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { ArrowUpRight, FileText } from "lucide-react";
 
+import SmartNavLink from "@/components/layout/SmartNavLink";
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 import { SiteContent } from "@/lib/cmsContent";
@@ -33,10 +33,10 @@ export default function AnnualReports({ content }: { content: SiteContent }) {
                   <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">{item.description}</p>
                 </div>
                 {item.linkHref ? (
-                  <Link href={item.linkHref} className="inline-flex h-11 items-center justify-center rounded-full bg-teal-700 px-5 text-sm font-bold text-white hover:bg-teal-800">
+                  <SmartNavLink href={item.linkHref} className="inline-flex h-11 items-center justify-center rounded-full bg-teal-700 px-5 text-sm font-bold text-white hover:bg-teal-800">
                     {item.linkLabel || "View"}
                     <ArrowUpRight className="ml-2 h-4 w-4" />
-                  </Link>
+                  </SmartNavLink>
                 ) : null}
               </article>
             </Reveal>

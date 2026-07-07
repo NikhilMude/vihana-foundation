@@ -1,7 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowRight, Heart } from "lucide-react";
 
+import SmartNavLink from "@/components/layout/SmartNavLink";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
@@ -36,10 +36,10 @@ export default function FeaturedStory({ content }: { content: SiteContent }) {
 
               {story.linkLabel && story.linkHref ? (
                 <Button asChild className="mt-6 h-12 w-full rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800 sm:mt-8 sm:w-fit">
-                  <Link href={story.linkHref}>
+                  <SmartNavLink href={story.linkHref}>
                     {story.linkLabel}
                     <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
+                  </SmartNavLink>
                 </Button>
               ) : null}
             </div>

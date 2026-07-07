@@ -1,7 +1,7 @@
 import Image from "next/image";
-import Link from "next/link";
 import { ArrowUpRight, Calendar } from "lucide-react";
 
+import SmartNavLink from "@/components/layout/SmartNavLink";
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 import { SiteContent } from "@/lib/cmsContent";
@@ -38,10 +38,10 @@ export default function News({ content }: { content: SiteContent }) {
                   <h3 className="mt-3 text-lg font-bold text-slate-950 sm:mt-4 sm:text-xl">{item.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-slate-600 sm:mt-3 sm:text-base sm:leading-7">{item.description || item.summary}</p>
                   {item.linkHref ? (
-                    <Link href={item.linkHref} className="mt-5 inline-flex items-center text-sm font-bold text-teal-700">
+                    <SmartNavLink href={item.linkHref} className="mt-5 inline-flex items-center text-sm font-bold text-teal-700">
                       {item.linkLabel || "Read More"}
                       <ArrowUpRight className="ml-2 h-4 w-4" />
-                    </Link>
+                    </SmartNavLink>
                   ) : null}
                 </div>
               </article>
