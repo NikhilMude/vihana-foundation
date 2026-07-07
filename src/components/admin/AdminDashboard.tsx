@@ -18,7 +18,9 @@ import {
   Users,
   BadgeIndianRupee,
   Download,
+  HelpCircle,
   Mail,
+  Search,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
@@ -122,6 +124,14 @@ type ListKey =
   | "testimonials"
   | "faqs"
   | "newsItems";
+
+type SearchResult = {
+  id: string;
+  title: string;
+  description: string;
+  tab: Tab;
+  action: () => void;
+};
 
 const contentFields: { key: keyof SiteContent; label: string; multiline?: boolean }[] = [
   { key: "brandName", label: "Website logo name" },
@@ -497,6 +507,7 @@ export default function AdminDashboard({
   const [saving, setSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [contentGroup, setContentGroup] = useState(contentGroups[0].id);
   const [activePageId, setActivePageId] = useState(initialContent.pages[0]?.id || "");
 
@@ -524,6 +535,183 @@ export default function AdminDashboard({
   const activePageIndex = content.pages.findIndex((page) => page.id === activePageId);
   const safeActivePageIndex = activePageIndex >= 0 ? activePageIndex : 0;
   const activePage = content.pages[safeActivePageIndex];
+  const cmsSearchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    if (!query) {
+      return [];
+    }
+
+    const matches = (...parts: unknown[]) =>
+      parts
+        .filter((part) => part !== undefined && part !== null)
+        .join(" ")
+        .toLowerCase()
+        .includes(query);
+
+    const results: SearchResult[] = [];
+
+    contentFields.forEach((field) => {
+      const group = contentGroups.find((item) => item.fields.includes(field.key)) || contentGroups[0];
+      const value = String(content[field.key] || "");
+
+      if (matches(field.label, field.key, value, group.label)) {
+        results.push({
+          id: `content-${String(field.key)}`,
+          title: field.label,
+          description: `Website Text / ${group.label}`,
+          tab: "content",
+          action: () => {
+            setTab("content");
+            setContentGroup(group.id);
+          },
+        });
+      }
+    });
+
+    content.pages.forEach((page) => {
+      if (matches(page.title, page.slug, page.description, page.body, page.buttonLabel, page.buttonHref)) {
+        results.push({
+          id: `page-${page.id}`,
+          title: page.title || page.slug,
+          description: `Pages / ${page.slug}`,
+          tab: "pages",
+          action: () => {
+            setTab("pages");
+            setActivePageId(page.id);
+          },
+        });
+      }
+    });
+
+    (Object.keys(listLabels) as ListKey[]).forEach((listKey) => {
+      content[listKey].forEach((item, index) => {
+        if (
+          matches(
+            listLabels[listKey],
+            item.title,
+            item.description,
+            item.value,
+            item.name,
+            item.role,
+            item.quote,
+            item.question,
+            item.answer,
+            item.summary,
+            item.date,
+            item.linkLabel,
+            item.linkHref
+          )
+        ) {
+          results.push({
+            id: `${listKey}-${item.id || index}`,
+            title: item.title || item.name || item.question || listLabels[listKey],
+            description: `Section Cards / ${listLabels[listKey]}`,
+            tab: "sections",
+            action: () => setTab("sections"),
+          });
+        }
+      });
+    });
+
+    galleryItems.forEach((item) => {
+      if (matches(item.title, item.description, item.tag, item.imageUrl)) {
+        results.push({
+          id: `gallery-${item.id}`,
+          title: item.title || "Gallery image",
+          description: "Gallery / Images",
+          tab: "gallery",
+          action: () => setTab("gallery"),
+        });
+      }
+    });
+
+    content.navigationItems.forEach((item, index) => {
+      if (matches(item.label, item.href)) {
+        results.push({
+          id: `navigation-${index}`,
+          title: item.label || "Navigation item",
+          description: "Menu & Social / Website menu",
+          tab: "navigation",
+          action: () => setTab("navigation"),
+        });
+      }
+    });
+
+    content.socialLinks.forEach((item, index) => {
+      if (matches(item.label, item.href, item.iconImageUrl)) {
+        results.push({
+          id: `social-${item.id || index}`,
+          title: item.label || "Social media link",
+          description: "Menu & Social / Social links",
+          tab: "navigation",
+          action: () => setTab("navigation"),
+        });
+      }
+    });
+
+    donations.forEach((item) => {
+      if (matches(item.name, item.email, item.phone, item.amount, item.method, item.transactionId, item.purpose, item.status, item.createdAt)) {
+        results.push({
+          id: `donation-${item.id}`,
+          title: item.name || item.email || "Donation record",
+          description: `Donations / ${item.amount || "Amount not entered"}`,
+          tab: "donations",
+          action: () => setTab("donations"),
+        });
+      }
+    });
+
+    donors.forEach((item) => {
+      if (matches(item.name, item.email, item.phone, item.donorType, item.pan, item.address, item.createdAt)) {
+        results.push({
+          id: `donor-${item.id}`,
+          title: item.name || item.email || "Donor account",
+          description: "Donors / Accounts",
+          tab: "donors",
+          action: () => setTab("donors"),
+        });
+      }
+    });
+
+    messages.forEach((item) => {
+      if (matches(item.name, item.email, item.phone, item.interest, item.message, item.createdAt)) {
+        results.push({
+          id: `message-${item.id}`,
+          title: item.name || item.email || "Message",
+          description: "Messages / Contact and volunteer forms",
+          tab: "messages",
+          action: () => setTab("messages"),
+        });
+      }
+    });
+
+    subscribers.forEach((item) => {
+      if (matches(item.email, item.source, item.createdAt)) {
+        results.push({
+          id: `subscriber-${item.id}`,
+          title: item.email || "Newsletter subscriber",
+          description: "Newsletter / Subscribers",
+          tab: "subscribers",
+          action: () => setTab("subscribers"),
+        });
+      }
+    });
+
+    visitors.forEach((item) => {
+      if (matches(item.path, item.referrer, item.language, item.timezone, item.ipAddress, item.createdAt)) {
+        results.push({
+          id: `visitor-${item.id}`,
+          title: item.path || "Visitor",
+          description: "Visitors / Analytics",
+          tab: "visitors",
+          action: () => setTab("visitors"),
+        });
+      }
+    });
+
+    return results.slice(0, 18);
+  }, [content, donations, donors, galleryItems, messages, searchQuery, subscribers, visitors]);
   const donationSummary = useMemo(() => {
     const total = donations.reduce((sum, donation) => sum + currencyAmount(donation.amount), 0);
     const receiptCount = donations.filter((donation) => donation.receiptRequired === "Yes").length;
@@ -868,6 +1056,12 @@ export default function AdminDashboard({
     );
   }
 
+  function openSearchResult(result: SearchResult) {
+    result.action();
+    setSearchQuery("");
+    setStatus(`Opened ${result.title}. Update it, then click Save Changes.`);
+  }
+
   return (
     <div className="min-h-screen bg-stone-50">
       <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-5 py-4 shadow-sm backdrop-blur">
@@ -894,7 +1088,73 @@ export default function AdminDashboard({
       </div>
 
       <div className="mx-auto max-w-7xl px-5 py-6">
-        <div className="rounded-[8px] border border-slate-200 bg-white p-3 shadow-sm">
+        <section className="rounded-[8px] border border-teal-100 bg-white p-4 shadow-sm sm:p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-teal-700">CMS Finder</p>
+              <h2 className="mt-1 text-xl font-bold text-slate-950">Search anything you want to update</h2>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                Search page names, hero text, donations, emails, gallery items, FAQ, menu links or visitors. Click a result to open the correct editor.
+              </p>
+            </div>
+            <div className="rounded-[8px] bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-900 lg:max-w-sm">
+              <HelpCircle className="mr-2 inline h-4 w-4" />
+              After editing, always click Save Changes at the top before checking the website.
+            </div>
+          </div>
+
+          <div className="relative mt-4">
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Example: hero, about page, donate amount, FAQ, newsletter, donor email..."
+              className="h-14 w-full rounded-full border border-slate-200 bg-slate-50 pl-12 pr-5 text-base font-semibold text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-teal-500 focus:bg-white focus:shadow-sm"
+            />
+          </div>
+
+          {searchQuery.trim() ? (
+            <div className="mt-4 rounded-[8px] border border-slate-200 bg-slate-50 p-3">
+              {cmsSearchResults.length ? (
+                <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
+                  {cmsSearchResults.map((result) => (
+                    <button
+                      key={result.id}
+                      type="button"
+                      onClick={() => openSearchResult(result)}
+                      className="rounded-[8px] border border-slate-200 bg-white p-4 text-left transition hover:-translate-y-0.5 hover:border-teal-300 hover:shadow-sm"
+                    >
+                      <span className="block text-sm font-black text-slate-950">{result.title}</span>
+                      <span className="mt-1 block text-xs font-bold uppercase tracking-[0.14em] text-teal-700">{result.description}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-[8px] bg-white p-5 text-sm font-semibold text-slate-600">
+                  No result found. Try a shorter word like home, image, donation, contact, FAQ, page or email.
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="mt-4 grid gap-3 md:grid-cols-4">
+              {[
+                ["1", "Search", "Type what you want to change."],
+                ["2", "Open", "Click the matching result."],
+                ["3", "Edit", "Update text, image, page or record."],
+                ["4", "Save", "Click Save Changes and view site."],
+              ].map(([step, title, description]) => (
+                <div key={step} className="rounded-[8px] bg-teal-50 p-4">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-sm font-black text-teal-700 shadow-sm">{step}</div>
+                  <p className="mt-3 font-black text-slate-950">{title}</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">{description}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <div className="mt-4 rounded-[8px] border border-slate-200 bg-white p-3 shadow-sm">
           <div className="flex flex-wrap gap-2">
           {tabs.map((item) => {
             const Icon = item.icon;
