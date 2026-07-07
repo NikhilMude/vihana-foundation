@@ -126,6 +126,13 @@ export async function getDonationIntents() {
         amount: String(donation.amount || ""),
         method: String(donation.method || ""),
         transactionId: String(donation.transactionId || ""),
+        donorType: String(donation.donorType || ""),
+        frequency: String(donation.frequency || ""),
+        purpose: String(donation.purpose || ""),
+        pan: String(donation.pan || ""),
+        address: String(donation.address || ""),
+        receiptRequired: String(donation.receiptRequired || ""),
+        donorEmail: String(donation.donorEmail || ""),
         message: String(donation.message || ""),
         status: String(donation.status || ""),
         createdAt: String(donation.createdAt || ""),
@@ -134,6 +141,17 @@ export async function getDonationIntents() {
   } catch {
     return [];
   }
+}
+
+export async function getDonationsForEmail(email: string) {
+  const normalizedEmail = email.trim().toLowerCase();
+  const donations = await getDonationIntents();
+
+  return donations.filter(
+    (donation) =>
+      donation.email.toLowerCase() === normalizedEmail ||
+      donation.donorEmail.toLowerCase() === normalizedEmail
+  );
 }
 
 export async function getNewsletterSubscribers() {

@@ -24,12 +24,24 @@ type Message = {
   createdAt?: string;
 };
 
+type Donor = {
+  id: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  donorType?: string;
+  pan?: string;
+  address?: string;
+  createdAt?: string;
+};
+
 export default async function AdminDashboardPage() {
   if (!(await isAdminAuthenticated())) {
     redirect("/admin");
   }
 
   let messages: Message[] = [];
+  let donors: Donor[] = [];
   const visitorStats = await getVisitorStats();
   const visitors = await getRecentVisitors();
   const donations = await getDonationIntents();
@@ -51,6 +63,23 @@ export default async function AdminDashboardPage() {
     messages = [];
   }
 
+  try {
+    donors = (await listDocuments("donors"))
+      .map((donor) => ({
+        id: String(donor.id || ""),
+        name: String(donor.name || ""),
+        email: String(donor.email || ""),
+        phone: String(donor.phone || ""),
+        donorType: String(donor.donorType || ""),
+        pan: String(donor.pan || ""),
+        address: String(donor.address || ""),
+        createdAt: String(donor.createdAt || ""),
+      }))
+      .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+  } catch {
+    donors = [];
+  }
+
   return (
     <AdminDashboard
       initialContent={await getSiteContent({ fresh: true })}
@@ -59,6 +88,7 @@ export default async function AdminDashboardPage() {
       initialVisitors={visitors}
       visitorCount={visitorStats.total}
       initialDonations={donations}
+      initialDonors={donors}
       initialSubscribers={subscribers}
     />
   );

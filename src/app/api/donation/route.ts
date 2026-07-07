@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getAuthenticatedDonorEmail } from "@/lib/donorAuth";
 import { addDocument } from "@/lib/firestoreAdmin";
 import { sendEmail } from "@/lib/email";
 
@@ -13,6 +14,12 @@ type DonationPayload = {
   method?: string;
   transactionId?: string;
   message?: string;
+  donorType?: string;
+  frequency?: string;
+  purpose?: string;
+  pan?: string;
+  address?: string;
+  receiptRequired?: string;
 };
 
 function clean(value: unknown) {
@@ -33,6 +40,13 @@ export async function POST(request: Request) {
     const method = clean(payload.method) || "UPI";
     const transactionId = clean(payload.transactionId) || "Test / pending";
     const message = clean(payload.message);
+    const donorType = clean(payload.donorType) || "Indian Citizen";
+    const frequency = clean(payload.frequency) || "One Time";
+    const purpose = clean(payload.purpose) || "General Fund";
+    const pan = clean(payload.pan).toUpperCase();
+    const address = clean(payload.address);
+    const receiptRequired = clean(payload.receiptRequired) || "No";
+    const donorEmail = await getAuthenticatedDonorEmail();
 
     if (!name || !isEmail(email) || !amount) {
       return NextResponse.json({ ok: false, message: "Please enter name, email and amount." }, { status: 400 });
@@ -47,8 +61,15 @@ export async function POST(request: Request) {
       amount,
       method,
       transactionId,
+      donorType,
+      frequency,
+      purpose,
+      pan,
+      address,
+      receiptRequired,
+      donorEmail: donorEmail || email,
       message,
-      status: "Test / self-reported",
+      status: transactionId === "Test / pending" ? "Pledged / pending payment" : "Self-reported / awaiting verification",
       createdAt,
     });
 
@@ -58,7 +79,8 @@ export async function POST(request: Request) {
       html: `
         <p>Dear ${name},</p>
         <p>Thank you for supporting Vihana Foundation.</p>
-        <p>We received your donation intent for <strong>INR ${amount}</strong> through <strong>${method}</strong>.</p>
+        <p>We received your ${frequency.toLowerCase()} donation intent for <strong>INR ${amount}</strong> toward <strong>${purpose}</strong>.</p>
+        <p>Payment method: <strong>${method}</strong></p>
         <p>Transaction/reference: ${transactionId}</p>
         <p>This is a test-mode acknowledgement until verified payment integration and official receipts are configured.</p>
       `,

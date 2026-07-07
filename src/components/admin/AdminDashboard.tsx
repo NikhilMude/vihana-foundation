@@ -17,6 +17,7 @@ import {
   Trash2,
   Users,
   BadgeIndianRupee,
+  Download,
   Mail,
 } from "lucide-react";
 
@@ -53,8 +54,26 @@ type DonationRecord = {
   amount?: string;
   method?: string;
   transactionId?: string;
+  donorType?: string;
+  frequency?: string;
+  purpose?: string;
+  pan?: string;
+  address?: string;
+  receiptRequired?: string;
+  donorEmail?: string;
   message?: string;
   status?: string;
+  createdAt?: string;
+};
+
+type DonorRecord = {
+  id: string;
+  name?: string;
+  email?: string;
+  phone?: string;
+  donorType?: string;
+  pan?: string;
+  address?: string;
   createdAt?: string;
 };
 
@@ -72,6 +91,7 @@ type AdminDashboardProps = {
   initialVisitors: Visitor[];
   visitorCount: number;
   initialDonations: DonationRecord[];
+  initialDonors: DonorRecord[];
   initialSubscribers: SubscriberRecord[];
 };
 
@@ -86,6 +106,7 @@ type Tab =
   | "gallery"
   | "messages"
   | "donations"
+  | "donors"
   | "subscribers"
   | "visitors";
 type ListKey =
@@ -264,6 +285,29 @@ function emptySocialLink(): SocialLink {
   };
 }
 
+function currencyAmount(value?: string) {
+  return Number(String(value || "").replace(/[^\d.]/g, "")) || 0;
+}
+
+function downloadCsv(filename: string, rows: Record<string, string | number | undefined>[]) {
+  const headers = Object.keys(rows[0] || { empty: "" });
+  const csv = [
+    headers.join(","),
+    ...rows.map((row) =>
+      headers
+        .map((header) => `"${String(row[header] ?? "").replace(/"/g, '""')}"`)
+        .join(",")
+    ),
+  ].join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 export default function AdminDashboard({
   initialContent,
   initialGalleryItems,
@@ -271,6 +315,7 @@ export default function AdminDashboard({
   initialVisitors,
   visitorCount,
   initialDonations,
+  initialDonors,
   initialSubscribers,
 }: AdminDashboardProps) {
   const [tab, setTab] = useState<Tab>("content");
@@ -279,6 +324,7 @@ export default function AdminDashboard({
   const [messages] = useState(initialMessages);
   const [visitors] = useState(initialVisitors);
   const [donations] = useState(initialDonations);
+  const [donors] = useState(initialDonors);
   const [subscribers] = useState(initialSubscribers);
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
@@ -297,11 +343,30 @@ export default function AdminDashboard({
       { id: "gallery" as const, label: "Gallery", icon: ImagePlus },
       { id: "messages" as const, label: "Messages", icon: Inbox },
       { id: "donations" as const, label: "Donations", icon: BadgeIndianRupee },
+      { id: "donors" as const, label: "Donors", icon: Users },
       { id: "subscribers" as const, label: "Newsletter", icon: Mail },
       { id: "visitors" as const, label: "Visitors", icon: Users },
     ],
     []
   );
+  const donationSummary = useMemo(() => {
+    const total = donations.reduce((sum, donation) => sum + currencyAmount(donation.amount), 0);
+    const receiptCount = donations.filter((donation) => donation.receiptRequired === "Yes").length;
+    const monthlyCount = donations.filter((donation) => donation.frequency === "Monthly").length;
+    const uniqueDonors = new Set(donations.map((donation) => donation.email?.toLowerCase()).filter(Boolean)).size;
+    const byPurpose = donations.reduce<Record<string, number>>((accumulator, donation) => {
+      const purpose = donation.purpose || "General Fund";
+      accumulator[purpose] = (accumulator[purpose] || 0) + currencyAmount(donation.amount);
+      return accumulator;
+    }, {});
+    const byMethod = donations.reduce<Record<string, number>>((accumulator, donation) => {
+      const method = donation.method || "Unknown";
+      accumulator[method] = (accumulator[method] || 0) + 1;
+      return accumulator;
+    }, {});
+
+    return { total, receiptCount, monthlyCount, uniqueDonors, byPurpose, byMethod };
+  }, [donations]);
 
   async function persistContent(
     nextContent: SiteContent,
@@ -1175,6 +1240,77 @@ export default function AdminDashboard({
 
         {tab === "donations" ? (
           <div className="mt-6 grid gap-4">
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Total pledged</p>
+                <h2 className="mt-2 text-3xl font-black text-slate-950">INR {donationSummary.total.toLocaleString("en-IN")}</h2>
+              </div>
+              <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Donors</p>
+                <h2 className="mt-2 text-3xl font-black text-slate-950">{donationSummary.uniqueDonors}</h2>
+              </div>
+              <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Monthly pledges</p>
+                <h2 className="mt-2 text-3xl font-black text-slate-950">{donationSummary.monthlyCount}</h2>
+              </div>
+              <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Receipt requests</p>
+                <h2 className="mt-2 text-3xl font-black text-slate-950">{donationSummary.receiptCount}</h2>
+              </div>
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 className="text-lg font-bold text-slate-950">Purpose report</h2>
+                <div className="mt-4 grid gap-3">
+                  {Object.entries(donationSummary.byPurpose).map(([purpose, total]) => (
+                    <div key={purpose} className="flex items-center justify-between rounded-[8px] bg-slate-50 px-4 py-3 text-sm">
+                      <span className="font-bold text-slate-700">{purpose}</span>
+                      <span className="font-black text-teal-700">INR {total.toLocaleString("en-IN")}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                  <h2 className="text-lg font-bold text-slate-950">Export reports</h2>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => downloadCsv("vihana-donation-report.csv", donations)}
+                    className="h-10 rounded-full"
+                    disabled={!donations.length}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Donation CSV
+                  </Button>
+                </div>
+                <div className="mt-4 grid gap-3">
+                  {Object.entries(donationSummary.byMethod).map(([method, count]) => (
+                    <div key={method} className="flex items-center justify-between rounded-[8px] bg-slate-50 px-4 py-3 text-sm">
+                      <span className="font-bold text-slate-700">{method}</span>
+                      <span className="font-black text-teal-700">{count} records</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-messages-report.csv", messages)} className="h-10 rounded-full">
+                    Messages CSV
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-subscribers-report.csv", subscribers)} className="h-10 rounded-full">
+                    Subscribers CSV
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-visitors-report.csv", visitors)} className="h-10 rounded-full">
+                    Visitors CSV
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-donor-accounts.csv", donors)} className="h-10 rounded-full">
+                    Donors CSV
+                  </Button>
+                </div>
+              </div>
+            </div>
+
             {donations.length ? (
               donations.map((donation) => (
                 <div key={donation.id} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
@@ -1188,8 +1324,14 @@ export default function AdminDashboard({
                     <p className="text-lg font-bold text-teal-700">INR {donation.amount}</p>
                   </div>
                   <div className="mt-4 grid gap-2 text-sm text-slate-600 md:grid-cols-2">
+                    <p><span className="font-bold text-slate-800">Donor type:</span> {donation.donorType || "Not recorded"}</p>
+                    <p><span className="font-bold text-slate-800">Frequency:</span> {donation.frequency || "One Time"}</p>
+                    <p><span className="font-bold text-slate-800">Purpose:</span> {donation.purpose || "General Fund"}</p>
                     <p><span className="font-bold text-slate-800">Method:</span> {donation.method}</p>
                     <p><span className="font-bold text-slate-800">Reference:</span> {donation.transactionId}</p>
+                    <p><span className="font-bold text-slate-800">Receipt:</span> {donation.receiptRequired || "No"}</p>
+                    <p><span className="font-bold text-slate-800">PAN:</span> {donation.pan || "Not provided"}</p>
+                    <p><span className="font-bold text-slate-800">Address:</span> {donation.address || "Not provided"}</p>
                     <p><span className="font-bold text-slate-800">Status:</span> {donation.status}</p>
                     <p><span className="font-bold text-slate-800">Date:</span> {donation.createdAt}</p>
                   </div>
@@ -1199,6 +1341,46 @@ export default function AdminDashboard({
             ) : (
               <div className="rounded-[8px] border border-slate-200 bg-white p-8 text-center text-slate-600">
                 No donation records yet.
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        {tab === "donors" ? (
+          <div className="mt-6 grid gap-4">
+            <div className="flex flex-col justify-between gap-3 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-600">Registered Donors</p>
+                <h2 className="mt-2 text-3xl font-black text-slate-950">{donors.length}</h2>
+              </div>
+              <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-donor-accounts.csv", donors)} className="h-10 rounded-full" disabled={!donors.length}>
+                <Download className="mr-2 h-4 w-4" />
+                Donor CSV
+              </Button>
+            </div>
+
+            {donors.length ? (
+              donors.map((donor) => (
+                <div key={donor.id} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex flex-col justify-between gap-2 md:flex-row">
+                    <div>
+                      <h3 className="text-lg font-bold text-slate-950">{donor.name}</h3>
+                      <p className="text-sm text-slate-500">
+                        {donor.email} {donor.phone ? `| ${donor.phone}` : ""}
+                      </p>
+                    </div>
+                    <p className="text-sm font-bold text-teal-700">{donor.donorType || "Donor"}</p>
+                  </div>
+                  <div className="mt-4 grid gap-2 text-sm text-slate-600 md:grid-cols-2">
+                    <p><span className="font-bold text-slate-800">PAN:</span> {donor.pan || "Not provided"}</p>
+                    <p><span className="font-bold text-slate-800">Joined:</span> {donor.createdAt}</p>
+                    <p className="md:col-span-2"><span className="font-bold text-slate-800">Address:</span> {donor.address || "Not provided"}</p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-[8px] border border-slate-200 bg-white p-8 text-center text-slate-600">
+                No donor accounts yet.
               </div>
             )}
           </div>
