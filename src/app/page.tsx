@@ -9,24 +9,30 @@ import Impact from "@/sections/Impact";
 import Gallery from "@/sections/Gallery";
 import Donation from "@/sections/Donation";
 import Volunteer from "@/sections/Volunteer";
+import { getGalleryItems, getSiteContent } from "@/lib/siteData";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const content = await getSiteContent();
+  const galleryItems = await getGalleryItems();
+
   return (
     <div className="min-h-screen bg-stone-50 text-slate-950">
       <Navbar />
 
       <main className="overflow-x-hidden">
-        <Hero />
-        <Mission />
-        <Programs />
-        <WhyChooseUs />
-        <Impact />
-        <Gallery />
-        <Donation />
-        <Volunteer />
+        <Hero content={content} />
+        <Mission content={content} />
+        <Programs content={content} />
+        <WhyChooseUs content={content} />
+        <Impact content={content} />
+        <Gallery content={content} items={galleryItems} />
+        <Donation content={content} />
+        <Volunteer content={content} />
       </main>
 
-      <Footer />
+      <Footer content={content} />
     </div>
   );
 }

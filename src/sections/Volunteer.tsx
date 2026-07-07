@@ -3,6 +3,7 @@ import { Gift, HandHeart, Mail } from "lucide-react";
 import ContactForm from "@/components/forms/ContactForm";
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
+import { SiteContent } from "@/lib/cmsContent";
 
 const actions = [
   {
@@ -22,7 +23,7 @@ const actions = [
   },
 ];
 
-export default function Volunteer() {
+export default function Volunteer({ content }: { content: SiteContent }) {
   return (
     <section id="volunteer" className="bg-white py-24 md:py-32">
       <Container>
@@ -34,11 +35,11 @@ export default function Volunteer() {
               </span>
 
               <h2 className="mt-5 max-w-2xl font-[family-name:var(--font-playfair)] text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">
-                Help make Vihana&apos;s birthday a reason for many children to smile.
+                {content.volunteerTitle}
               </h2>
 
               <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-                Start with one act: sponsor a meal, contribute school supplies, volunteer at a drive or build a birthday campaign with your family.
+                {content.volunteerDescription}
               </p>
 
               <div className="mt-8 grid gap-4">

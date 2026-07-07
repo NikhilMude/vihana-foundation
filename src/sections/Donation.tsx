@@ -2,29 +2,30 @@ import { BadgeIndianRupee, Building2, Copy, QrCode } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
+import { SiteContent } from "@/lib/cmsContent";
 
-const donationOptions = [
-  {
-    icon: BadgeIndianRupee,
-    title: "UPI",
-    value: "vihanafoundation@upi",
-    note: "Replace with your real UPI ID before launch.",
-  },
-  {
-    icon: Building2,
-    title: "Bank Transfer",
-    value: "Vihana Foundation",
-    note: "Add account number, IFSC and bank name after your charity bank account is ready.",
-  },
-  {
-    icon: QrCode,
-    title: "QR Code",
-    value: "Coming soon",
-    note: "Add a verified payment QR image in the public folder before publishing donations.",
-  },
-];
+export default function Donation({ content }: { content: SiteContent }) {
+  const donationOptions = [
+    {
+      icon: BadgeIndianRupee,
+      title: "UPI",
+      value: content.upiId,
+      note: "Use only verified payment details before public fundraising.",
+    },
+    {
+      icon: Building2,
+      title: "Bank Transfer",
+      value: `${content.bankAccountName} | ${content.bankAccountNumber} | ${content.bankIfsc}`,
+      note: content.bankName,
+    },
+    {
+      icon: QrCode,
+      title: "QR Code",
+      value: "Coming soon",
+      note: "Add a verified payment QR image before publishing donations.",
+    },
+  ];
 
-export default function Donation() {
   return (
     <section id="donate" className="bg-stone-50 py-24 md:py-32">
       <Container>
@@ -35,11 +36,11 @@ export default function Donation() {
             </span>
 
             <h2 className="mt-5 font-[family-name:var(--font-playfair)] text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">
-              Give with clarity and confidence.
+              {content.donateTitle}
             </h2>
 
             <p className="mt-6 text-lg leading-8 text-slate-600">
-              Donation information is ready as a website section. Replace the placeholders with your verified charity payment details before accepting public donations.
+              {content.donateDescription}
             </p>
           </div>
         </Reveal>

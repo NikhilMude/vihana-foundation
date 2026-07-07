@@ -3,6 +3,7 @@ import { ArrowUpRight, GraduationCap, HeartPulse, Soup, Trees } from "lucide-rea
 
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
+import { SiteContent } from "@/lib/cmsContent";
 
 const programs = [
   {
@@ -35,7 +36,7 @@ const programs = [
   },
 ];
 
-export default function Programs() {
+export default function Programs({ content }: { content: SiteContent }) {
   return (
     <section id="programs" className="bg-stone-50 py-24 md:py-32">
       <Container>
@@ -46,11 +47,11 @@ export default function Programs() {
             </span>
 
             <h2 className="mt-5 font-[family-name:var(--font-playfair)] text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">
-              Focused care for the moments that shape childhood.
+              {content.programsTitle}
             </h2>
 
             <p className="mt-6 text-lg leading-8 text-slate-600">
-              Each program is practical, measurable and built with community partners who understand what children need on the ground.
+              {content.programsDescription}
             </p>
           </div>
         </Reveal>

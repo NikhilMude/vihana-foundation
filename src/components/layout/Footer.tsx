@@ -4,8 +4,9 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
 import { navigation } from "@/constants/navigation";
+import { SiteContent } from "@/lib/cmsContent";
 
-export default function Footer() {
+export default function Footer({ content }: { content: SiteContent }) {
   return (
     <footer className="bg-slate-950 py-16 text-white">
       <Container>
@@ -46,17 +47,17 @@ export default function Footer() {
             <div className="mt-5 grid gap-4 text-sm text-slate-400">
               <p className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-amber-300" />
-                hello@vihanafoundation.org
+                {content.contactEmail}
               </p>
 
               <p className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-amber-300" />
-                +91 98765 43210
+                {content.contactPhone}
               </p>
 
               <p className="flex items-center gap-3">
                 <MapPin className="h-4 w-4 text-amber-300" />
-                India
+                {content.contactLocation}
               </p>
             </div>
           </div>

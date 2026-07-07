@@ -2,6 +2,7 @@ import { BookOpen, HeartHandshake, ShieldCheck, Soup } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
+import { SiteContent } from "@/lib/cmsContent";
 
 const pillars = [
   {
@@ -26,7 +27,7 @@ const pillars = [
   },
 ];
 
-export default function Mission() {
+export default function Mission({ content }: { content: SiteContent }) {
   return (
     <section id="mission" className="bg-white py-24 md:py-32">
       <Container>
@@ -38,14 +39,14 @@ export default function Mission() {
               </span>
 
               <h2 className="mt-5 max-w-2xl font-[family-name:var(--font-playfair)] text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">
-                Turning personal celebration into public good.
+                {content.missionTitle}
               </h2>
             </div>
           </Reveal>
 
           <Reveal delay={0.1}>
             <p className="max-w-2xl text-lg leading-8 text-slate-600">
-              Vihana Foundation was created from a simple belief: joy becomes more powerful when it is shared. Each initiative helps children feel seen, supported and ready to build a brighter future.
+              {content.missionDescription}
             </p>
           </Reveal>
         </div>

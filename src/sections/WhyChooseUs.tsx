@@ -2,6 +2,7 @@ import { HandHeart, Heart, Leaf, Users } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
+import { SiteContent } from "@/lib/cmsContent";
 
 const features = [
   {
@@ -30,7 +31,7 @@ const features = [
   },
 ];
 
-export default function WhyChooseUs() {
+export default function WhyChooseUs({ content }: { content: SiteContent }) {
   return (
     <section className="bg-white py-24 md:py-32">
       <Container>
@@ -42,11 +43,11 @@ export default function WhyChooseUs() {
               </span>
 
               <h2 className="mt-5 font-[family-name:var(--font-playfair)] text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">
-                Compassion that is organized, transparent and close to the community.
+                {content.whyTitle}
               </h2>
 
               <p className="mt-6 text-lg leading-8 text-slate-600">
-                A beautiful mission needs disciplined execution. Vihana Foundation brings warmth and structure together so every contribution has a clear path to impact.
+                {content.whyDescription}
               </p>
             </div>
           </Reveal>

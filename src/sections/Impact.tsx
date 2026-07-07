@@ -2,6 +2,7 @@ import { BadgeCheck, CalendarHeart, HandCoins } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
+import { SiteContent } from "@/lib/cmsContent";
 
 const stats = [
   { value: "500+", label: "Children supported" },
@@ -28,7 +29,7 @@ const notes = [
   },
 ];
 
-export default function Impact() {
+export default function Impact({ content }: { content: SiteContent }) {
   return (
     <section id="impact" className="bg-teal-800 py-24 text-white md:py-32">
       <Container>
@@ -39,11 +40,11 @@ export default function Impact() {
             </p>
 
             <h2 className="mt-5 font-[family-name:var(--font-playfair)] text-4xl font-bold leading-tight sm:text-5xl">
-              Small acts become measurable change.
+              {content.impactTitle}
             </h2>
 
             <p className="mt-6 text-lg leading-8 text-teal-50/85">
-              These numbers represent shared meals, steady learning, timely care and volunteers choosing to show up.
+              {content.impactDescription}
             </p>
           </div>
         </Reveal>

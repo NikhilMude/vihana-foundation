@@ -128,3 +128,47 @@ Do not publicly share the website until these are done:
 - Domain is connected in Vercel.
 - Website is checked on phone and laptop.
 
+## Step 6: CMS Setup
+
+The CMS lets you update website text, add gallery photos and view received messages from the website.
+
+After the CMS code is deployed, open:
+
+```txt
+https://your-website-link.vercel.app/admin
+```
+
+Before it works on Vercel, add these Environment Variables in Vercel:
+
+```txt
+ADMIN_PASSWORD
+FIREBASE_CLIENT_EMAIL
+FIREBASE_PRIVATE_KEY
+```
+
+Use a strong private password for `ADMIN_PASSWORD`.
+
+To get Firebase service account values:
+
+1. Open Firebase Console.
+2. Open your project.
+3. Click the gear icon.
+4. Click Project settings.
+5. Click Service accounts.
+6. Click Generate new private key.
+7. Download the JSON file.
+8. Send me these two values from that JSON file:
+
+```txt
+client_email
+private_key
+```
+
+Do not post this JSON file publicly. It gives private access to your Firebase project.
+
+After I add those values to Vercel, the CMS will be able to:
+
+- Save homepage text.
+- Add gallery photos.
+- Delete gallery photos.
+- Show volunteer/contact submissions.
