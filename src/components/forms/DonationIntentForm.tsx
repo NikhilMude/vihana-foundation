@@ -16,9 +16,17 @@ export default function DonationIntentForm() {
   const [frequency, setFrequency] = useState("One Time");
   const [amount, setAmount] = useState("5000");
   const [purpose, setPurpose] = useState("Child Education");
+  const foreignDonationBlocked = donorType === "Foreign Citizen / OCI";
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (foreignDonationBlocked) {
+      setStatus("error");
+      setError("We are not accepting foreign citizen or OCI donations at this time. Please contact Vihana Foundation for partnership or non-financial support options.");
+      return;
+    }
+
     setStatus("loading");
     setError("");
 
@@ -72,19 +80,31 @@ export default function DonationIntentForm() {
               onClick={() => setDonorType(type)}
               className={`flex h-14 items-center justify-center gap-2 rounded-[8px] border text-sm font-bold transition sm:text-base ${
                 donorType === type
-                  ? "border-teal-600 bg-teal-50 text-teal-900"
+                  ? type === "Foreign Citizen / OCI"
+                    ? "border-amber-400 bg-amber-50 text-amber-900"
+                    : "border-teal-600 bg-teal-50 text-teal-900"
                   : "border-slate-200 bg-white text-slate-700 hover:border-teal-400 hover:bg-teal-50/50"
               }`}
             >
-              {donorType === type ? <CheckCircle2 className="h-5 w-5 text-teal-600" /> : <span className="h-5 w-5 rounded-full border-2 border-slate-400" />}
+              {donorType === type ? (
+                <CheckCircle2 className={`h-5 w-5 ${type === "Foreign Citizen / OCI" ? "text-amber-600" : "text-teal-600"}`} />
+              ) : (
+                <span className="h-5 w-5 rounded-full border-2 border-slate-400" />
+              )}
               {type}
             </button>
           ))}
         </div>
 
-        <div className="mt-4 flex items-center gap-3 rounded-[8px] bg-amber-50 px-4 py-3 text-sm font-semibold text-slate-800">
+        <div className={`mt-4 flex items-start gap-3 rounded-[8px] px-4 py-3 text-sm font-semibold ${
+          foreignDonationBlocked ? "bg-rose-50 text-rose-900" : "bg-amber-50 text-slate-800"
+        }`}>
           <Info className="h-5 w-5 text-slate-700" />
-          {donorType === "Indian Citizen" ? "For Indian passport holders" : "For foreign citizens and OCI supporters"}
+          <span>
+            {donorType === "Indian Citizen"
+              ? "For Indian passport holders. You may proceed with a domestic donation pledge."
+              : "Currently we cannot accept donations from foreign citizens or OCI supporters. We are updating our compliance process and payment setup. You may still contact us for volunteering, partnerships or non-financial support."}
+          </span>
         </div>
 
         <div className="mt-5 grid grid-cols-2 overflow-hidden rounded-[8px] bg-slate-100">
@@ -177,9 +197,9 @@ export default function DonationIntentForm() {
 
           {status === "error" ? <p className="mt-4 rounded-[8px] bg-rose-50 px-4 py-3 text-sm font-bold text-rose-800">{error}</p> : null}
 
-          <Button disabled={status === "loading"} className="mt-5 h-12 w-full rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
+          <Button disabled={status === "loading" || foreignDonationBlocked} className="mt-5 h-12 w-full rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800 disabled:bg-slate-300 disabled:text-slate-600">
             {status === "loading" ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Send className="mr-2 h-5 w-5" />}
-            Proceed to Donate
+            {foreignDonationBlocked ? "Foreign / OCI Donations Unavailable" : "Proceed to Donate"}
           </Button>
         </form>
 

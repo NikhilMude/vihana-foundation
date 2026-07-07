@@ -52,6 +52,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: "Please enter name, email and amount." }, { status: 400 });
     }
 
+    if (donorType === "Foreign Citizen / OCI") {
+      return NextResponse.json(
+        {
+          ok: false,
+          message:
+            "We are not accepting foreign citizen or OCI donations at this time while compliance and payment setup is being updated.",
+        },
+        { status: 403 }
+      );
+    }
+
     const createdAt = new Date().toISOString();
 
     await addDocument("donationIntents", {
