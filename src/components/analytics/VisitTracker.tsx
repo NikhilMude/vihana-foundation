@@ -12,20 +12,33 @@ export default function VisitTracker() {
 
     sessionStorage.setItem(key, "true");
 
-    fetch("/api/visit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const payload = JSON.stringify({
         path: window.location.pathname,
         referrer: document.referrer || "Direct",
         language: navigator.language,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         screen: `${window.screen.width}x${window.screen.height}`,
-      }),
-      keepalive: true,
-    }).catch(() => undefined);
+      });
+    const sendVisit = () => {
+      fetch("/api/visit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: payload,
+        keepalive: true,
+      }).catch(() => undefined);
+    };
+
+    if ("requestIdleCallback" in window) {
+      const idleId = window.requestIdleCallback(sendVisit, { timeout: 2500 });
+
+      return () => window.cancelIdleCallback(idleId);
+    }
+
+    const timeoutId = globalThis.setTimeout(sendVisit, 1200);
+
+    return () => globalThis.clearTimeout(timeoutId);
   }, []);
 
   return null;

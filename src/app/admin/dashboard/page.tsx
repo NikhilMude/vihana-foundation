@@ -55,72 +55,80 @@ export default async function AdminDashboardPage() {
     redirect("/admin");
   }
 
-  let messages: Message[] = [];
-  let donors: Donor[] = [];
-  let accountingRecords: AccountingRecord[] = [];
-  const visitorStats = await getVisitorStats();
-  const visitors = await getRecentVisitors();
-  const donations = await getDonationIntents();
-  const subscribers = await getNewsletterSubscribers();
-
-  try {
-    messages = (await listDocuments("websiteMessages"))
-      .map((message) => ({
-        id: String(message.id || ""),
-        name: String(message.name || ""),
-        email: String(message.email || ""),
-        phone: String(message.phone || ""),
-        interest: String(message.interest || ""),
-        message: String(message.message || ""),
-        createdAt: String(message.createdAt || ""),
-      }))
-      .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
-  } catch {
-    messages = [];
-  }
-
-  try {
-    donors = (await listDocuments("donors"))
-      .map((donor) => ({
-        id: String(donor.id || ""),
-        name: String(donor.name || ""),
-        email: String(donor.email || ""),
-        phone: String(donor.phone || ""),
-        donorType: String(donor.donorType || ""),
-        pan: String(donor.pan || ""),
-        address: String(donor.address || ""),
-        createdAt: String(donor.createdAt || ""),
-      }))
-      .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
-  } catch {
-    donors = [];
-  }
-
-  try {
-    accountingRecords = (await listDocuments("accountingRecords"))
-      .map((record) => ({
-        id: String(record.id || ""),
-        type: String(record.type || ""),
-        title: String(record.title || ""),
-        amount: String(record.amount || ""),
-        category: String(record.category || ""),
-        date: String(record.date || ""),
-        party: String(record.party || ""),
-        reference: String(record.reference || ""),
-        status: String(record.status || ""),
-        notes: String(record.notes || ""),
-        documentUrl: String(record.documentUrl || ""),
-        createdAt: String(record.createdAt || ""),
-      }))
-      .sort((a, b) => String(b.date || b.createdAt || "").localeCompare(String(a.date || a.createdAt || "")));
-  } catch {
-    accountingRecords = [];
-  }
+  const [
+    content,
+    galleryItems,
+    visitorStats,
+    visitors,
+    donations,
+    subscribers,
+    messages,
+    donors,
+    accountingRecords,
+  ] = await Promise.all([
+    getSiteContent({ fresh: true }),
+    getGalleryItems({ fresh: true }),
+    getVisitorStats(),
+    getRecentVisitors(),
+    getDonationIntents(),
+    getNewsletterSubscribers(),
+    listDocuments("websiteMessages")
+      .then((items) =>
+        items
+          .map((message) => ({
+            id: String(message.id || ""),
+            name: String(message.name || ""),
+            email: String(message.email || ""),
+            phone: String(message.phone || ""),
+            interest: String(message.interest || ""),
+            message: String(message.message || ""),
+            createdAt: String(message.createdAt || ""),
+          }))
+          .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")))
+      )
+      .catch(() => [] as Message[]),
+    listDocuments("donors")
+      .then((items) =>
+        items
+          .map((donor) => ({
+            id: String(donor.id || ""),
+            name: String(donor.name || ""),
+            email: String(donor.email || ""),
+            phone: String(donor.phone || ""),
+            donorType: String(donor.donorType || ""),
+            pan: String(donor.pan || ""),
+            address: String(donor.address || ""),
+            createdAt: String(donor.createdAt || ""),
+          }))
+          .sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")))
+      )
+      .catch(() => [] as Donor[]),
+    listDocuments("accountingRecords")
+      .then((items) =>
+        items
+          .map((record) => ({
+            id: String(record.id || ""),
+            type: String(record.type || ""),
+            title: String(record.title || ""),
+            amount: String(record.amount || ""),
+            category: String(record.category || ""),
+            date: String(record.date || ""),
+            party: String(record.party || ""),
+            reference: String(record.reference || ""),
+            status: String(record.status || ""),
+            notes: String(record.notes || ""),
+            documentUrl: String(record.documentUrl || ""),
+            createdAt: String(record.createdAt || ""),
+          }))
+          .sort((a, b) => String(b.date || b.createdAt || "").localeCompare(String(a.date || a.createdAt || "")))
+      )
+      .catch(() => [] as AccountingRecord[]),
+  ]);
 
   return (
     <AdminDashboard
-      initialContent={await getSiteContent({ fresh: true })}
-      initialGalleryItems={await getGalleryItems({ fresh: true })}
+      initialContent={content}
+      initialGalleryItems={galleryItems}
       initialMessages={messages}
       initialVisitors={visitors}
       visitorCount={visitorStats.total}

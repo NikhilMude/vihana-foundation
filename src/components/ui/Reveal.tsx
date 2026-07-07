@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { ReactNode } from "react";
 
 interface RevealProps {
@@ -13,26 +10,11 @@ export default function Reveal({
   delay = 0,
 }: RevealProps) {
   return (
-    <motion.div
-      initial={{
-        opacity: 0,
-        y: 40,
-      }}
-      whileInView={{
-        opacity: 1,
-        y: 0,
-      }}
-      viewport={{
-        once: true,
-        amount: 0.2,
-      }}
-      transition={{
-        duration: 0.7,
-        delay,
-        ease: "easeOut",
-      }}
+    <div
+      className="animate-in fade-in slide-in-from-bottom-3 duration-700"
+      style={delay ? { animationDelay: `${delay}s`, animationFillMode: "both" } : undefined}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }

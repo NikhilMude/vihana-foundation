@@ -54,24 +54,44 @@ export default async function Home() {
 
   const galleryItems = await getGalleryItems();
 
-  const sectionMap = {
-    hero: <Hero key="hero" content={content} />,
-    mission: <Mission key="mission" content={content} />,
-    programs: <Programs key="programs" content={content} />,
-    why: <WhyChooseUs key="why" content={content} />,
-    impact: <Impact key="impact" content={content} />,
-    story: <FeaturedStory key="story" content={content} />,
-    cta: <ReusableCta key="cta" content={content} />,
-    testimonials: <Testimonials key="testimonials" content={content} />,
-    faq: <Faq key="faq" content={content} />,
-    gallery: <Gallery key="gallery" content={content} items={galleryItems} />,
-    events: <Events key="events" content={content} />,
-    news: <News key="news" content={content} />,
-    annualReports: <AnnualReports key="annualReports" content={content} />,
-    newsletter: <Newsletter key="newsletter" content={content} />,
-    donate: <Donation key="donate" content={content} />,
-    volunteer: <Volunteer key="volunteer" content={content} />,
-  };
+  function renderSection(id: string) {
+    switch (id) {
+      case "hero":
+        return <Hero key="hero" content={content} />;
+      case "mission":
+        return <Mission key="mission" content={content} />;
+      case "programs":
+        return <Programs key="programs" content={content} />;
+      case "why":
+        return <WhyChooseUs key="why" content={content} />;
+      case "impact":
+        return <Impact key="impact" content={content} />;
+      case "story":
+        return <FeaturedStory key="story" content={content} />;
+      case "cta":
+        return <ReusableCta key="cta" content={content} />;
+      case "testimonials":
+        return <Testimonials key="testimonials" content={content} />;
+      case "faq":
+        return <Faq key="faq" content={content} />;
+      case "gallery":
+        return <Gallery key="gallery" content={content} items={galleryItems} />;
+      case "events":
+        return <Events key="events" content={content} />;
+      case "news":
+        return <News key="news" content={content} />;
+      case "annualReports":
+        return <AnnualReports key="annualReports" content={content} />;
+      case "newsletter":
+        return <Newsletter key="newsletter" content={content} />;
+      case "donate":
+        return <Donation key="donate" content={content} />;
+      case "volunteer":
+        return <Volunteer key="volunteer" content={content} />;
+      default:
+        return null;
+    }
+  }
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-950">
@@ -79,9 +99,7 @@ export default async function Home() {
       <VisitTracker />
 
       <main className="overflow-x-hidden">
-        {getRenderableSections(content, galleryItems)
-          .map((section) => sectionMap[section.id as keyof typeof sectionMap])
-          .filter(Boolean)}
+        {getRenderableSections(content, galleryItems).map((section) => renderSection(section.id))}
       </main>
 
       <FloatingDonate content={content} />
