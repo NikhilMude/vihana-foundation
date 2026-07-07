@@ -60,6 +60,8 @@ const SmartNavLink = forwardRef<HTMLAnchorElement, SmartNavLinkProps>(function S
   }
 
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
+    console.log("[SmartNavLink] click", { href, normalizedHref, sectionId, pathname });
+
     if (!sectionId) {
       onClick?.();
       return;
@@ -72,10 +74,12 @@ const SmartNavLink = forwardRef<HTMLAnchorElement, SmartNavLinkProps>(function S
 
     if (pathname === "/" && section) {
       section.scrollIntoView({ behavior: "smooth", block: "start" });
+      console.log("[SmartNavLink] pushState", normalizedHref);
       window.history.pushState(null, "", normalizedHref);
       return;
     }
 
+    console.log("[SmartNavLink] setPending and router.push", { sectionId, normalizedHref });
     setPendingSection(sectionId);
     router.push(normalizedHref, { scroll: false });
   }

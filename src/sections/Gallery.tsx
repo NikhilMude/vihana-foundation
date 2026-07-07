@@ -51,6 +51,8 @@ export default function Gallery({ content, items }: { content: SiteContent; item
                   <a
                     href={moment.imageUrl || "#"}
                     onClick={(e) => {
+                      console.log("[Gallery] item click", { id: moment.id, imageUrl: moment.imageUrl });
+
                       if (moment.imageUrl) {
                         e.preventDefault();
                         setSelected(moment);

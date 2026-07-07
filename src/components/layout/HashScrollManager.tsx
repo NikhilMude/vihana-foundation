@@ -13,6 +13,8 @@ function getCurrentSectionId() {
   const pendingSection = window.sessionStorage.getItem(pendingSectionKey) || "";
   const hashSection = window.location.hash.replace("#", "");
 
+  console.log("[HashScrollManager] getCurrentSectionId", { pendingSection, hashSection });
+
   return pendingSection || hashSection;
 }
 
@@ -21,6 +23,7 @@ function scrollToSection(sectionId: string, attempt = 0) {
 
   if (section) {
     section.scrollIntoView({ behavior: "smooth", block: "start" });
+    console.log("[HashScrollManager] scrollToSection - scrolled to", sectionId);
     window.sessionStorage.removeItem(pendingSectionKey);
     return;
   }
@@ -31,6 +34,7 @@ function scrollToSection(sectionId: string, attempt = 0) {
 }
 
 export function setPendingSection(sectionId: string) {
+  console.log("[HashScrollManager] setPendingSection", sectionId);
   window.sessionStorage.setItem(pendingSectionKey, sectionId);
 }
 
@@ -43,6 +47,8 @@ export default function HashScrollManager() {
     }
 
     const sectionId = getCurrentSectionId();
+
+    console.log("[HashScrollManager] useEffect", { pathname, sectionId });
 
     if (!sectionId) {
       return;
