@@ -261,9 +261,13 @@ export default function AdminDashboard({
     []
   );
 
-  async function persistContent(nextContent: SiteContent, successMessage = "Website saved.") {
+  async function persistContent(
+    nextContent: SiteContent,
+    successMessage = "Website saved.",
+    savingMessage = "Saving changes..."
+  ) {
     setSaving(true);
-    setStatus("");
+    setStatus(savingMessage);
 
     const response = await fetch("/api/admin/content", {
       method: "PUT",
@@ -312,24 +316,18 @@ export default function AdminDashboard({
   }
 
   function moveNavigationItem(index: number, direction: -1 | 1) {
-    let nextContent: SiteContent | null = null;
+    const target = index + direction;
 
-    setContent((current) => {
-      const next = [...current.navigationItems];
-      const target = index + direction;
-
-      if (target < 0 || target >= next.length) {
-        return current;
-      }
-
-      [next[index], next[target]] = [next[target], next[index]];
-      nextContent = { ...current, navigationItems: next };
-      return nextContent;
-    });
-
-    if (nextContent) {
-      void persistContent(nextContent, "Navigation order saved.");
+    if (target < 0 || target >= content.navigationItems.length) {
+      return;
     }
+
+    const navigationItems = [...content.navigationItems];
+    [navigationItems[index], navigationItems[target]] = [navigationItems[target], navigationItems[index]];
+
+    const nextContent = { ...content, navigationItems };
+    setContent(nextContent);
+    void persistContent(nextContent, "Navigation order saved.", "Saving navigation order...");
   }
 
   function updateSectionConfig(index: number, key: keyof SectionConfig, value: string | boolean) {
@@ -342,24 +340,18 @@ export default function AdminDashboard({
   }
 
   function moveSection(index: number, direction: -1 | 1) {
-    let nextContent: SiteContent | null = null;
+    const target = index + direction;
 
-    setContent((current) => {
-      const next = [...current.sectionOrder];
-      const target = index + direction;
-
-      if (target < 0 || target >= next.length) {
-        return current;
-      }
-
-      [next[index], next[target]] = [next[target], next[index]];
-      nextContent = { ...current, sectionOrder: next };
-      return nextContent;
-    });
-
-    if (nextContent) {
-      void persistContent(nextContent, "Homepage order saved.");
+    if (target < 0 || target >= content.sectionOrder.length) {
+      return;
     }
+
+    const sectionOrder = [...content.sectionOrder];
+    [sectionOrder[index], sectionOrder[target]] = [sectionOrder[target], sectionOrder[index]];
+
+    const nextContent = { ...content, sectionOrder };
+    setContent(nextContent);
+    void persistContent(nextContent, "Homepage order saved.", "Saving homepage order...");
   }
 
   function updateListItem(listKey: ListKey, index: number, key: keyof EditableItem, value: string) {
@@ -388,24 +380,19 @@ export default function AdminDashboard({
   }
 
   function moveListItem(listKey: ListKey, index: number, direction: -1 | 1) {
-    let nextContent: SiteContent | null = null;
+    const target = index + direction;
+    const items = content[listKey];
 
-    setContent((current) => {
-      const next = [...current[listKey]];
-      const target = index + direction;
-
-      if (target < 0 || target >= next.length) {
-        return current;
-      }
-
-      [next[index], next[target]] = [next[target], next[index]];
-      nextContent = { ...current, [listKey]: next };
-      return nextContent;
-    });
-
-    if (nextContent) {
-      void persistContent(nextContent, "Card order saved.");
+    if (target < 0 || target >= items.length) {
+      return;
     }
+
+    const nextItems = [...items];
+    [nextItems[index], nextItems[target]] = [nextItems[target], nextItems[index]];
+
+    const nextContent = { ...content, [listKey]: nextItems } as SiteContent;
+    setContent(nextContent);
+    void persistContent(nextContent, "Card order saved.", "Saving card order...");
   }
 
   function updateFeaturedStory(key: keyof EditableItem, value: string) {
@@ -720,8 +707,22 @@ export default function AdminDashboard({
                 <div key={`${item.label}-${index}`} className="grid gap-3 rounded-[8px] border border-slate-200 bg-slate-50 p-4 md:grid-cols-[1fr_1fr_auto_auto_auto]">
                   <input value={item.label} onChange={(event) => updateNavigation(index, "label", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Label" />
                   <input value={item.href} onChange={(event) => updateNavigation(index, "href", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="/page or #section" />
-                  <button type="button" onClick={() => moveNavigationItem(index, -1)} className="rounded-[8px] px-3 text-sm font-bold text-slate-700">Up</button>
-                  <button type="button" onClick={() => moveNavigationItem(index, 1)} className="rounded-[8px] px-3 text-sm font-bold text-slate-700">Down</button>
+                  <button
+                    type="button"
+                    disabled={saving || index === 0}
+                    onClick={() => moveNavigationItem(index, -1)}
+                    className="rounded-[8px] bg-white px-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-teal-50 hover:text-teal-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Up
+                  </button>
+                  <button
+                    type="button"
+                    disabled={saving || index === content.navigationItems.length - 1}
+                    onClick={() => moveNavigationItem(index, 1)}
+                    className="rounded-[8px] bg-white px-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-teal-50 hover:text-teal-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Down
+                  </button>
                   <button type="button" onClick={() => removeNavigationItem(index)} className="inline-flex items-center justify-center rounded-[8px] px-4 text-sm font-bold text-rose-700">
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -751,8 +752,22 @@ export default function AdminDashboard({
                     onChange={(event) => updateSectionConfig(index, "label", event.target.value)}
                     className="h-11 rounded-[8px] border border-slate-200 px-4"
                   />
-                  <button type="button" onClick={() => moveSection(index, -1)} className="rounded-[8px] px-3 text-sm font-bold text-slate-700">Up</button>
-                  <button type="button" onClick={() => moveSection(index, 1)} className="rounded-[8px] px-3 text-sm font-bold text-slate-700">Down</button>
+                  <button
+                    type="button"
+                    disabled={saving || index === 0}
+                    onClick={() => moveSection(index, -1)}
+                    className="rounded-[8px] bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-teal-50 hover:text-teal-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Up
+                  </button>
+                  <button
+                    type="button"
+                    disabled={saving || index === content.sectionOrder.length - 1}
+                    onClick={() => moveSection(index, 1)}
+                    className="rounded-[8px] bg-white px-3 py-2 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-teal-50 hover:text-teal-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Down
+                  </button>
                 </div>
               ))}
             </div>
@@ -791,8 +806,22 @@ export default function AdminDashboard({
                       <input value={item.linkLabel || ""} onChange={(event) => updateListItem(listKey, index, "linkLabel", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button text, if needed" />
                       <div className="flex gap-3">
                         <input value={item.linkHref || ""} onChange={(event) => updateListItem(listKey, index, "linkHref", event.target.value)} className="h-11 flex-1 rounded-[8px] border border-slate-200 px-4" placeholder="Button link, if needed" />
-                        <button type="button" onClick={() => moveListItem(listKey, index, -1)} className="h-11 rounded-[8px] px-3 text-sm font-bold text-slate-700">Up</button>
-                        <button type="button" onClick={() => moveListItem(listKey, index, 1)} className="h-11 rounded-[8px] px-3 text-sm font-bold text-slate-700">Down</button>
+                        <button
+                          type="button"
+                          disabled={saving || index === 0}
+                          onClick={() => moveListItem(listKey, index, -1)}
+                          className="h-11 rounded-[8px] bg-white px-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-teal-50 hover:text-teal-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Up
+                        </button>
+                        <button
+                          type="button"
+                          disabled={saving || index === content[listKey].length - 1}
+                          onClick={() => moveListItem(listKey, index, 1)}
+                          className="h-11 rounded-[8px] bg-white px-3 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-teal-50 hover:text-teal-800 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Down
+                        </button>
                         <button type="button" onClick={() => removeListItem(listKey, index)} className="inline-flex h-11 w-11 items-center justify-center rounded-[8px] text-rose-700">
                           <Trash2 className="h-4 w-4" />
                         </button>
