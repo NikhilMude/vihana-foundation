@@ -239,6 +239,149 @@ const socialIconPresets = [
   { label: "Website", mark: "WWW" },
 ];
 
+const contentGroups: {
+  id: string;
+  label: string;
+  description: string;
+  fields: (keyof SiteContent)[];
+}[] = [
+  {
+    id: "home",
+    label: "Home / Hero",
+    description: "Main top section, buttons, hero stat and SEO preview image.",
+    fields: [
+      "brandName",
+      "brandTagline",
+      "heroBadge",
+      "heroTitle",
+      "heroHighlight",
+      "heroDescription",
+      "heroPrimaryLabel",
+      "heroPrimaryHref",
+      "heroSecondaryLabel",
+      "heroSecondaryHref",
+      "heroStatValue",
+      "heroStatLabel",
+      "heroMiniTitle",
+      "heroMiniDescription",
+    ],
+  },
+  {
+    id: "mission",
+    label: "Mission",
+    description: "Mission copy, founder story and the mission image section text.",
+    fields: [
+      "missionTitle",
+      "missionEyebrow",
+      "missionDescription",
+      "missionStoryEyebrow",
+      "missionStoryTitle",
+      "missionStoryDescription",
+      "founderStory",
+    ],
+  },
+  {
+    id: "programs",
+    label: "Programs / Impact",
+    description: "Program headings, why section, impact headings and gallery text.",
+    fields: [
+      "programsTitle",
+      "programsEyebrow",
+      "programsDescription",
+      "whyTitle",
+      "whyEyebrow",
+      "whyDescription",
+      "impactTitle",
+      "impactEyebrow",
+      "impactDescription",
+      "galleryTitle",
+      "galleryEyebrow",
+      "galleryFeatureTitle",
+      "galleryFeatureDescription",
+    ],
+  },
+  {
+    id: "donate",
+    label: "Donate",
+    description: "Donation copy, bank/UPI details, legal trust signals and floating donate button.",
+    fields: [
+      "donateTitle",
+      "donateEyebrow",
+      "donateDescription",
+      "donationStoryEyebrow",
+      "donationStoryTitle",
+      "donationStoryDescription",
+      "upiId",
+      "bankAccountName",
+      "bankAccountNumber",
+      "bankIfsc",
+      "bankName",
+      "legalStatusNote",
+      "registrationNumber",
+      "panNumber",
+      "taxExemptionNote",
+      "annualReportHref",
+      "floatingDonateText",
+      "floatingDonateHref",
+      "floatingDonateColor",
+      "floatingDonateTextColor",
+    ],
+  },
+  {
+    id: "contact",
+    label: "Contact / Footer",
+    description: "Volunteer, contact, WhatsApp, footer and CTA banner text.",
+    fields: [
+      "volunteerTitle",
+      "volunteerEyebrow",
+      "volunteerDescription",
+      "contactEmail",
+      "contactPhone",
+      "contactLocation",
+      "whatsappEnabled",
+      "whatsappNumber",
+      "whatsappMessage",
+      "whatsappButtonText",
+      "footerLegalTitle",
+      "ctaHeading",
+      "ctaDescription",
+      "ctaButtonText",
+      "ctaButtonHref",
+      "ctaBackground",
+    ],
+  },
+  {
+    id: "news",
+    label: "News / Email",
+    description: "News, events, reports, testimonials, FAQ and newsletter text.",
+    fields: [
+      "storyEyebrow",
+      "testimonialsEyebrow",
+      "testimonialsTitle",
+      "faqEyebrow",
+      "faqTitle",
+      "newsEyebrow",
+      "newsTitle",
+      "eventsEyebrow",
+      "eventsTitle",
+      "annualReportsEyebrow",
+      "annualReportsTitle",
+      "newsletterHeading",
+      "newsletterDescription",
+      "newsletterPlaceholder",
+      "newsletterButtonText",
+      "newsletterEmailSubject",
+      "newsletterEmailBody",
+    ],
+  },
+  {
+    id: "seo",
+    label: "SEO",
+    description: "Google/social sharing metadata.",
+    fields: ["metaTitle", "metaDescription", "metaKeywords", "ogImageUrl"],
+  },
+];
+
 function uniqueId(prefix: string) {
   return `${prefix}-${Date.now()}`;
 }
@@ -330,25 +473,32 @@ export default function AdminDashboard({
   const [saving, setSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
+  const [contentGroup, setContentGroup] = useState(contentGroups[0].id);
+  const [activePageId, setActivePageId] = useState(initialContent.pages[0]?.id || "");
 
   const tabs = useMemo(
     () => [
-      { id: "content" as const, label: "Text", icon: Pencil },
-      { id: "email" as const, label: "Email Template", icon: Mail },
-      { id: "media" as const, label: "Images", icon: ImagePlus },
-      { id: "navigation" as const, label: "Navigation", icon: Navigation },
-      { id: "order" as const, label: "Order", icon: Settings },
-      { id: "sections" as const, label: "Cards", icon: LayoutList },
+      { id: "content" as const, label: "Website Text", icon: Pencil },
       { id: "pages" as const, label: "Pages", icon: FileText },
+      { id: "sections" as const, label: "Section Cards", icon: LayoutList },
+      { id: "media" as const, label: "Images", icon: ImagePlus },
       { id: "gallery" as const, label: "Gallery", icon: ImagePlus },
-      { id: "messages" as const, label: "Messages", icon: Inbox },
+      { id: "navigation" as const, label: "Menu & Social", icon: Navigation },
+      { id: "order" as const, label: "Homepage Order", icon: Settings },
+      { id: "email" as const, label: "Email Template", icon: Mail },
       { id: "donations" as const, label: "Donations", icon: BadgeIndianRupee },
       { id: "donors" as const, label: "Donors", icon: Users },
+      { id: "messages" as const, label: "Messages", icon: Inbox },
       { id: "subscribers" as const, label: "Newsletter", icon: Mail },
       { id: "visitors" as const, label: "Visitors", icon: Users },
     ],
     []
   );
+  const activeContentGroup = contentGroups.find((group) => group.id === contentGroup) || contentGroups[0];
+  const visibleContentFields = contentFields.filter((field) => activeContentGroup.fields.includes(field.key));
+  const activePageIndex = content.pages.findIndex((page) => page.id === activePageId);
+  const safeActivePageIndex = activePageIndex >= 0 ? activePageIndex : 0;
+  const activePage = content.pages[safeActivePageIndex];
   const donationSummary = useMemo(() => {
     const total = donations.reduce((sum, donation) => sum + currencyAmount(donation.amount), 0);
     const receiptCount = donations.filter((donation) => donation.receiptRequired === "Yes").length;
@@ -555,18 +705,24 @@ export default function AdminDashboard({
   }
 
   function addPage() {
+    const page = emptyPage();
+
     setContent((current) => ({
       ...current,
-      pages: [...current.pages, emptyPage()],
+      pages: [...current.pages, page],
     }));
+    setActivePageId(page.id);
     setStatus("Page list updated. Click Save to publish it.");
   }
 
   function removePage(index: number) {
+    const nextActivePage = content.pages[index - 1] || content.pages[index + 1];
+
     setContent((current) => ({
       ...current,
       pages: current.pages.filter((_, pageIndex) => pageIndex !== index),
     }));
+    setActivePageId(nextActivePage?.id || "");
     setStatus("Page list updated. Click Save to publish it.");
   }
 
@@ -688,26 +844,33 @@ export default function AdminDashboard({
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 px-5 py-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="flex flex-col justify-between gap-4 rounded-[8px] bg-slate-950 p-6 text-white md:flex-row md:items-center">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-300">Private Admin</p>
-            <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-4xl font-bold">Vihana CMS</h1>
+    <div className="min-h-screen bg-stone-50">
+      <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-5 py-4 shadow-sm backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-teal-700">Vihana Foundation Admin</p>
+            <h1 className="mt-1 truncate font-[family-name:var(--font-playfair)] text-3xl font-bold text-slate-950">Website CMS</h1>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <Button type="button" onClick={() => saveContent()} disabled={saving} className="h-11 rounded-full bg-amber-400 px-6 text-slate-950 hover:bg-amber-300">
+          <div className="flex flex-wrap items-center gap-3">
+            {status ? <p className="rounded-full bg-amber-50 px-4 py-2 text-sm font-bold text-amber-800">{status}</p> : null}
+            <a href="/" target="_blank" className="inline-flex h-11 items-center rounded-full border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50">
+              View Site
+            </a>
+            <Button type="button" onClick={() => saveContent()} disabled={saving} className="h-11 rounded-full bg-teal-700 px-6 hover:bg-teal-800">
               {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-              Save
+              Save Changes
             </Button>
             <form action="/api/admin/logout" method="post">
-              <Button type="submit" className="h-11 rounded-full bg-white px-6 text-slate-950 hover:bg-slate-200">Logout</Button>
+              <Button type="submit" variant="outline" className="h-11 rounded-full px-6">Logout</Button>
             </form>
           </div>
         </div>
+      </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mx-auto max-w-7xl px-5 py-6">
+        <div className="rounded-[8px] border border-slate-200 bg-white p-3 shadow-sm">
+          <div className="flex flex-wrap gap-2">
           {tabs.map((item) => {
             const Icon = item.icon;
 
@@ -717,7 +880,7 @@ export default function AdminDashboard({
                 key={item.id}
                 onClick={() => setTab(item.id)}
                 className={`inline-flex h-11 items-center gap-2 rounded-full px-5 text-sm font-bold transition ${
-                  tab === item.id ? "bg-teal-700 text-white" : "bg-white text-slate-700 shadow-sm"
+                  tab === item.id ? "bg-teal-700 text-white shadow-sm" : "bg-slate-50 text-slate-700 hover:bg-teal-50 hover:text-teal-800"
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -725,14 +888,47 @@ export default function AdminDashboard({
               </button>
             );
           })}
+          </div>
         </div>
-
-        {status ? <p className="mt-5 rounded-[8px] bg-amber-50 px-4 py-3 text-sm font-bold text-amber-800">{status}</p> : null}
 
         {tab === "content" ? (
           <form onSubmit={saveContent} className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-start">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-950">Edit Website Text</h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                  Choose one website area, update the fields, then click Save Changes.
+                </p>
+              </div>
+              <Button type="submit" disabled={saving} className="h-11 rounded-full bg-teal-700 px-6 hover:bg-teal-800">
+                {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
+                Save Text
+              </Button>
+            </div>
+
+            <div className="mt-5 grid gap-5 lg:grid-cols-[260px_1fr]">
+              <div className="grid gap-2 self-start rounded-[8px] bg-slate-50 p-3">
+                {contentGroups.map((group) => (
+                  <button
+                    key={group.id}
+                    type="button"
+                    onClick={() => setContentGroup(group.id)}
+                    className={`rounded-[8px] px-4 py-3 text-left text-sm font-bold transition ${
+                      contentGroup === group.id ? "bg-white text-teal-800 shadow-sm" : "text-slate-600 hover:bg-white hover:text-slate-950"
+                    }`}
+                  >
+                    {group.label}
+                  </button>
+                ))}
+              </div>
+
+              <div>
+                <div className="rounded-[8px] bg-teal-50 px-4 py-3">
+                  <h3 className="font-bold text-teal-950">{activeContentGroup.label}</h3>
+                  <p className="mt-1 text-sm leading-6 text-teal-800">{activeContentGroup.description}</p>
+                </div>
             <div className="grid gap-5 lg:grid-cols-2">
-              {contentFields.map((field) => (
+              {visibleContentFields.map((field) => (
                 <label key={field.key} className={field.multiline ? "lg:col-span-2" : ""}>
                   <span className="text-sm font-bold text-slate-800">{field.label}</span>
                   {field.multiline ? (
@@ -752,11 +948,8 @@ export default function AdminDashboard({
                 </label>
               ))}
             </div>
-
-            <Button type="submit" disabled={saving} className="mt-6 h-12 rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800">
-              {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-              Save Text
-            </Button>
+              </div>
+            </div>
           </form>
         ) : null}
 
@@ -1122,58 +1315,83 @@ export default function AdminDashboard({
 
         {tab === "pages" ? (
           <div className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between gap-4">
-              <h2 className="text-xl font-bold text-slate-950">Pages</h2>
+            <div className="flex flex-col justify-between gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-950">Edit Pages</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">Select one page, update text/image/button, then save.</p>
+              </div>
               <Button type="button" onClick={addPage} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
                 <Plus className="mr-2 h-4 w-4" />
                 Add Page
               </Button>
             </div>
-            <div className="mt-5 grid gap-5">
-              {content.pages.map((page, index) => (
-                <div key={page.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+
+            <div className="mt-5 grid gap-5 lg:grid-cols-[280px_1fr]">
+              <div className="grid gap-2 self-start rounded-[8px] bg-slate-50 p-3">
+                {content.pages.map((page) => (
+                  <button
+                    key={page.id}
+                    type="button"
+                    onClick={() => setActivePageId(page.id)}
+                    className={`rounded-[8px] px-4 py-3 text-left transition ${
+                      activePage?.id === page.id ? "bg-white shadow-sm" : "hover:bg-white"
+                    }`}
+                  >
+                    <span className="block text-sm font-bold text-slate-950">{page.title}</span>
+                    <span className="mt-1 block truncate text-xs text-slate-500">/{page.slug}</span>
+                  </button>
+                ))}
+              </div>
+
+              {activePage ? (
+                <div className="rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <label className="inline-flex items-center gap-2 text-sm font-bold text-slate-700">
+                      <input type="checkbox" checked={activePage.published} onChange={(event) => updatePage(safeActivePageIndex, "published", event.target.checked)} />
+                      Published
+                    </label>
+                    <div className="flex gap-4">
+                      <a href={`/${activePage.slug}`} target="_blank" className="inline-flex items-center gap-2 text-sm font-bold text-teal-700">
+                        <LinkIcon className="h-4 w-4" />
+                        Open page
+                      </a>
+                      <button type="button" onClick={() => removePage(safeActivePageIndex)} className="inline-flex items-center gap-2 text-sm font-bold text-rose-700">
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="grid gap-3 lg:grid-cols-2">
-                    <input value={page.title} onChange={(event) => updatePage(index, "title", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Page title" />
-                    <input value={page.slug} onChange={(event) => updatePage(index, "slug", event.target.value.replace(/[^a-z0-9-]/g, "-"))} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="page-url" />
-                    <input value={page.description} onChange={(event) => updatePage(index, "description", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4 lg:col-span-2" placeholder="Short description" />
-                    <input value={page.imageUrl || ""} onChange={(event) => updatePage(index, "imageUrl", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4 lg:col-span-2" placeholder="Page image URL" />
+                    <input value={activePage.title} onChange={(event) => updatePage(safeActivePageIndex, "title", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Page title" />
+                    <input value={activePage.slug} onChange={(event) => updatePage(safeActivePageIndex, "slug", event.target.value.replace(/[^a-z0-9-]/g, "-"))} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="page-url" />
+                    <input value={activePage.description} onChange={(event) => updatePage(safeActivePageIndex, "description", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4 lg:col-span-2" placeholder="Short description" />
+                    <input value={activePage.imageUrl || ""} onChange={(event) => updatePage(safeActivePageIndex, "imageUrl", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4 lg:col-span-2" placeholder="Page image URL" />
                     <div className="grid gap-3 lg:col-span-2 lg:grid-cols-[0.7fr_1.3fr]">
                       <input
                         type="file"
                         accept="image/*"
-                        onChange={(event) => handleImageUpload(event, (value) => updatePage(index, "imageUrl", value))}
+                        onChange={(event) => handleImageUpload(event, (value) => updatePage(safeActivePageIndex, "imageUrl", value))}
                         className="rounded-[8px] border border-dashed border-slate-300 bg-white p-3 text-sm"
                       />
-                      {page.imageUrl ? (
-                        <Image src={page.imageUrl} alt={page.title} width={520} height={220} unoptimized className="h-36 w-full rounded-[8px] object-cover" />
+                      {activePage.imageUrl ? (
+                        <Image src={activePage.imageUrl} alt={activePage.title} width={520} height={220} unoptimized className="h-36 w-full rounded-[8px] object-cover" />
                       ) : (
                         <div className="flex h-36 items-center justify-center rounded-[8px] border border-dashed border-slate-300 bg-white text-sm font-bold text-slate-400">
                           Page image preview
                         </div>
                       )}
                     </div>
-                    <textarea value={page.body} onChange={(event) => updatePage(index, "body", event.target.value)} rows={7} className="rounded-[8px] border border-slate-200 px-4 py-3 lg:col-span-2" placeholder="Page content" />
-                    <input value={page.buttonLabel} onChange={(event) => updatePage(index, "buttonLabel", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button label" />
-                    <input value={page.buttonHref} onChange={(event) => updatePage(index, "buttonHref", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button link" />
-                  </div>
-                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-                    <label className="inline-flex items-center gap-2 text-sm font-bold text-slate-700">
-                      <input type="checkbox" checked={page.published} onChange={(event) => updatePage(index, "published", event.target.checked)} />
-                      Published
-                    </label>
-                    <div className="flex gap-4">
-                      <a href={`/${page.slug}`} target="_blank" className="inline-flex items-center gap-2 text-sm font-bold text-teal-700">
-                        <LinkIcon className="h-4 w-4" />
-                        Open page
-                      </a>
-                      <button type="button" onClick={() => removePage(index)} className="inline-flex items-center gap-2 text-sm font-bold text-rose-700">
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                      </button>
-                    </div>
+                    <textarea value={activePage.body} onChange={(event) => updatePage(safeActivePageIndex, "body", event.target.value)} rows={10} className="rounded-[8px] border border-slate-200 px-4 py-3 lg:col-span-2" placeholder="Page content" />
+                    <input value={activePage.buttonLabel} onChange={(event) => updatePage(safeActivePageIndex, "buttonLabel", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button label" />
+                    <input value={activePage.buttonHref} onChange={(event) => updatePage(safeActivePageIndex, "buttonHref", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button link" />
                   </div>
                 </div>
-              ))}
+              ) : (
+                <div className="rounded-[8px] border border-dashed border-slate-300 p-8 text-center text-slate-600">
+                  Add a page to start editing.
+                </div>
+              )}
             </div>
           </div>
         ) : null}
