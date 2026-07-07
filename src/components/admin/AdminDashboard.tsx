@@ -100,6 +100,8 @@ type ListKey =
   | "newsItems";
 
 const contentFields: { key: keyof SiteContent; label: string; multiline?: boolean }[] = [
+  { key: "brandName", label: "Website logo name" },
+  { key: "brandTagline", label: "Website logo small text" },
   { key: "heroBadge", label: "Hero badge" },
   { key: "heroTitle", label: "Hero title" },
   { key: "heroHighlight", label: "Hero highlighted title" },
@@ -622,25 +624,53 @@ export default function AdminDashboard({
         ) : null}
 
         {tab === "media" ? (
-          <div className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-950">Hero Image</h2>
-            <p className="mt-2 text-slate-600">Upload the main image shown at the top of the homepage.</p>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(event) => handleImageUpload(event, (value) => updateContent("heroImageUrl", value))}
-              className="mt-5 w-full rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm"
-            />
-            {content.heroImageUrl ? (
-              <Image
-                src={content.heroImageUrl}
-                alt="Hero preview"
-                width={760}
-                height={520}
-                unoptimized
-                className="mt-5 max-h-[420px] w-full rounded-[8px] object-contain"
+          <div className="mt-6 grid gap-6">
+            <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-950">Website Logo</h2>
+              <p className="mt-2 text-slate-600">Upload the logo shown in the header and footer.</p>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) => handleImageUpload(event, (value) => updateContent("logoImageUrl", value))}
+                className="mt-5 w-full rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm"
               />
-            ) : null}
+              {content.logoImageUrl ? (
+                <div className="mt-5 flex items-center gap-4 rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+                  <Image
+                    src={content.logoImageUrl}
+                    alt="Logo preview"
+                    width={88}
+                    height={88}
+                    unoptimized
+                    className="h-16 w-16 rounded-[8px] object-contain"
+                  />
+                  <Button type="button" onClick={() => updateContent("logoImageUrl", "")} className="h-10 rounded-full bg-slate-950 px-5 hover:bg-slate-800">
+                    Remove Logo Image
+                  </Button>
+                </div>
+              ) : null}
+            </section>
+
+            <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-950">Hero Image</h2>
+              <p className="mt-2 text-slate-600">Upload the main image shown at the top of the homepage.</p>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) => handleImageUpload(event, (value) => updateContent("heroImageUrl", value))}
+                className="mt-5 w-full rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm"
+              />
+              {content.heroImageUrl ? (
+                <Image
+                  src={content.heroImageUrl}
+                  alt="Hero preview"
+                  width={760}
+                  height={520}
+                  unoptimized
+                  className="mt-5 max-h-[420px] w-full rounded-[8px] object-contain"
+                />
+              ) : null}
+            </section>
           </div>
         ) : null}
 

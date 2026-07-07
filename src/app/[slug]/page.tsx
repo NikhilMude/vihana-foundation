@@ -28,7 +28,7 @@ export default async function CmsPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-950">
-      <Navbar navigation={content.navigationItems} />
+      <Navbar content={content} navigation={content.navigationItems} />
       <VisitTracker />
 
       <main className="pt-28">

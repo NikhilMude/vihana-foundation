@@ -61,7 +61,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-950">
-      <Navbar navigation={content.navigationItems} />
+      <Navbar content={content} navigation={content.navigationItems} />
       <VisitTracker />
 
       <main className="overflow-x-hidden">

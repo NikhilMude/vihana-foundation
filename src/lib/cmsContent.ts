@@ -40,6 +40,9 @@ export type CmsPage = {
 };
 
 export type SiteContent = {
+  brandName: string;
+  brandTagline: string;
+  logoImageUrl: string;
   heroBadge: string;
   heroTitle: string;
   heroHighlight: string;
@@ -135,6 +138,9 @@ export type GalleryItem = {
 };
 
 export const defaultSiteContent: SiteContent = {
+  brandName: "Vihana",
+  brandTagline: "Foundation",
+  logoImageUrl: "",
   heroBadge: "Founded in honor of Vihana",
   heroTitle: "Every Birthday.",
   heroHighlight: "A Thousand Smiles.",

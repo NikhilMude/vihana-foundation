@@ -7,13 +7,13 @@ import { HeartHandshake, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
-import { NavigationItem } from "@/lib/cmsContent";
+import { NavigationItem, SiteContent } from "@/lib/cmsContent";
 
 function normalizeHref(href: string) {
   return href.startsWith("#") ? `/${href}` : href;
 }
 
-export default function Navbar({ navigation }: { navigation: NavigationItem[] }) {
+export default function Navbar({ content, navigation }: { content: SiteContent; navigation: NavigationItem[] }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -35,7 +35,7 @@ export default function Navbar({ navigation }: { navigation: NavigationItem[] })
       }`}
     >
       <Container className="flex h-20 items-center justify-between">
-        <Logo />
+        <Logo brandName={content.brandName} brandTagline={content.brandTagline} logoImageUrl={content.logoImageUrl} />
 
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Main navigation">
           {navigation.map((item) => (

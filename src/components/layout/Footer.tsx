@@ -18,7 +18,7 @@ export default function Footer({
         <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr_1fr]">
           <div>
             <div className="[&_p]:text-white [&_p:last-child]:text-slate-400">
-              <Logo />
+              <Logo brandName={content.brandName} brandTagline={content.brandTagline} logoImageUrl={content.logoImageUrl} />
             </div>
 
             <p className="mt-6 max-w-md leading-7 text-slate-400">
