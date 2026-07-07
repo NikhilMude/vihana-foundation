@@ -19,17 +19,17 @@ export default function Programs({ content }: { content: SiteContent }) {
               {content.programsEyebrow}
             </span>
 
-            <h2 className="mt-4 font-[family-name:var(--font-playfair)] text-[2rem] font-bold leading-tight text-slate-950 sm:mt-5 sm:text-5xl">
+            <h2 className="mt-2 font-[family-name:var(--font-playfair)] text-[1.75rem] font-bold leading-tight text-slate-950 sm:mt-5 sm:text-5xl">
               {content.programsTitle}
             </h2>
 
-            <p className="mt-4 text-base leading-7 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8">
+            <p className="mt-2 text-sm leading-6 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8">
               {content.programsDescription}
             </p>
           </div>
         </Reveal>
 
-        <div className="mt-7 grid gap-4 md:grid-cols-2 lg:mt-8 xl:grid-cols-4">
+        <div className="mt-4 grid gap-3 md:grid-cols-2 lg:mt-8 xl:grid-cols-4">
           {content.programCards.map((program, index) => {
             const Icon = icons[index % icons.length];
 
@@ -37,7 +37,7 @@ export default function Programs({ content }: { content: SiteContent }) {
               <Reveal key={program.title} delay={index * 0.06}>
                 <article className="group flex h-full flex-col overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/8">
                   {program.imageUrl ? (
-                    <div className="relative h-40 bg-teal-50">
+                    <div className="relative h-28 bg-teal-50 sm:h-40">
                       <Image
                         src={program.imageUrl}
                         alt={program.title}
@@ -48,18 +48,18 @@ export default function Programs({ content }: { content: SiteContent }) {
                     </div>
                   ) : null}
 
-                  <div className="flex flex-1 flex-col p-5 sm:p-6">
-                    <div className={`flex h-11 w-11 items-center justify-center rounded-[8px] sm:h-12 sm:w-12 ${accents[index % accents.length]}`}>
+                  <div className="flex flex-1 flex-col p-4 sm:p-6">
+                    <div className={`flex h-9 w-9 items-center justify-center rounded-[8px] sm:h-12 sm:w-12 ${accents[index % accents.length]}`}>
                       <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
 
-                    <h3 className="mt-5 text-lg font-bold text-slate-950 sm:mt-6 sm:text-xl">{program.title}</h3>
+                    <h3 className="mt-3 text-base font-bold text-slate-950 sm:mt-6 sm:text-xl">{program.title}</h3>
 
-                    <p className="mt-2 flex-1 text-sm leading-6 text-slate-600 sm:mt-3 sm:text-base sm:leading-7">{program.description}</p>
+                    <p className="mt-1 flex-1 text-sm leading-5 text-slate-600 sm:mt-3 sm:text-base sm:leading-7">{program.description}</p>
 
                     <SmartNavLink
                       href={program.linkHref || "#volunteer"}
-                      className="mt-7 inline-flex items-center text-sm font-bold text-teal-700 transition group-hover:text-teal-800"
+                      className="mt-4 inline-flex items-center text-sm font-bold text-teal-700 transition group-hover:text-teal-800 sm:mt-7"
                     >
                       {program.linkLabel || "Support this program"}
                       <ArrowUpRight className="ml-2 h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

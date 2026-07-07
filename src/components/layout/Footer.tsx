@@ -49,20 +49,20 @@ export default function Footer({
   );
 
   return (
-    <footer className="bg-slate-950 py-8 text-white sm:py-12">
+    <footer className="bg-slate-950 py-6 text-white sm:py-12">
       <Container>
-        <div className="grid gap-7 lg:grid-cols-[1.15fr_0.75fr_0.75fr_1fr] lg:gap-10">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-[1.15fr_0.75fr_0.75fr_1fr] lg:gap-10">
           <div>
             <div className="[&_p]:text-white [&_p:last-child]:text-slate-400">
               <Logo brandName={content.brandName} brandTagline={content.brandTagline} logoImageUrl={content.logoImageUrl} />
             </div>
 
-            <p className="mt-5 max-w-md text-sm leading-6 text-slate-400 sm:mt-6 sm:text-base sm:leading-7">
+            <p className="mt-3 max-w-md text-sm leading-5 text-slate-400 sm:mt-6 sm:text-base sm:leading-7">
               Every Birthday. A Thousand Smiles. Building kinder communities through education, nutrition, health and dignity.
             </p>
 
             {socialLinks.length ? (
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-4 flex flex-wrap gap-2 sm:mt-6 sm:gap-3">
                 {socialLinks.map((item) => {
                   const mark = getSocialMark(item.label);
 
@@ -74,7 +74,7 @@ export default function Footer({
                       rel="noreferrer"
                       aria-label={item.label}
                       title={item.label}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/8 text-sm font-black text-white transition hover:border-amber-300/60 hover:bg-white hover:text-slate-950"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/8 text-xs font-black text-white transition hover:border-amber-300/60 hover:bg-white hover:text-slate-950 sm:h-10 sm:w-10 sm:text-sm"
                     >
                       {item.iconImageUrl ? (
                         <Image
@@ -102,7 +102,7 @@ export default function Footer({
               Explore
             </h3>
 
-            <div className="mt-4 grid gap-2.5">
+            <div className="mt-3 grid gap-2 sm:mt-4 sm:gap-2.5">
               {exploreLinks.map((item) => (
                 <SmartNavLink
                   key={item.label}
@@ -121,7 +121,7 @@ export default function Footer({
                 {content.footerLegalTitle}
               </h3>
 
-              <div className="mt-4 grid gap-2.5">
+              <div className="mt-3 grid gap-2 sm:mt-4 sm:gap-2.5">
                 {legalPages.map((page) => (
                   <SmartNavLink
                     key={page.id}
@@ -140,7 +140,7 @@ export default function Footer({
               Contact
             </h3>
 
-            <div className="mt-4 grid gap-3 text-sm text-slate-400">
+            <div className="mt-3 grid gap-2.5 text-sm text-slate-400 sm:mt-4 sm:gap-3">
               <p className="flex min-w-0 items-center gap-3 break-words">
                 <Mail className="h-4 w-4 text-amber-300" />
                 <span className="min-w-0 break-all">{content.contactEmail}</span>
@@ -159,7 +159,7 @@ export default function Footer({
           </div>
         </div>
 
-        <div className="mt-8 border-t border-white/10 pt-5 sm:mt-10">
+        <div className="mt-6 border-t border-white/10 pt-4 sm:mt-10 sm:pt-5">
           <p className="text-sm text-slate-500">Copyright 2026 Vihana Foundation. All rights reserved.</p>
         </div>
       </Container>

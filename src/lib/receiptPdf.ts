@@ -109,8 +109,8 @@ export function createReceiptPdf(content: SiteContent, donation: ReceiptDonation
     textLine(52, 718, 12, content.receiptSubtitle || "Provisional acknowledgement"),
     textLine(398, 742, 10, `Receipt`, "F2"),
     textLine(398, 724, 12, receiptNumber, "F2"),
-    "1 1 1 rg 44 96 507 590 re f",
-    "0.85 0.89 0.92 RG 44 96 507 590 re S",
+    "1 1 1 rg 44 54 507 632 re f",
+    "0.85 0.89 0.92 RG 44 54 507 632 re S",
     "0.93 0.99 0.97 rg 64 612 467 54 re f",
     "0.70 0.91 0.86 RG 64 612 467 54 re S",
     "0.02 0.48 0.44 rg",
@@ -132,7 +132,7 @@ export function createReceiptPdf(content: SiteContent, donation: ReceiptDonation
     wrapText(value, 34).forEach((line, index) => {
       commands.push(textLine(64, donorY - 15 - index * 12, 9, line));
     });
-    donorY -= Math.max(42, wrapText(value, 34).length * 12 + 28);
+    donorY -= Math.max(34, wrapText(value, 34).length * 12 + 22);
   });
 
   let donationY = 552;
@@ -143,32 +143,42 @@ export function createReceiptPdf(content: SiteContent, donation: ReceiptDonation
     wrapText(value, 32).forEach((line, index) => {
       commands.push(textLine(304, donationY - 15 - index * 12, 9, line));
     });
-    donationY -= Math.max(42, wrapText(value, 32).length * 12 + 28);
+    donationY -= Math.max(34, wrapText(value, 32).length * 12 + 22);
   });
 
-  commands.push("0.98 0.96 0.89 rg 64 204 467 82 re f");
-  commands.push("0.94 0.72 0.23 RG 64 204 467 82 re S");
+  commands.push("0.98 0.96 0.89 rg 64 144 467 142 re f");
+  commands.push("0.94 0.72 0.23 RG 64 144 467 142 re S");
   commands.push("0.02 0.04 0.12 rg");
-  commands.push(textLine(82, 260, 10, "Foundation Details", "F2"));
-  foundationRows.slice(0, 5).forEach(([label, value], index) => {
-    commands.push(textLine(82, 242 - index * 13, 8, `${label}: ${value}`));
+  commands.push(textLine(82, 262, 10, "Foundation Details", "F2"));
+  let leftFoundationY = 242;
+  foundationRows.slice(0, 5).forEach(([label, value]) => {
+    const lines = wrapText(`${label}: ${value}`, 36);
+    lines.slice(0, 2).forEach((line, index) => {
+      commands.push(textLine(82, leftFoundationY - index * 11, 8, line));
+    });
+    leftFoundationY -= Math.max(16, lines.slice(0, 2).length * 11 + 5);
   });
-  foundationRows.slice(5).forEach(([label, value], index) => {
-    commands.push(textLine(304, 242 - index * 13, 8, `${label}: ${value}`));
+  let rightFoundationY = 242;
+  foundationRows.slice(5).forEach(([label, value]) => {
+    const lines = wrapText(`${label}: ${value}`, 38);
+    lines.slice(0, 3).forEach((line, index) => {
+      commands.push(textLine(304, rightFoundationY - index * 11, 8, line));
+    });
+    rightFoundationY -= Math.max(16, lines.slice(0, 3).length * 11 + 5);
   });
 
-  let noteY = 176;
+  let noteY = 122;
   commands.push("0.38 0.45 0.55 rg");
-  wrapText(content.receiptLegalNote || "", 92).slice(0, 4).forEach((line) => {
+  wrapText(content.receiptLegalNote || "", 92).slice(0, 3).forEach((line) => {
     commands.push(textLine(64, noteY, 8, line));
     noteY -= 11;
   });
 
   commands.push("0.02 0.48 0.44 rg");
-  commands.push(textLine(64, 130, 10, content.receiptFooterNote || "Thank you for supporting Vihana Foundation.", "F2"));
+  commands.push(textLine(64, 78, 10, content.receiptFooterNote || "Thank you for supporting Vihana Foundation.", "F2"));
   commands.push("0.02 0.04 0.12 rg");
-  commands.push(textLine(390, 130, 10, content.receiptSignatureName || "Vihana Foundation", "F2"));
-  commands.push(textLine(390, 114, 8, "Authorized acknowledgement"));
+  commands.push(textLine(390, 78, 10, content.receiptSignatureName || "Vihana Foundation", "F2"));
+  commands.push(textLine(390, 62, 8, "Authorized acknowledgement"));
 
   const stream = commands.join("\n");
   const objects = [

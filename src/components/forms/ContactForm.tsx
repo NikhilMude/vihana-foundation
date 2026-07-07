@@ -57,10 +57,10 @@ export default function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/8 sm:p-6">
-      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
+    <form onSubmit={handleSubmit} className="rounded-[8px] border border-slate-200 bg-white p-4 shadow-xl shadow-slate-900/8 sm:p-6">
+      <div className="grid gap-2 sm:grid-cols-2 sm:gap-4">
         <div>
-          <label htmlFor="name" className="text-sm font-bold text-slate-800">
+          <label htmlFor="name" className="text-xs font-bold text-slate-800 sm:text-sm">
             Name
           </label>
           <input
@@ -68,13 +68,13 @@ export default function ContactForm() {
             name="name"
             required
             autoComplete="name"
-            className="mt-2 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-teal-600 focus:bg-white"
+            className="mt-1 h-10 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-teal-600 focus:bg-white sm:mt-2 sm:h-12 sm:px-4"
             placeholder="Your name"
           />
         </div>
 
         <div>
-          <label htmlFor="email" className="text-sm font-bold text-slate-800">
+          <label htmlFor="email" className="text-xs font-bold text-slate-800 sm:text-sm">
             Email
           </label>
           <input
@@ -83,28 +83,28 @@ export default function ContactForm() {
             type="email"
             required
             autoComplete="email"
-            className="mt-2 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-teal-600 focus:bg-white"
+            className="mt-1 h-10 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-teal-600 focus:bg-white sm:mt-2 sm:h-12 sm:px-4"
             placeholder="you@example.com"
           />
         </div>
       </div>
 
-      <div className="mt-3 grid gap-3 sm:mt-4 sm:grid-cols-2 sm:gap-4">
+      <div className="mt-2 grid gap-2 sm:mt-4 sm:grid-cols-2 sm:gap-4">
         <div>
-          <label htmlFor="phone" className="text-sm font-bold text-slate-800">
+          <label htmlFor="phone" className="text-xs font-bold text-slate-800 sm:text-sm">
             Phone
           </label>
           <input
             id="phone"
             name="phone"
             autoComplete="tel"
-            className="mt-2 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-teal-600 focus:bg-white"
+            className="mt-1 h-10 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-teal-600 focus:bg-white sm:mt-2 sm:h-12 sm:px-4"
             placeholder="+91 98765 43210"
           />
         </div>
 
         <div>
-          <label htmlFor="interest" className="text-sm font-bold text-slate-800">
+          <label htmlFor="interest" className="text-xs font-bold text-slate-800 sm:text-sm">
             I want to help with
           </label>
           <select
@@ -112,7 +112,7 @@ export default function ContactForm() {
             name="interest"
             required
             defaultValue="Birthday Campaign"
-            className="mt-2 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 text-sm outline-none transition focus:border-teal-600 focus:bg-white"
+            className="mt-1 h-10 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none transition focus:border-teal-600 focus:bg-white sm:mt-2 sm:h-12 sm:px-4"
           >
             {interests.map((interest) => (
               <option key={interest}>{interest}</option>
@@ -126,29 +126,29 @@ export default function ContactForm() {
         <input id="company" name="company" tabIndex={-1} autoComplete="off" />
       </div>
 
-      <div className="mt-3 sm:mt-4">
-        <label htmlFor="message" className="text-sm font-bold text-slate-800">
+      <div className="mt-2 sm:mt-4">
+        <label htmlFor="message" className="text-xs font-bold text-slate-800 sm:text-sm">
           Message
         </label>
         <textarea
           id="message"
           name="message"
           required
-          rows={5}
-          className="mt-2 w-full resize-none rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-teal-600 focus:bg-white"
+          rows={3}
+          className="mt-1 w-full resize-none rounded-[8px] border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none transition focus:border-teal-600 focus:bg-white sm:mt-2 sm:px-4 sm:py-3"
           placeholder="Tell us how you would like to support Vihana Foundation."
         />
       </div>
 
       {status === "success" ? (
-        <div className="mt-5 flex items-center gap-2 rounded-[8px] bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">
+        <div className="mt-3 flex items-center gap-2 rounded-[8px] bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-800 sm:mt-5 sm:px-4 sm:py-3">
           <CheckCircle2 className="h-5 w-5" />
           {successMessage || "Thank you. We received your message."}
         </div>
       ) : null}
 
       {status === "error" ? (
-        <div className="mt-5 rounded-[8px] bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-800">
+        <div className="mt-3 rounded-[8px] bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-800 sm:mt-5 sm:px-4 sm:py-3">
           {error}
         </div>
       ) : null}
@@ -156,7 +156,7 @@ export default function ContactForm() {
       <Button
         type="submit"
         disabled={status === "loading"}
-        className="mt-5 h-12 w-full rounded-full bg-teal-700 text-base hover:bg-teal-800"
+        className="mt-4 h-11 w-full rounded-full bg-teal-700 text-sm hover:bg-teal-800 sm:mt-5 sm:h-12 sm:text-base"
       >
         {status === "loading" ? (
           <Loader2 className="mr-2 h-5 w-5 animate-spin" />

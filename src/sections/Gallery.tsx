@@ -23,26 +23,26 @@ export default function Gallery({ content, items }: { content: SiteContent; item
               {content.galleryEyebrow}
             </span>
 
-            <h2 className="mt-4 font-[family-name:var(--font-playfair)] text-[2rem] font-bold leading-tight text-slate-950 sm:mt-5 sm:text-5xl">
+            <h2 className="mt-2 font-[family-name:var(--font-playfair)] text-[1.75rem] font-bold leading-tight text-slate-950 sm:mt-5 sm:text-5xl">
               {content.galleryTitle}
             </h2>
           </div>
         </Reveal>
 
-        <div className="mt-7 grid gap-4 lg:mt-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-5">
+        <div className="mt-4 grid gap-3 lg:mt-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-5">
           <Reveal>
-            <div className="flex min-h-[260px] flex-col justify-end rounded-[8px] bg-[linear-gradient(135deg,#0f766e,#0ea5e9)] p-5 text-white shadow-xl shadow-slate-900/10 sm:min-h-[420px] sm:p-7">
-              <Camera className="h-9 w-9 text-amber-200 sm:h-10 sm:w-10" />
-              <h3 className="mt-5 max-w-xl font-[family-name:var(--font-playfair)] text-[2rem] font-bold leading-tight sm:mt-6 sm:text-4xl">
+            <div className="flex min-h-[170px] flex-col justify-end rounded-[8px] bg-[linear-gradient(135deg,#0f766e,#0ea5e9)] p-4 text-white shadow-xl shadow-slate-900/10 sm:min-h-[420px] sm:p-7">
+              <Camera className="h-7 w-7 text-amber-200 sm:h-10 sm:w-10" />
+              <h3 className="mt-3 max-w-xl font-[family-name:var(--font-playfair)] text-[1.65rem] font-bold leading-tight sm:mt-6 sm:text-4xl">
                 {content.galleryFeatureTitle}
               </h3>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-white/85 sm:mt-4 sm:text-base sm:leading-7">
+              <p className="mt-2 max-w-xl text-sm leading-5 text-white/85 sm:mt-4 sm:text-base sm:leading-7">
                 {content.galleryFeatureDescription}
               </p>
             </div>
           </Reveal>
 
-          <div className="columns-1 gap-4 sm:columns-2 lg:columns-1 lg:gap-5">
+          <div className="columns-2 gap-3 sm:columns-2 lg:columns-1 lg:gap-5">
             {items.map((moment, index) => {
               const Icon = fallbackIcons[index % fallbackIcons.length];
 
@@ -50,7 +50,7 @@ export default function Gallery({ content, items }: { content: SiteContent; item
                 <Reveal key={moment.id || moment.title} delay={index * 0.06}>
                   <button
                     onClick={() => moment.imageUrl && setSelected(moment)}
-                    className="mb-4 w-full break-inside-avoid overflow-hidden rounded-[8px] border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:shadow-xl lg:mb-5"
+                    className="mb-3 w-full break-inside-avoid overflow-hidden rounded-[8px] border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:shadow-xl lg:mb-5"
                   >
                     {moment.imageUrl ? (
                       <Image
@@ -63,13 +63,13 @@ export default function Gallery({ content, items }: { content: SiteContent; item
                         loading="lazy"
                       />
                     ) : null}
-                    <div className="p-5 sm:p-6">
-                      <div className={`flex h-11 w-11 items-center justify-center rounded-[8px] ${fallbackColors[index % fallbackColors.length]}`}>
+                    <div className="p-3 sm:p-6">
+                      <div className={`flex h-8 w-8 items-center justify-center rounded-[8px] sm:h-11 sm:w-11 ${fallbackColors[index % fallbackColors.length]}`}>
                         <Icon className="h-5 w-5" />
                       </div>
-                      <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-amber-600">{moment.tag}</p>
-                      <h3 className="mt-2 text-lg font-bold text-slate-950 sm:text-xl">{moment.title}</h3>
-                      <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base sm:leading-7">{moment.description}</p>
+                      <p className="mt-3 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-600 sm:mt-5 sm:text-xs sm:tracking-[0.18em]">{moment.tag}</p>
+                      <h3 className="mt-1 text-sm font-bold text-slate-950 sm:mt-2 sm:text-xl">{moment.title}</h3>
+                      <p className="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-base sm:leading-7">{moment.description}</p>
                     </div>
                   </button>
                 </Reveal>

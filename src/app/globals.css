@@ -48,15 +48,27 @@
 }
 
 html {
+  max-width: 100%;
+  overflow-x: clip;
+  overscroll-behavior-x: none;
   scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
+  max-width: 100%;
+  overflow-x: clip;
   color: var(--text);
   background: var(--background);
   font-family: var(--font-inter), sans-serif;
   text-rendering: optimizeLegibility;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
 }
 
 h1,

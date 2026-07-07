@@ -98,7 +98,7 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
           open ? "max-h-[34rem]" : "max-h-0 border-transparent"
         }`}
       >
-        <Container className="py-3">
+        <Container className="max-h-[calc(100dvh-3.5rem)] overflow-y-auto overscroll-contain py-3">
           <div className="flex flex-col gap-1">
             {menuNavigation.map((item) => (
               <SmartNavLink
