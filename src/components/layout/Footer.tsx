@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Globe, Mail, MapPin, Phone } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
@@ -68,7 +69,20 @@ export default function Footer({
                       title={item.label}
                       className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/8 text-sm font-black text-white transition hover:border-amber-300/60 hover:bg-white hover:text-slate-950"
                     >
-                      {mark ? mark : <Globe className="h-4 w-4" />}
+                      {item.iconImageUrl ? (
+                        <Image
+                          src={item.iconImageUrl}
+                          alt={`${item.label} icon`}
+                          width={24}
+                          height={24}
+                          unoptimized
+                          className="h-5 w-5 object-contain"
+                        />
+                      ) : mark ? (
+                        mark
+                      ) : (
+                        <Globe className="h-4 w-4" />
+                      )}
                     </a>
                   );
                 })}

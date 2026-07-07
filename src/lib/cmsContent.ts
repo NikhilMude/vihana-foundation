@@ -7,6 +7,7 @@ export type SocialLink = {
   id: string;
   label: string;
   href: string;
+  iconImageUrl?: string;
 };
 
 export type EditableItem = {
@@ -243,10 +244,10 @@ export const defaultSiteContent: SiteContent = {
     { label: "Contact Us", href: "/contact-us" },
   ],
   socialLinks: [
-    { id: "instagram", label: "Instagram", href: "" },
-    { id: "facebook", label: "Facebook", href: "" },
-    { id: "youtube", label: "YouTube", href: "" },
-    { id: "linkedin", label: "LinkedIn", href: "" },
+    { id: "instagram", label: "Instagram", href: "", iconImageUrl: "" },
+    { id: "facebook", label: "Facebook", href: "", iconImageUrl: "" },
+    { id: "youtube", label: "YouTube", href: "", iconImageUrl: "" },
+    { id: "linkedin", label: "LinkedIn", href: "", iconImageUrl: "" },
   ],
   sectionOrder: [
     { id: "hero", label: "Hero", visible: true },

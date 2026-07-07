@@ -186,6 +186,15 @@ const listLabels: Record<ListKey, string> = {
   newsItems: "News / Activities",
 };
 
+const socialIconPresets = [
+  { label: "Instagram", mark: "IG" },
+  { label: "Facebook", mark: "f" },
+  { label: "YouTube", mark: "▶" },
+  { label: "LinkedIn", mark: "in" },
+  { label: "X", mark: "X" },
+  { label: "Website", mark: "🌐" },
+];
+
 function uniqueId(prefix: string) {
   return `${prefix}-${Date.now()}`;
 }
@@ -227,6 +236,7 @@ function emptySocialLink(): SocialLink {
     id: uniqueId("social"),
     label: "Instagram",
     href: "",
+    iconImageUrl: "",
   };
 }
 
@@ -361,6 +371,16 @@ export default function AdminDashboard({
       socialLinks: current.socialLinks.filter((_, itemIndex) => itemIndex !== index),
     }));
     setStatus("Social links updated. Click Save to publish it.");
+  }
+
+  function applySocialPreset(index: number, label: string) {
+    setContent((current) => ({
+      ...current,
+      socialLinks: current.socialLinks.map((item, itemIndex) =>
+        itemIndex === index ? { ...item, label, iconImageUrl: "" } : item
+      ),
+    }));
+    setStatus("Social icon selected. Click Save to publish it.");
   }
 
   function updateSectionConfig(index: number, key: keyof SectionConfig, value: string | boolean) {
@@ -776,18 +796,23 @@ export default function AdminDashboard({
               <div className="mt-5 grid gap-4">
                 {content.socialLinks.map((item, index) => (
                   <div key={item.id} className="grid gap-3 rounded-[8px] border border-slate-200 bg-slate-50 p-4 md:grid-cols-[0.7fr_1fr_auto]">
-                    <select
-                      value={item.label}
-                      onChange={(event) => updateSocialLink(index, "label", event.target.value)}
-                      className="h-11 rounded-[8px] border border-slate-200 px-4"
-                    >
-                      <option>Instagram</option>
-                      <option>Facebook</option>
-                      <option>YouTube</option>
-                      <option>LinkedIn</option>
-                      <option>X</option>
-                      <option>Website</option>
-                    </select>
+                    <div className="grid grid-cols-[auto_1fr] gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-950 text-sm font-black text-white">
+                        {socialIconPresets.find((preset) => preset.label === item.label)?.mark || "🌐"}
+                      </div>
+                      <select
+                        value={item.label}
+                        onChange={(event) => applySocialPreset(index, event.target.value)}
+                        className="h-11 rounded-[8px] border border-slate-200 px-4"
+                        aria-label="Choose social icon"
+                      >
+                        {socialIconPresets.map((preset) => (
+                          <option key={preset.label} value={preset.label}>
+                            {preset.mark} {preset.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     <input
                       value={item.href}
                       onChange={(event) => updateSocialLink(index, "href", event.target.value)}
@@ -797,6 +822,33 @@ export default function AdminDashboard({
                     <button type="button" onClick={() => removeSocialLink(index)} className="inline-flex items-center justify-center rounded-[8px] px-4 text-sm font-bold text-rose-700">
                       <Trash2 className="h-4 w-4" />
                     </button>
+                    <div className="grid gap-3 md:col-span-3 md:grid-cols-[1fr_auto] md:items-center">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => handleImageUpload(event, (value) => updateSocialLink(index, "iconImageUrl", value))}
+                        className="rounded-[8px] border border-dashed border-slate-300 bg-white p-3 text-sm"
+                      />
+                      {item.iconImageUrl ? (
+                        <div className="flex items-center gap-3">
+                          <Image
+                            src={item.iconImageUrl}
+                            alt={`${item.label} icon preview`}
+                            width={44}
+                            height={44}
+                            unoptimized
+                            className="h-11 w-11 rounded-full bg-white object-contain p-1 shadow-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => updateSocialLink(index, "iconImageUrl", "")}
+                            className="h-10 rounded-full bg-slate-950 px-4 text-sm font-bold text-white"
+                          >
+                            Remove Icon
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
                 ))}
               </div>
