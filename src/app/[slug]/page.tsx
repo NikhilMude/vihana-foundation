@@ -10,6 +10,7 @@ import FloatingDonate from "@/components/layout/FloatingDonate";
 import FloatingWhatsApp from "@/components/layout/FloatingWhatsApp";
 import LaunchingSoon from "@/components/layout/LaunchingSoon";
 import Navbar from "@/components/layout/Navbar";
+import SmartNavLink from "@/components/layout/SmartNavLink";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { shouldShowLaunchSoon } from "@/lib/launchGate";
@@ -78,10 +79,10 @@ export default async function CmsPage({ params }: PageProps) {
 
               {page.buttonLabel && page.buttonHref ? (
                 <Button asChild className="mt-8 h-12 w-full rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800 sm:w-fit">
-                  <Link href={page.buttonHref}>
+                  <SmartNavLink href={page.buttonHref}>
                     {page.buttonLabel}
                     <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
+                  </SmartNavLink>
                 </Button>
               ) : null}
             </article>

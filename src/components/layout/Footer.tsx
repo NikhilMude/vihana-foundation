@@ -1,7 +1,7 @@
-import Link from "next/link";
 import Image from "next/image";
 import { Globe, Mail, MapPin, Phone } from "lucide-react";
 
+import SmartNavLink from "@/components/layout/SmartNavLink";
 import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
 import { NavigationItem, SiteContent } from "@/lib/cmsContent";
@@ -30,10 +30,6 @@ function getSocialMark(label: string) {
   }
 
   return "";
-}
-
-function normalizeHref(href: string) {
-  return href.startsWith("#") ? `/${href}` : href;
 }
 
 export default function Footer({
@@ -105,13 +101,13 @@ export default function Footer({
 
             <div className="mt-5 grid gap-3">
               {navigation.map((item) => (
-                <Link
+                <SmartNavLink
                   key={item.label}
-                  href={normalizeHref(item.href)}
+                  href={item.href}
                   className="text-sm text-slate-400 transition hover:text-white"
                 >
                   {item.label}
-                </Link>
+                </SmartNavLink>
               ))}
             </div>
           </div>
@@ -124,13 +120,13 @@ export default function Footer({
 
               <div className="mt-5 grid gap-3">
                 {legalPages.map((page) => (
-                  <Link
+                  <SmartNavLink
                     key={page.id}
                     href={`/${page.slug}`}
                     className="text-sm text-slate-400 transition hover:text-white"
                   >
                     {page.title}
-                  </Link>
+                  </SmartNavLink>
                 ))}
               </div>
             </div>

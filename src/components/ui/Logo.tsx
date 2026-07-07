@@ -1,6 +1,7 @@
-import Link from "next/link";
 import Image from "next/image";
 import { HeartHandshake } from "lucide-react";
+
+import SmartNavLink from "@/components/layout/SmartNavLink";
 
 type LogoProps = {
   brandName?: string;
@@ -10,7 +11,7 @@ type LogoProps = {
 
 export function Logo({ brandName = "Vihana", brandTagline = "Foundation", logoImageUrl = "" }: LogoProps) {
   return (
-    <Link href="/#home" className="flex min-w-0 items-center gap-2.5 sm:gap-3" aria-label={`${brandName} ${brandTagline} home`}>
+    <SmartNavLink href="/#home" className="flex min-w-0 items-center gap-2.5 sm:gap-3" aria-label={`${brandName} ${brandTagline} home`}>
       {logoImageUrl ? (
         <Image
           src={logoImageUrl}
@@ -34,6 +35,6 @@ export function Logo({ brandName = "Vihana", brandTagline = "Foundation", logoIm
           {brandTagline}
         </p>
       </div>
-    </Link>
+    </SmartNavLink>
   );
 }
