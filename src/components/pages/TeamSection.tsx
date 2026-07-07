@@ -9,7 +9,7 @@ function getName(member: EditableItem) {
 
 function getBullets(member: EditableItem) {
   return (member.description || "")
-    .split(/\n|•/)
+    .split(/\n|\u2022/)
     .map((item) => item.trim())
     .filter(Boolean);
 }
@@ -22,22 +22,22 @@ export default function TeamSection({ content }: { content: SiteContent }) {
   }
 
   return (
-    <section className="mt-6 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:mt-8 sm:p-8">
+    <section className="mt-4 rounded-[8px] border border-slate-200 bg-white p-4 shadow-sm sm:mt-8 sm:p-8">
       <div className="mx-auto max-w-3xl text-center">
         <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-600 sm:text-sm sm:tracking-[0.26em]">
           {content.teamEyebrow}
         </p>
-        <h2 className="mt-2 font-[family-name:var(--font-playfair)] text-[2rem] font-bold leading-tight text-teal-800 sm:mt-4 sm:text-5xl">
+        <h2 className="mt-2 font-[family-name:var(--font-playfair)] text-[1.75rem] font-bold leading-tight text-teal-800 sm:mt-4 sm:text-5xl">
           {content.teamTitle}
         </h2>
         {content.teamDescription ? (
-          <p className="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-5 sm:text-lg sm:leading-8">
+          <p className="mx-auto mt-2 max-w-2xl text-sm leading-5 text-slate-600 sm:mt-5 sm:text-lg sm:leading-8">
             {content.teamDescription}
           </p>
         ) : null}
       </div>
 
-      <div className="mt-6 grid gap-5 md:grid-cols-2 lg:mt-8 lg:grid-cols-3">
+      <div className="mt-4 grid gap-3 md:grid-cols-2 lg:mt-8 lg:grid-cols-3">
         {members.map((member) => {
           const bullets = getBullets(member);
 
@@ -54,28 +54,30 @@ export default function TeamSection({ content }: { content: SiteContent }) {
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-teal-700 shadow-sm">
-                      <HeartHandshake className="h-8 w-8" />
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white text-teal-700 shadow-sm sm:h-16 sm:w-16">
+                      <HeartHandshake className="h-7 w-7 sm:h-8 sm:w-8" />
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="p-4 sm:p-5">
-                <h3 className="font-[family-name:var(--font-playfair)] text-2xl font-bold leading-tight text-teal-800">
+              <div className="p-3 sm:p-5">
+                <h3 className="font-[family-name:var(--font-playfair)] text-xl font-bold leading-tight text-teal-800 sm:text-2xl">
                   {getName(member)}
                 </h3>
                 {member.role || member.value ? (
-                  <p className="mt-1 text-lg tracking-[0.08em] text-teal-700">{member.role || member.value}</p>
+                  <p className="mt-0.5 text-base tracking-[0.06em] text-teal-700 sm:mt-1 sm:text-lg sm:tracking-[0.08em]">
+                    {member.role || member.value}
+                  </p>
                 ) : null}
                 {member.tag ? (
-                  <p className="mt-4 flex gap-2 text-sm italic leading-6 text-slate-500">
+                  <p className="mt-2 flex gap-2 text-xs italic leading-5 text-slate-500 sm:mt-4 sm:text-sm sm:leading-6">
                     <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
                     {member.tag}
                   </p>
                 ) : null}
                 {bullets.length ? (
-                  <ul className="mt-4 grid gap-2 text-sm leading-6 text-slate-600">
+                  <ul className="mt-3 grid gap-1.5 text-xs leading-5 text-slate-600 sm:mt-4 sm:gap-2 sm:text-sm sm:leading-6">
                     {bullets.map((bullet) => (
                       <li key={bullet} className="flex gap-2">
                         <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-teal-700" />
