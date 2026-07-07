@@ -182,6 +182,7 @@ const contentFields: { key: keyof SiteContent; label: string; multiline?: boolea
   { key: "contactEmail", label: "Contact email" },
   { key: "contactPhone", label: "Contact phone" },
   { key: "contactLocation", label: "Contact location" },
+  { key: "footerLegalTitle", label: "Footer legal links title" },
 ];
 
 const listLabels: Record<ListKey, string> = {

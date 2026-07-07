@@ -40,11 +40,15 @@ export default function Footer({
   navigation: NavigationItem[];
 }) {
   const socialLinks = content.socialLinks.filter((item) => item.href.trim());
+  const legalPages = content.pages.filter((page) =>
+    page.published &&
+    ["privacy-policy", "terms-and-conditions", "cookie-policy", "disclaimer", "refund-cancellation-policy"].includes(page.slug)
+  );
 
   return (
     <footer className="bg-slate-950 py-10 text-white sm:py-16">
       <Container>
-        <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr_1fr] lg:gap-10">
+        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.75fr_0.75fr_1fr] lg:gap-10">
           <div>
             <div className="[&_p]:text-white [&_p:last-child]:text-slate-400">
               <Logo brandName={content.brandName} brandTagline={content.brandTagline} logoImageUrl={content.logoImageUrl} />
@@ -107,6 +111,26 @@ export default function Footer({
               ))}
             </div>
           </div>
+
+          {legalPages.length ? (
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-slate-300">
+                {content.footerLegalTitle}
+              </h3>
+
+              <div className="mt-5 grid gap-3">
+                {legalPages.map((page) => (
+                  <Link
+                    key={page.id}
+                    href={`/${page.slug}`}
+                    className="text-sm text-slate-400 transition hover:text-white"
+                  >
+                    {page.title}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <div>
             <h3 className="text-sm font-bold uppercase tracking-[0.22em] text-slate-300">
