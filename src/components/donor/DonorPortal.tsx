@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { Download, HeartHandshake, Info, Loader2, LogIn, LogOut, UserPlus } from "lucide-react";
+import { BadgeCheck, Download, HeartHandshake, Info, Loader2, LogIn, LogOut, ReceiptText, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 
@@ -36,6 +36,24 @@ function toNumber(value?: string) {
   return Number(String(value || "").replace(/[^\d.]/g, "")) || 0;
 }
 
+function formatDate(value?: string) {
+  if (!value) {
+    return "Not available";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata",
+  }).format(date);
+}
+
 function downloadCsv(filename: string, rows: Record<string, string | number | undefined>[]) {
   const headers = Object.keys(rows[0] || { empty: "" });
   const csv = [
@@ -61,6 +79,7 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
   const [loading, setLoading] = useState(false);
   const [foreignNotice, setForeignNotice] = useState("");
   const total = useMemo(() => donations.reduce((sum, item) => sum + toNumber(item.amount), 0), [donations]);
+  const receiptsRequested = useMemo(() => donations.filter((item) => item.receiptRequired === "Yes").length, [donations]);
 
   async function submitAuth(event: FormEvent<HTMLFormElement>, endpoint: string) {
     event.preventDefault();
@@ -92,12 +111,12 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
 
   if (donor) {
     return (
-      <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
+      <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
         <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-600">Donor Account</p>
-              <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-4xl font-bold text-slate-950">
+              <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-3xl font-bold capitalize text-slate-950 sm:text-4xl">
                 {donor.name}
               </h1>
             </div>
@@ -107,15 +126,30 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
             </Button>
           </div>
 
-          <div className="mt-6 grid gap-3 text-sm leading-6 text-slate-600">
-            <p><span className="font-bold text-slate-900">Email:</span> {donor.email}</p>
-            <p><span className="font-bold text-slate-900">Phone:</span> {donor.phone || "Not added"}</p>
-            <p><span className="font-bold text-slate-900">Type:</span> {donor.donorType}</p>
-            <p><span className="font-bold text-slate-900">PAN:</span> {donor.pan || "Not added"}</p>
-            <p><span className="font-bold text-slate-900">Address:</span> {donor.address || "Not added"}</p>
+          <div className="mt-5 rounded-[8px] bg-[linear-gradient(135deg,#ecfeff,#fff7ed)] p-4">
+            <div className="flex items-start gap-3">
+              <BadgeCheck className="mt-0.5 h-5 w-5 shrink-0 text-teal-700" />
+              <p className="text-sm leading-6 text-slate-700">
+                Your donor profile is connected to donation pledges submitted with this email.
+              </p>
+            </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="mt-5 grid gap-3 text-sm leading-6 text-slate-600">
+            {[
+              ["Email", donor.email],
+              ["Phone", donor.phone || "Not added"],
+              ["Type", donor.donorType || "Indian Citizen"],
+              ["PAN", donor.pan || "Not added"],
+              ["Address", donor.address || "Not added"],
+            ].map(([label, value]) => (
+              <p key={label} className="rounded-[8px] bg-slate-50 px-4 py-3">
+                <span className="font-bold text-slate-900">{label}:</span> {value}
+              </p>
+            ))}
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
             <div className="rounded-[8px] bg-teal-50 p-4">
               <p className="text-2xl font-black text-teal-700">INR {total.toLocaleString("en-IN")}</p>
               <p className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Total pledged</p>
@@ -124,6 +158,10 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
               <p className="text-2xl font-black text-amber-700">{donations.length}</p>
               <p className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Transactions</p>
             </div>
+            <div className="rounded-[8px] bg-sky-50 p-4">
+              <p className="text-2xl font-black text-sky-700">{receiptsRequested}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">Receipts</p>
+            </div>
           </div>
         </section>
 
@@ -131,7 +169,7 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-600">Donation History</p>
-              <h2 className="mt-2 text-2xl font-bold text-slate-950">Your transactions</h2>
+              <h2 className="mt-2 text-2xl font-bold text-slate-950">Donation dashboard</h2>
             </div>
             <Button
               type="button"
@@ -148,19 +186,22 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
           <div className="mt-5 grid gap-3">
             {donations.length ? (
               donations.map((donation) => (
-                <div key={donation.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+                <div key={donation.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-4 transition hover:border-teal-200 hover:bg-white hover:shadow-sm">
                   <div className="flex flex-col justify-between gap-2 sm:flex-row">
                     <div>
-                      <h3 className="font-bold text-slate-950">INR {donation.amount}</h3>
+                      <h3 className="flex items-center gap-2 font-bold text-slate-950">
+                        <ReceiptText className="h-4 w-4 text-teal-700" />
+                        INR {Number(toNumber(donation.amount)).toLocaleString("en-IN")}
+                      </h3>
                       <p className="mt-1 text-sm text-slate-500">{donation.purpose || "General Fund"} | {donation.frequency || "One Time"}</p>
                     </div>
-                    <p className="text-sm font-bold text-teal-700">{donation.status}</p>
+                    <p className="h-fit rounded-full bg-teal-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-teal-700">{donation.status || "Recorded"}</p>
                   </div>
                   <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
                     <p><span className="font-bold text-slate-800">Method:</span> {donation.method}</p>
                     <p><span className="font-bold text-slate-800">Reference:</span> {donation.transactionId}</p>
                     <p><span className="font-bold text-slate-800">Receipt:</span> {donation.receiptRequired || "No"}</p>
-                    <p><span className="font-bold text-slate-800">Date:</span> {donation.createdAt}</p>
+                    <p><span className="font-bold text-slate-800">Date:</span> {formatDate(donation.createdAt)}</p>
                   </div>
                 </div>
               ))

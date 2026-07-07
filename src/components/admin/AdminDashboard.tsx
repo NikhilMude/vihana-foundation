@@ -20,6 +20,7 @@ import {
   Download,
   HelpCircle,
   Mail,
+  ReceiptText,
   Search,
 } from "lucide-react";
 
@@ -86,6 +87,21 @@ type SubscriberRecord = {
   createdAt?: string;
 };
 
+type AccountingRecord = {
+  id: string;
+  type?: string;
+  title?: string;
+  amount?: string;
+  category?: string;
+  date?: string;
+  party?: string;
+  reference?: string;
+  status?: string;
+  notes?: string;
+  documentUrl?: string;
+  createdAt?: string;
+};
+
 type AdminDashboardProps = {
   initialContent: SiteContent;
   initialGalleryItems: GalleryItem[];
@@ -95,6 +111,7 @@ type AdminDashboardProps = {
   initialDonations: DonationRecord[];
   initialDonors: DonorRecord[];
   initialSubscribers: SubscriberRecord[];
+  initialAccountingRecords: AccountingRecord[];
 };
 
 type Tab =
@@ -110,6 +127,7 @@ type Tab =
   | "gallery"
   | "messages"
   | "donations"
+  | "accounting"
   | "donors"
   | "subscribers"
   | "visitors";
@@ -283,6 +301,7 @@ const quickActions: { tab: Tab; title: string; description: string; icon: typeof
   { tab: "sections", title: "Edit Cards", description: "Programs, impact numbers, FAQ, news, events and reports.", icon: LayoutList },
   { tab: "navigation", title: "Menu & Social Links", description: "Website menu, footer links and social media.", icon: Navigation },
   { tab: "donations", title: "Donation Reports", description: "Donation records, donor reports and CSV downloads.", icon: BadgeIndianRupee },
+  { tab: "accounting", title: "Accounting", description: "Expenses, receipts, bills and annual statements.", icon: ReceiptText },
 ];
 
 const socialIconPresets = [
@@ -547,6 +566,17 @@ const pageWorkspaces: {
     ],
   },
   {
+    id: "accounting",
+    title: "Accounting & Compliance",
+    description: "Donation ledger, expenses, receipts, bills, statements and supporting documents.",
+    guide: ["Add expenses, bills and receipt records.", "Attach bill or receipt documents.", "Export CSV for accountant or annual reporting."],
+    actions: [
+      { label: "Accounting Register", tab: "accounting" },
+      { label: "Donation Reports", tab: "donations" },
+      { label: "Annual Reports", tab: "sections", listKey: "annualReports" },
+    ],
+  },
+  {
     id: "navigation",
     title: "Menu, Footer & Social",
     description: "Website navigation, social media icons, footer links and SEO metadata.",
@@ -720,6 +750,7 @@ export default function AdminDashboard({
   initialDonations,
   initialDonors,
   initialSubscribers,
+  initialAccountingRecords,
 }: AdminDashboardProps) {
   const [tab, setTab] = useState<Tab>("pageStudio");
   const [content, setContent] = useState(initialContent);
@@ -729,9 +760,11 @@ export default function AdminDashboard({
   const [donations] = useState(initialDonations);
   const [donors] = useState(initialDonors);
   const [subscribers] = useState(initialSubscribers);
+  const [accountingRecords, setAccountingRecords] = useState(initialAccountingRecords);
   const [status, setStatus] = useState("");
   const [saving, setSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
+  const [accountingDocumentPreview, setAccountingDocumentPreview] = useState("");
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -752,6 +785,7 @@ export default function AdminDashboard({
       { id: "order" as const, label: "Homepage Order", icon: Settings },
       { id: "email" as const, label: "Email Composer", icon: Mail },
       { id: "donations" as const, label: "Donations", icon: BadgeIndianRupee },
+      { id: "accounting" as const, label: "Accounting", icon: ReceiptText },
       { id: "donors" as const, label: "Donors", icon: Users },
       { id: "messages" as const, label: "Messages", icon: Inbox },
       { id: "subscribers" as const, label: "Newsletter", icon: Mail },
@@ -953,6 +987,18 @@ export default function AdminDashboard({
       }
     });
 
+    accountingRecords.forEach((item) => {
+      if (matches(item.type, item.title, item.amount, item.category, item.date, item.party, item.reference, item.status, item.notes)) {
+        results.push({
+          id: `accounting-${item.id}`,
+          title: item.title || "Accounting record",
+          description: `Accounting / ${item.type || "Record"}`,
+          tab: "accounting",
+          action: () => setTab("accounting"),
+        });
+      }
+    });
+
     visitors.forEach((item) => {
       if (matches(item.path, item.referrer, item.language, item.timezone, item.ipAddress, item.createdAt)) {
         results.push({
@@ -966,7 +1012,7 @@ export default function AdminDashboard({
     });
 
     return results.slice(0, 18);
-  }, [content, donations, donors, galleryItems, messages, searchQuery, subscribers, visitors]);
+  }, [accountingRecords, content, donations, donors, galleryItems, messages, searchQuery, subscribers, visitors]);
   const donationSummary = useMemo(() => {
     const total = donations.reduce((sum, donation) => sum + currencyAmount(donation.amount), 0);
     const receiptCount = donations.filter((donation) => donation.receiptRequired === "Yes").length;
@@ -985,6 +1031,21 @@ export default function AdminDashboard({
 
     return { total, receiptCount, monthlyCount, uniqueDonors, byPurpose, byMethod };
   }, [donations]);
+  const accountingSummary = useMemo(() => {
+    const byType = accountingRecords.reduce<Record<string, number>>((accumulator, record) => {
+      const type = record.type || "Record";
+      accumulator[type] = (accumulator[type] || 0) + currencyAmount(record.amount);
+      return accumulator;
+    }, {});
+    const expenses = accountingRecords
+      .filter((record) => (record.type || "").toLowerCase().includes("expense") || (record.type || "").toLowerCase().includes("bill"))
+      .reduce((sum, record) => sum + currencyAmount(record.amount), 0);
+    const receipts = accountingRecords
+      .filter((record) => (record.type || "").toLowerCase().includes("receipt"))
+      .reduce((sum, record) => sum + currencyAmount(record.amount), 0);
+
+    return { byType, expenses, receipts };
+  }, [accountingRecords]);
 
   useEffect(() => {
     if (!hasUnsavedChanges) {
@@ -1292,8 +1353,8 @@ export default function AdminDashboard({
       return;
     }
 
-    if (file.size > 1800000) {
-      setStatus("Please choose a PDF under 1.8 MB.");
+    if (file.size > 650000) {
+      setStatus("Please choose a compressed PDF or image under 650 KB.");
       return;
     }
 
@@ -1350,6 +1411,64 @@ export default function AdminDashboard({
       setGalleryItems((items) => items.filter((item) => item.id !== id));
       setStatus("Gallery item deleted.");
     }
+  }
+
+  async function addAccountingRecord(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setStatus("Saving accounting record...");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const response = await fetch("/api/admin/accounting", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: String(formData.get("type") || ""),
+        title: String(formData.get("title") || ""),
+        amount: String(formData.get("amount") || ""),
+        category: String(formData.get("category") || ""),
+        date: String(formData.get("date") || ""),
+        party: String(formData.get("party") || ""),
+        reference: String(formData.get("reference") || ""),
+        status: String(formData.get("status") || ""),
+        notes: String(formData.get("notes") || ""),
+        documentUrl: accountingDocumentPreview,
+      }),
+    });
+    const result = (await response.json()) as { ok: boolean; item?: AccountingRecord; message?: string };
+
+    setSaving(false);
+
+    if (!response.ok || !result.item) {
+      setStatus(result.message || "Could not save accounting record.");
+      return;
+    }
+
+    setAccountingRecords((records) => [result.item as AccountingRecord, ...records]);
+    setAccountingDocumentPreview("");
+    form.reset();
+    setStatus("Accounting record saved.");
+  }
+
+  async function deleteAccountingRecord(id: string) {
+    if (!window.confirm("Delete this accounting record?")) {
+      return;
+    }
+
+    const response = await fetch(`/api/admin/accounting?id=${id}`, {
+      method: "DELETE",
+    });
+
+    if (!response.ok) {
+      setStatus("Could not delete accounting record.");
+      return;
+    }
+
+    setAccountingRecords((records) => records.filter((record) => record.id !== id));
+    setStatus("Accounting record deleted.");
   }
 
   async function sendNewsletter() {
@@ -1610,10 +1729,11 @@ export default function AdminDashboard({
               </div>
             </section>
 
-            <section className="grid gap-4 md:grid-cols-5">
+            <section className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
               {[
                 ["Messages", messages.length],
                 ["Donations", donations.length],
+                ["Accounting", accountingRecords.length],
                 ["Donors", donors.length],
                 ["Subscribers", subscribers.length],
                 ["Visitors", visitorCount],
@@ -2404,6 +2524,150 @@ export default function AdminDashboard({
                 No donation records yet.
               </div>
             )}
+          </div>
+        ) : null}
+
+        {tab === "accounting" ? (
+          <div className="mt-6 grid gap-5">
+            <section className="grid gap-4 md:grid-cols-4">
+              {[
+                ["Records", accountingRecords.length],
+                ["Expenses / Bills", `INR ${accountingSummary.expenses.toLocaleString("en-IN")}`],
+                ["Receipts", `INR ${accountingSummary.receipts.toLocaleString("en-IN")}`],
+                ["Net", `INR ${(accountingSummary.receipts - accountingSummary.expenses).toLocaleString("en-IN")}`],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{label}</p>
+                  <p className="mt-2 text-2xl font-black text-slate-950">{value}</p>
+                </div>
+              ))}
+            </section>
+
+            <section className="grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
+              <form onSubmit={addAccountingRecord} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-600">Accounting</p>
+                  <h2 className="mt-2 text-2xl font-black text-slate-950">Add compliance record</h2>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    Maintain expenses, receipts, bills and annual statement records for transparency.
+                  </p>
+                </div>
+
+                <div className="mt-5 grid gap-3">
+                  <select name="type" defaultValue="Expense" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600">
+                    <option>Donation</option>
+                    <option>Expense</option>
+                    <option>Receipt</option>
+                    <option>Bill</option>
+                    <option>Annual Statement</option>
+                  </select>
+                  <input name="title" required placeholder="Title, e.g. School kit purchase" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <input name="amount" required inputMode="numeric" placeholder="Amount" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                    <input name="date" type="date" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <input name="category" placeholder="Category" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                    <input name="party" placeholder="Vendor / donor / party" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <input name="reference" placeholder="Bill / receipt / transaction no." className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                    <select name="status" defaultValue="Recorded" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600">
+                      <option>Recorded</option>
+                      <option>Pending verification</option>
+                      <option>Verified</option>
+                      <option>Audited</option>
+                    </select>
+                  </div>
+                  <textarea name="notes" rows={4} placeholder="Notes for audit or transparency" className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-teal-600" />
+                  <input
+                    type="file"
+                    accept="application/pdf,image/*"
+                    onChange={(event) => handleDocumentUpload(event, setAccountingDocumentPreview)}
+                    className="rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm"
+                  />
+                  {accountingDocumentPreview ? (
+                    <p className="rounded-[8px] bg-teal-50 px-4 py-3 text-sm font-bold text-teal-800">
+                      Document attached. Save the record to store it.
+                    </p>
+                  ) : null}
+                </div>
+
+                <Button type="submit" disabled={saving} className="mt-5 h-12 w-full rounded-full bg-teal-700 text-base hover:bg-teal-800">
+                  {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ReceiptText className="mr-2 h-5 w-5" />}
+                  Save Accounting Record
+                </Button>
+              </form>
+
+              <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                  <div>
+                    <h2 className="text-xl font-black text-slate-950">Accounting register</h2>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">Use this as an internal transparency ledger.</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => downloadCsv("vihana-accounting-register.csv", accountingRecords)}
+                    className="h-10 rounded-full"
+                    disabled={!accountingRecords.length}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Export CSV
+                  </Button>
+                </div>
+
+                <div className="mt-5 grid gap-3">
+                  {Object.entries(accountingSummary.byType).length ? (
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {Object.entries(accountingSummary.byType).map(([type, total]) => (
+                        <div key={type} className="rounded-[8px] bg-slate-50 px-4 py-3 text-sm">
+                          <p className="font-bold text-slate-700">{type}</p>
+                          <p className="mt-1 font-black text-teal-700">INR {total.toLocaleString("en-IN")}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+
+                  {accountingRecords.length ? (
+                    accountingRecords.map((record) => (
+                      <article key={record.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+                        <div className="flex flex-col justify-between gap-2 sm:flex-row">
+                          <div>
+                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">{record.type || "Record"}</p>
+                            <h3 className="mt-1 font-bold text-slate-950">{record.title}</h3>
+                            <p className="mt-1 text-sm text-slate-500">{record.category || "General"} | {record.date || "Date not added"}</p>
+                          </div>
+                          <p className="text-lg font-black text-teal-700">INR {record.amount}</p>
+                        </div>
+                        <div className="mt-3 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
+                          <p><span className="font-bold text-slate-800">Party:</span> {record.party || "Not added"}</p>
+                          <p><span className="font-bold text-slate-800">Reference:</span> {record.reference || "Not added"}</p>
+                          <p><span className="font-bold text-slate-800">Status:</span> {record.status || "Recorded"}</p>
+                          <p><span className="font-bold text-slate-800">Created:</span> {record.createdAt || "Not available"}</p>
+                        </div>
+                        {record.notes ? <p className="mt-3 text-sm leading-6 text-slate-600">{record.notes}</p> : null}
+                        <div className="mt-4 flex flex-wrap gap-3">
+                          {record.documentUrl ? (
+                            <a href={record.documentUrl} target="_blank" rel="noreferrer" className="inline-flex h-10 items-center rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-teal-700">
+                              View document
+                            </a>
+                          ) : null}
+                          <button type="button" onClick={() => deleteAccountingRecord(record.id)} className="inline-flex h-10 items-center rounded-full px-4 text-sm font-bold text-rose-700">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </button>
+                        </div>
+                      </article>
+                    ))
+                  ) : (
+                    <div className="rounded-[8px] border border-dashed border-slate-300 p-8 text-center text-slate-600">
+                      No accounting records yet.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </section>
           </div>
         ) : null}
 

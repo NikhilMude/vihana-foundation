@@ -23,7 +23,7 @@ export default function Faq({ content }: { content: SiteContent }) {
               <summary className="cursor-pointer text-base font-bold leading-7 text-slate-950 sm:text-lg">
                 {item.question || item.title}
               </summary>
-              <p className="mt-3 text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">{item.description || item.answer}</p>
+              <p className="mt-3 text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">{item.answer || item.description}</p>
             </details>
           ))}
         </div>

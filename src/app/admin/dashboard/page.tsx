@@ -35,6 +35,21 @@ type Donor = {
   createdAt?: string;
 };
 
+type AccountingRecord = {
+  id: string;
+  type?: string;
+  title?: string;
+  amount?: string;
+  category?: string;
+  date?: string;
+  party?: string;
+  reference?: string;
+  status?: string;
+  notes?: string;
+  documentUrl?: string;
+  createdAt?: string;
+};
+
 export default async function AdminDashboardPage() {
   if (!(await isAdminAuthenticated())) {
     redirect("/admin");
@@ -42,6 +57,7 @@ export default async function AdminDashboardPage() {
 
   let messages: Message[] = [];
   let donors: Donor[] = [];
+  let accountingRecords: AccountingRecord[] = [];
   const visitorStats = await getVisitorStats();
   const visitors = await getRecentVisitors();
   const donations = await getDonationIntents();
@@ -80,6 +96,27 @@ export default async function AdminDashboardPage() {
     donors = [];
   }
 
+  try {
+    accountingRecords = (await listDocuments("accountingRecords"))
+      .map((record) => ({
+        id: String(record.id || ""),
+        type: String(record.type || ""),
+        title: String(record.title || ""),
+        amount: String(record.amount || ""),
+        category: String(record.category || ""),
+        date: String(record.date || ""),
+        party: String(record.party || ""),
+        reference: String(record.reference || ""),
+        status: String(record.status || ""),
+        notes: String(record.notes || ""),
+        documentUrl: String(record.documentUrl || ""),
+        createdAt: String(record.createdAt || ""),
+      }))
+      .sort((a, b) => String(b.date || b.createdAt || "").localeCompare(String(a.date || a.createdAt || "")));
+  } catch {
+    accountingRecords = [];
+  }
+
   return (
     <AdminDashboard
       initialContent={await getSiteContent({ fresh: true })}
@@ -90,6 +127,7 @@ export default async function AdminDashboardPage() {
       initialDonations={donations}
       initialDonors={donors}
       initialSubscribers={subscribers}
+      initialAccountingRecords={accountingRecords}
     />
   );
 }
