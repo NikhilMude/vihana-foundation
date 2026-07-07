@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 
 import VisitTracker from "@/components/analytics/VisitTracker";
 import Footer from "@/components/layout/Footer";
 import FloatingDonate from "@/components/layout/FloatingDonate";
 import FloatingWhatsApp from "@/components/layout/FloatingWhatsApp";
+import LaunchingSoon from "@/components/layout/LaunchingSoon";
 import Navbar from "@/components/layout/Navbar";
 import AnnualReports from "@/sections/AnnualReports";
 import Donation from "@/sections/Donation";
@@ -22,6 +24,7 @@ import Testimonials from "@/sections/Testimonials";
 import Volunteer from "@/sections/Volunteer";
 import WhyChooseUs from "@/sections/WhyChooseUs";
 import { getRenderableSections } from "@/lib/cmsContent";
+import { shouldShowLaunchSoon } from "@/lib/launchGate";
 import { getGalleryItems, getSiteContent } from "@/lib/siteData";
 
 export const dynamic = "force-dynamic";
@@ -43,6 +46,12 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Home() {
   const content = await getSiteContent();
+  const requestHeaders = await headers();
+
+  if (shouldShowLaunchSoon(requestHeaders.get("host"))) {
+    return <LaunchingSoon content={content} />;
+  }
+
   const galleryItems = await getGalleryItems();
 
   const sectionMap = {

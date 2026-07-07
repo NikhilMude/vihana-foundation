@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
@@ -6,9 +7,11 @@ import VisitTracker from "@/components/analytics/VisitTracker";
 import Footer from "@/components/layout/Footer";
 import FloatingDonate from "@/components/layout/FloatingDonate";
 import FloatingWhatsApp from "@/components/layout/FloatingWhatsApp";
+import LaunchingSoon from "@/components/layout/LaunchingSoon";
 import Navbar from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { shouldShowLaunchSoon } from "@/lib/launchGate";
 import { getSiteContent } from "@/lib/siteData";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +25,12 @@ type PageProps = {
 export default async function CmsPage({ params }: PageProps) {
   const { slug } = await params;
   const content = await getSiteContent();
+  const requestHeaders = await headers();
+
+  if (shouldShowLaunchSoon(requestHeaders.get("host"))) {
+    return <LaunchingSoon content={content} />;
+  }
+
   const page = content.pages.find((item) => item.slug === slug && item.published);
 
   if (!page) {
