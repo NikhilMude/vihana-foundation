@@ -63,6 +63,9 @@ type DonationRecord = {
   pan?: string;
   address?: string;
   receiptRequired?: string;
+  receiptNumber?: string;
+  receiptStatus?: string;
+  receiptIssuedAt?: string;
   donorEmail?: string;
   message?: string;
   status?: string;
@@ -623,7 +626,7 @@ const emailTemplateComposers: {
     subjectKey: "donationAdminEmailSubject",
     bodyKey: "donationAdminEmailBody",
     sentTo: "Donation inbox",
-    placeholders: ["{{name}}", "{{email}}", "{{phone}}", "{{amount}}", "{{frequency}}", "{{purpose}}", "{{method}}", "{{transactionId}}", "{{receiptRequired}}", "{{pan}}", "{{address}}", "{{message}}", "{{createdAt}}"],
+    placeholders: ["{{name}}", "{{email}}", "{{phone}}", "{{amount}}", "{{frequency}}", "{{purpose}}", "{{method}}", "{{transactionId}}", "{{receiptRequired}}", "{{receiptNumber}}", "{{receiptStatus}}", "{{receiptIssuedAt}}", "{{pan}}", "{{address}}", "{{message}}", "{{createdAt}}"],
   },
   {
     id: "donation-visitor",
@@ -632,7 +635,7 @@ const emailTemplateComposers: {
     subjectKey: "donationVisitorEmailSubject",
     bodyKey: "donationVisitorEmailBody",
     sentTo: "Donor",
-    placeholders: ["{{name}}", "{{amount}}", "{{frequency}}", "{{purpose}}", "{{method}}", "{{transactionId}}"],
+    placeholders: ["{{name}}", "{{amount}}", "{{frequency}}", "{{purpose}}", "{{method}}", "{{transactionId}}", "{{receiptNumber}}", "{{receiptStatus}}", "{{receiptIssuedAt}}"],
   },
   {
     id: "donor-welcome",
@@ -2511,6 +2514,8 @@ export default function AdminDashboard({
                     <p><span className="font-bold text-slate-800">Method:</span> {donation.method}</p>
                     <p><span className="font-bold text-slate-800">Reference:</span> {donation.transactionId}</p>
                     <p><span className="font-bold text-slate-800">Receipt:</span> {donation.receiptRequired || "No"}</p>
+                    <p><span className="font-bold text-slate-800">Receipt no:</span> {donation.receiptNumber || "Not generated"}</p>
+                    <p><span className="font-bold text-slate-800">Receipt status:</span> {donation.receiptStatus || "Not available"}</p>
                     <p><span className="font-bold text-slate-800">PAN:</span> {donation.pan || "Not provided"}</p>
                     <p><span className="font-bold text-slate-800">Address:</span> {donation.address || "Not provided"}</p>
                     <p><span className="font-bold text-slate-800">Status:</span> {donation.status}</p>

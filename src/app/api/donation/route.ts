@@ -31,6 +31,14 @@ function isEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+function receiptNumber() {
+  const date = new Date();
+  const stamp = date.toISOString().slice(0, 10).replace(/-/g, "");
+  const random = Math.random().toString(36).slice(2, 7).toUpperCase();
+
+  return `VF-${stamp}-${random}`;
+}
+
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as DonationPayload;
@@ -66,6 +74,9 @@ export async function POST(request: Request) {
 
     const createdAt = new Date().toISOString();
     const content = await getSiteContent();
+    const generatedReceiptNumber = receiptNumber();
+    const receiptIssuedAt = createdAt;
+    const receiptStatus = receiptRequired === "Yes" ? "Provisional receipt generated" : "Receipt not requested";
     const templateValues = {
       name,
       email,
@@ -79,6 +90,9 @@ export async function POST(request: Request) {
       pan: pan || "Not provided",
       address: address || "Not provided",
       receiptRequired,
+      receiptNumber: generatedReceiptNumber,
+      receiptStatus,
+      receiptIssuedAt: new Date(receiptIssuedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
       message: message || "No message",
       createdAt: new Date(createdAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }),
     };
@@ -99,6 +113,9 @@ export async function POST(request: Request) {
       donorEmail: donorEmail || email,
       message,
       status: transactionId === "Test / pending" ? "Pledged / pending payment" : "Self-reported / awaiting verification",
+      receiptNumber: generatedReceiptNumber,
+      receiptStatus,
+      receiptIssuedAt,
       createdAt,
     });
 

@@ -309,10 +309,10 @@ export const defaultSiteContent: SiteContent = {
     "Dear {{name}},\n\nThank you for reaching out to Vihana Foundation. We received your message and will review it soon.\n\nYour interest: {{interest}}\n\nYour message:\n{{message}}\n\nWith gratitude,\nVihana Foundation",
   donationAdminEmailSubject: "New donation intent from {{name}}",
   donationAdminEmailBody:
-    "A donation intent was submitted.\n\nName: {{name}}\nEmail: {{email}}\nPhone: {{phone}}\nAmount: INR {{amount}}\nFrequency: {{frequency}}\nPurpose: {{purpose}}\nMethod: {{method}}\nReference: {{transactionId}}\nReceipt required: {{receiptRequired}}\nPAN: {{pan}}\nAddress: {{address}}\n\nMessage:\n{{message}}\n\nSubmitted at: {{createdAt}}",
+    "A donation intent was submitted.\n\nName: {{name}}\nEmail: {{email}}\nPhone: {{phone}}\nAmount: INR {{amount}}\nFrequency: {{frequency}}\nPurpose: {{purpose}}\nMethod: {{method}}\nReference: {{transactionId}}\nReceipt required: {{receiptRequired}}\nReceipt number: {{receiptNumber}}\nReceipt status: {{receiptStatus}}\nPAN: {{pan}}\nAddress: {{address}}\n\nMessage:\n{{message}}\n\nSubmitted at: {{createdAt}}",
   donationVisitorEmailSubject: "Thank you for supporting Vihana Foundation",
   donationVisitorEmailBody:
-    "Dear {{name}},\n\nThank you for supporting Vihana Foundation.\n\nWe received your {{frequency}} donation intent for INR {{amount}} toward {{purpose}}.\n\nPayment method: {{method}}\nTransaction/reference: {{transactionId}}\n\nThis is a test-mode acknowledgement until verified payment integration and official receipts are configured.\n\nWith gratitude,\nVihana Foundation",
+    "Dear {{name}},\n\nThank you for supporting Vihana Foundation.\n\nWe received your {{frequency}} donation intent for INR {{amount}} toward {{purpose}}.\n\nReceipt number: {{receiptNumber}}\nReceipt status: {{receiptStatus}}\nIssued at: {{receiptIssuedAt}}\n\nPayment method: {{method}}\nTransaction/reference: {{transactionId}}\n\nThis is a provisional acknowledgement until verified payment integration and official receipts are configured.\n\nWith gratitude,\nVihana Foundation",
   donorWelcomeEmailSubject: "Your Vihana Foundation donor account is ready",
   donorWelcomeEmailBody:
     "Dear {{name}},\n\nYour Vihana Foundation donor account has been created successfully.\n\nYou can use it to keep donation history and receipt information in one place.\n\nWith gratitude,\nVihana Foundation",
