@@ -107,6 +107,9 @@ export type SiteContent = {
   receiptFooterNote: string;
   receiptSignatureName: string;
   founderStory: string;
+  teamEyebrow: string;
+  teamTitle: string;
+  teamDescription: string;
   volunteerTitle: string;
   volunteerEyebrow: string;
   volunteerDescription: string;
@@ -182,6 +185,7 @@ export type SiteContent = {
   newsItems: EditableItem[];
   eventItems: EditableItem[];
   annualReports: EditableItem[];
+  teamMembers: EditableItem[];
   pages: CmsPage[];
 };
 
@@ -264,6 +268,10 @@ export const defaultSiteContent: SiteContent = {
   receiptSignatureName: "Vihana Foundation",
   founderStory:
     "Vihana Foundation was created as a family-led act of gratitude, inspired by Vihana's birthday and the belief that personal celebrations can become meaningful support for children. The foundation is being shaped to support education, nutrition, healthcare and community care with transparency, dignity and warmth.",
+  teamEyebrow: "People Behind Vihana",
+  teamTitle: "The Team",
+  teamDescription:
+    "A growing circle of family members, volunteers and advisors helping shape Vihana Foundation with care, discipline and transparency.",
   volunteerTitle: "Help make Vihana's birthday a reason for many children to smile.",
   volunteerEyebrow: "Volunteer",
   volunteerDescription:
@@ -572,6 +580,38 @@ export const defaultSiteContent: SiteContent = {
       linkHref: "",
     },
   ],
+  teamMembers: [
+    {
+      id: "team-founder",
+      name: "Nikhil Mude",
+      title: "Nikhil Mude",
+      role: "Founder",
+      tag: "Superpowers: Compassion, Operations, Community Building",
+      description:
+        "Founded Vihana Foundation in honor of Vihana\nFocused on transparent giving and practical community support\nBuilding programs around education, nutrition and health access",
+      imageUrl: "",
+    },
+    {
+      id: "team-volunteer",
+      name: "Vihana Foundation Volunteer",
+      title: "Vihana Foundation Volunteer",
+      role: "Community Support",
+      tag: "Superpowers: Empathy, Reliability, Local Coordination",
+      description:
+        "Supports outreach and volunteer coordination\nHelps organize drives, supplies and follow-ups\nKeeps every program grounded in dignity and care",
+      imageUrl: "",
+    },
+    {
+      id: "team-advisor",
+      name: "Program Advisor",
+      title: "Program Advisor",
+      role: "Advisor",
+      tag: "Superpowers: Planning, Partnerships, Impact Tracking",
+      description:
+        "Guides program planning and campaign structure\nSupports partnerships with schools and local groups\nHelps improve reporting and accountability",
+      imageUrl: "",
+    },
+  ],
   pages: [
     {
       id: "about-vihana",
@@ -803,6 +843,7 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
     newsItems: arrayOrDefault(merged.newsItems, defaultSiteContent.newsItems),
     eventItems: arrayOrDefault(merged.eventItems, defaultSiteContent.eventItems),
     annualReports: arrayOrDefault(merged.annualReports, defaultSiteContent.annualReports),
+    teamMembers: arrayOrDefault(merged.teamMembers, defaultSiteContent.teamMembers),
     pages: pagesWithDefaults,
   };
 }

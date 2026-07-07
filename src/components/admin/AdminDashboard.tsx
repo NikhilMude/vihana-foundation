@@ -143,6 +143,7 @@ type ListKey =
   | "volunteerActions"
   | "eventItems"
   | "annualReports"
+  | "teamMembers"
   | "testimonials"
   | "faqs"
   | "newsItems";
@@ -264,6 +265,9 @@ const contentFields: { key: keyof SiteContent; label: string; multiline?: boolea
   { key: "receiptFooterNote", label: "Receipt footer note", multiline: true },
   { key: "receiptSignatureName", label: "Receipt signature name" },
   { key: "founderStory", label: "Founder story", multiline: true },
+  { key: "teamEyebrow", label: "Team section small label" },
+  { key: "teamTitle", label: "Team section title" },
+  { key: "teamDescription", label: "Team section description", multiline: true },
   { key: "volunteerTitle", label: "Volunteer title" },
   { key: "volunteerEyebrow", label: "Volunteer small label" },
   { key: "volunteerDescription", label: "Volunteer description", multiline: true },
@@ -282,6 +286,7 @@ const listLabels: Record<ListKey, string> = {
   volunteerActions: "Volunteer Actions",
   eventItems: "Events",
   annualReports: "Annual Reports / PDFs",
+  teamMembers: "Team Members",
   testimonials: "Testimonials",
   faqs: "FAQ",
   newsItems: "News / Activities",
@@ -296,6 +301,7 @@ const listHelp: Record<ListKey, { first: string; second: string; body: keyof Edi
   volunteerActions: { first: "Action title", second: "Small label / value", body: "description", bodyLabel: "Description" },
   eventItems: { first: "Event title", second: "Date", body: "description", bodyLabel: "Event details" },
   annualReports: { first: "Report title", second: "Year / status", body: "description", bodyLabel: "Description" },
+  teamMembers: { first: "Name", second: "Role", body: "description", bodyLabel: "Bullet points, one per line" },
   testimonials: { first: "Person name", second: "Role", body: "quote", bodyLabel: "Quote" },
   faqs: { first: "Question", second: "Optional label", body: "answer", bodyLabel: "Answer" },
   newsItems: { first: "News title", second: "Date", body: "summary", bodyLabel: "Summary" },
@@ -350,8 +356,8 @@ const contentGroups: {
   },
   {
     id: "mission",
-    label: "Mission",
-    description: "Mission copy, founder story and the mission image section text.",
+    label: "Mission / About",
+    description: "Mission copy, founder story, About page team section and the mission image section text.",
     fields: [
       "missionTitle",
       "missionEyebrow",
@@ -360,6 +366,9 @@ const contentGroups: {
       "missionStoryTitle",
       "missionStoryDescription",
       "founderStory",
+      "teamEyebrow",
+      "teamTitle",
+      "teamDescription",
     ],
   },
   {
@@ -515,11 +524,12 @@ const pageWorkspaces: {
   {
     id: "about",
     title: "About Vihana",
-    description: "Foundation story, mission language, founder note and About page content.",
-    guide: ["Update the mission and founder story.", "Edit the About page body.", "Change the mission story image."],
+    description: "Foundation story, mission language, founder note, team members and About page content.",
+    guide: ["Update the mission and founder story.", "Edit the About page body.", "Add, update or delete team members."],
     actions: [
       { label: "Mission Text", tab: "content", contentGroup: "mission" },
       { label: "About Page", tab: "pages", pageSlug: "about-vihana" },
+      { label: "Team Members", tab: "sections", listKey: "teamMembers" },
       { label: "Mission Image", tab: "media" },
     ],
   },
@@ -2226,17 +2236,25 @@ export default function AdminDashboard({
                   {content[listKey].map((item, index) => (
                     <div key={item.id} className="grid gap-3 rounded-[8px] border border-slate-200 bg-slate-50 p-4 lg:grid-cols-2">
                       <input
-                        value={listKey === "testimonials" ? item.name || item.title : listKey === "faqs" ? item.question || item.title : item.title}
-                        onChange={(event) => updateListItem(listKey, index, listKey === "testimonials" ? "name" : listKey === "faqs" ? "question" : "title", event.target.value)}
+                        value={listKey === "testimonials" || listKey === "teamMembers" ? item.name || item.title : listKey === "faqs" ? item.question || item.title : item.title}
+                        onChange={(event) => updateListItem(listKey, index, listKey === "testimonials" || listKey === "teamMembers" ? "name" : listKey === "faqs" ? "question" : "title", event.target.value)}
                         className="h-11 rounded-[8px] border border-slate-200 px-4"
                         placeholder={listHelp[listKey].first}
                       />
                       <input
-                        value={listKey === "testimonials" ? item.role || item.value || "" : item.value || ""}
-                        onChange={(event) => updateListItem(listKey, index, listKey === "testimonials" ? "role" : "value", event.target.value)}
+                        value={listKey === "testimonials" || listKey === "teamMembers" ? item.role || item.value || "" : item.value || ""}
+                        onChange={(event) => updateListItem(listKey, index, listKey === "testimonials" || listKey === "teamMembers" ? "role" : "value", event.target.value)}
                         className="h-11 rounded-[8px] border border-slate-200 px-4"
                         placeholder={listHelp[listKey].second}
                       />
+                      {listKey === "teamMembers" ? (
+                        <input
+                          value={item.tag || ""}
+                          onChange={(event) => updateListItem(listKey, index, "tag", event.target.value)}
+                          className="h-11 rounded-[8px] border border-slate-200 px-4 lg:col-span-2"
+                          placeholder="Superpowers: empathy, leadership, partnerships"
+                        />
+                      ) : null}
                       <textarea
                         value={String(item[listHelp[listKey].body] || "")}
                         onChange={(event) => updateListItem(listKey, index, listHelp[listKey].body, event.target.value)}

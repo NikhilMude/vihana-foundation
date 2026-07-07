@@ -10,6 +10,7 @@ import FloatingWhatsApp from "@/components/layout/FloatingWhatsApp";
 import LaunchingSoon from "@/components/layout/LaunchingSoon";
 import Navbar from "@/components/layout/Navbar";
 import SmartNavLink from "@/components/layout/SmartNavLink";
+import TeamSection from "@/components/pages/TeamSection";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { shouldShowLaunchSoon } from "@/lib/launchGate";
@@ -80,6 +81,8 @@ export default async function CmsPage({ params }: PageProps) {
                 </Button>
               ) : null}
             </article>
+
+            {page.slug === "about-vihana" ? <TeamSection content={content} /> : null}
           </Container>
         </section>
       </main>
