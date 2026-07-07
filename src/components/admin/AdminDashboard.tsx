@@ -247,6 +247,7 @@ function emptyPage(): CmsPage {
     slug: "new-page",
     title: "New Page",
     description: "Short page description.",
+    imageUrl: "",
     body: "Write the page content here.",
     buttonLabel: "Contact Us",
     buttonHref: "/#volunteer",
@@ -1070,6 +1071,22 @@ export default function AdminDashboard({
                     <input value={page.title} onChange={(event) => updatePage(index, "title", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Page title" />
                     <input value={page.slug} onChange={(event) => updatePage(index, "slug", event.target.value.replace(/[^a-z0-9-]/g, "-"))} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="page-url" />
                     <input value={page.description} onChange={(event) => updatePage(index, "description", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4 lg:col-span-2" placeholder="Short description" />
+                    <input value={page.imageUrl || ""} onChange={(event) => updatePage(index, "imageUrl", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4 lg:col-span-2" placeholder="Page image URL" />
+                    <div className="grid gap-3 lg:col-span-2 lg:grid-cols-[0.7fr_1.3fr]">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => handleImageUpload(event, (value) => updatePage(index, "imageUrl", value))}
+                        className="rounded-[8px] border border-dashed border-slate-300 bg-white p-3 text-sm"
+                      />
+                      {page.imageUrl ? (
+                        <Image src={page.imageUrl} alt={page.title} width={520} height={220} unoptimized className="h-36 w-full rounded-[8px] object-cover" />
+                      ) : (
+                        <div className="flex h-36 items-center justify-center rounded-[8px] border border-dashed border-slate-300 bg-white text-sm font-bold text-slate-400">
+                          Page image preview
+                        </div>
+                      )}
+                    </div>
                     <textarea value={page.body} onChange={(event) => updatePage(index, "body", event.target.value)} rows={7} className="rounded-[8px] border border-slate-200 px-4 py-3 lg:col-span-2" placeholder="Page content" />
                     <input value={page.buttonLabel} onChange={(event) => updatePage(index, "buttonLabel", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button label" />
                     <input value={page.buttonHref} onChange={(event) => updatePage(index, "buttonHref", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button link" />

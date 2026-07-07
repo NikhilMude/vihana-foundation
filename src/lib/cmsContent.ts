@@ -40,6 +40,7 @@ export type CmsPage = {
   slug: string;
   title: string;
   description: string;
+  imageUrl: string;
   body: string;
   buttonLabel: string;
   buttonHref: string;
@@ -237,7 +238,7 @@ export const defaultSiteContent: SiteContent = {
   volunteerEyebrow: "Volunteer",
   volunteerDescription:
     "Start with one act: sponsor a meal, contribute school supplies, volunteer at a drive or build a birthday campaign with your family.",
-  contactEmail: "hello@vihanafoundation.org",
+  contactEmail: "contact@vihanafoundation.org",
   contactPhone: "+91 98765 43210",
   contactLocation: "India",
   footerLegalTitle: "Legal",
@@ -519,8 +520,11 @@ export const defaultSiteContent: SiteContent = {
       id: "about-vihana",
       slug: "about-vihana",
       title: "About Vihana",
-      description: "The story and spirit behind Vihana Foundation.",
-      body: "Vihana Foundation was created as a family-led act of gratitude, inspired by Vihana's birthday and the belief that personal celebrations can become meaningful support for children.\n\nThe name Vihana carries the heart of the mission: to turn love, celebration and kindness into practical help for children and families. Every initiative is intended to support education, nutrition, healthcare and community care with dignity.\n\nThe foundation is still growing its public story, partnerships and verified impact records. As formal registration, tax-exemption details and annual reports become available, they will be published clearly for donor trust and transparency.",
+      description:
+        "The story, values and birthday-inspired promise behind Vihana Foundation.",
+      imageUrl: "/images/generated/vihana-hero-photo.jpg",
+      body:
+        "Vihana Foundation was created in honor of Vihana's birthday, with a simple belief at its heart: a family celebration can become a source of care, dignity and opportunity for many children.\n\nThe name Vihana represents light, hope and a new beginning. The foundation carries that spirit into practical community work by supporting children's education, nutrition, health awareness and everyday wellbeing.\n\nOur early focus is intentionally simple and grounded. We want to help children stay connected to learning, receive nourishing meals, access basic health support and feel seen by a community that cares about their future.\n\nVihana Foundation is being built with transparency as a core value. Verified registration details, tax-exemption information, annual reports and audited public documents will be published clearly as they are finalized.\n\nUntil our real field photos and complete foundation documents are ready, this website uses carefully selected placeholder content so the structure is prepared for launch. Every line, image and page can be updated from the CMS by the admin team.",
       buttonLabel: "Join the Movement",
       buttonHref: "/#volunteer",
       published: true,
@@ -530,7 +534,9 @@ export const defaultSiteContent: SiteContent = {
       slug: "contact-us",
       title: "Contact Us",
       description: "Reach Vihana Foundation for volunteering, donations, partnerships and birthday campaigns.",
-      body: "We would love to hear from you.\n\nUse the volunteer form on the homepage to send your message, or contact us directly using the phone and email details listed on the website.\n\nYou can reach out for birthday campaigns, donations, volunteering, school partnerships, health camps or community initiatives.",
+      imageUrl: "/images/generated/vihana-meal-support-photo.jpg",
+      body:
+        "We would love to hear from you if you want to volunteer, donate, partner with us, organize a birthday campaign or support a local community initiative.\n\nFor general queries, write to contact@vihanafoundation.org. For donation-related questions, write to donate@vihanafoundation.org. For volunteering, write to volunteer@vihanafoundation.org. For foundation support or records, write to support@vihanafoundation.org or info@vihanafoundation.org.\n\nYou can also use the volunteer form on the homepage. Your message will be saved securely in the CMS so the foundation team can review and respond from one place.\n\nPlease include your name, city, preferred contact method and the type of support you are interested in. This helps us respond with the right next step.",
       buttonLabel: "Send A Message",
       buttonHref: "/#volunteer",
       published: true,
@@ -540,7 +546,9 @@ export const defaultSiteContent: SiteContent = {
       slug: "privacy-policy",
       title: "Privacy Policy",
       description: "How Vihana Foundation collects, uses and protects website visitor, donor, volunteer and subscriber information.",
-      body: "This Privacy Policy explains how Vihana Foundation handles information shared through this website.\n\nInformation we may collect includes contact details submitted through forms, newsletter subscriptions, donation intent details, website usage information and communication preferences.\n\nWe use this information to respond to messages, manage volunteer interest, maintain donation records, send updates when subscribed, improve the website and meet transparency or compliance needs.\n\nWe do not sell personal information. Information may be shared only with trusted service providers used to operate the website, email, hosting, analytics or recordkeeping, or when required by law.\n\nYou may contact us to request correction or deletion of your information, subject to any legal or accounting retention requirements.\n\nThis page should be reviewed by a qualified legal advisor before public launch.",
+      imageUrl: "/images/generated/vihana-story-photo.jpg",
+      body:
+        "This Privacy Policy explains how Vihana Foundation may collect, use and protect information shared through this website.\n\nInformation we may collect includes names, email addresses, phone numbers, city details, volunteer interests, donation intent details, newsletter subscriptions, website visit information and messages submitted through forms.\n\nWe use this information to respond to enquiries, coordinate volunteers, maintain donation and campaign records, send newsletters to subscribers, improve the website and meet operational, transparency or compliance needs.\n\nWe do not sell personal information. Information may be shared only with trusted service providers used for hosting, email delivery, analytics, form storage, recordkeeping or payment communication, or when required by law.\n\nVisitors may request correction or deletion of personal information by contacting contact@vihanafoundation.org. Some records may need to be retained for legal, accounting, security or audit reasons.\n\nThis is a draft policy for launch preparation. Please have it reviewed by a qualified legal advisor before accepting public donations or publishing final compliance statements.",
       buttonLabel: "Contact Us",
       buttonHref: "/contact-us",
       published: true,
@@ -550,7 +558,9 @@ export const defaultSiteContent: SiteContent = {
       slug: "terms-and-conditions",
       title: "Terms & Conditions",
       description: "Terms for using the Vihana Foundation website, content, forms, donation information and communications.",
-      body: "By using this website, you agree to use it responsibly and only for lawful purposes.\n\nWebsite content is provided for general information about Vihana Foundation programs, campaigns, volunteering and community work. Content may be updated, corrected or removed at any time.\n\nSubmitting a form does not create a binding partnership, employment, volunteer appointment or donation receipt until confirmed by Vihana Foundation through appropriate communication.\n\nDonation details shown on the website should be verified before making any payment. Official receipts, tax benefits and acknowledgements depend on the foundation's registration status, payment confirmation and applicable law.\n\nYou may not misuse the website, attempt unauthorized access, copy content for misleading purposes or submit false information.\n\nThis page should be reviewed by a qualified legal advisor before public launch.",
+      imageUrl: "/images/generated/vihana-hero-photo.jpg",
+      body:
+        "By using this website, you agree to use it responsibly, honestly and only for lawful purposes.\n\nWebsite content is provided for general information about Vihana Foundation, its programs, campaigns, volunteering opportunities, donation information and community initiatives. Content may be updated, corrected or removed as records and programs evolve.\n\nSubmitting a contact form, volunteer form, donation form or newsletter signup does not automatically create a confirmed partnership, employment relationship, volunteer appointment, donation receipt or tax benefit. Confirmation will be shared separately by the foundation team where applicable.\n\nDonation details shown on the website should be verified before making any payment. Receipts, acknowledgements and tax benefits depend on the foundation's verified registration status, payment confirmation and applicable law.\n\nUsers must not misuse the website, attempt unauthorized access, copy content in a misleading way, submit false information or use Vihana Foundation's name, photos or materials without permission.\n\nThis is a draft terms page for launch preparation. Please have it reviewed by a qualified legal advisor before public launch.",
       buttonLabel: "Contact Us",
       buttonHref: "/contact-us",
       published: true,
@@ -560,7 +570,9 @@ export const defaultSiteContent: SiteContent = {
       slug: "cookie-policy",
       title: "Cookie Policy",
       description: "How cookies, analytics and similar website technologies may be used on the Vihana Foundation website.",
-      body: "This Cookie Policy explains how this website may use cookies or similar technologies.\n\nCookies and similar tools may help the website remember preferences, understand traffic, improve performance, protect forms from abuse and measure visitor activity.\n\nSome services used by the website, such as hosting, analytics, email or embedded third-party tools, may set their own cookies according to their policies.\n\nYou can usually control or block cookies through your browser settings. Blocking cookies may affect some website features.\n\nIf analytics or marketing tools are added later, this policy should be updated to name those tools clearly.\n\nThis page should be reviewed by a qualified legal advisor before public launch.",
+      imageUrl: "/images/generated/vihana-story-photo.jpg",
+      body:
+        "This Cookie Policy explains how Vihana Foundation's website may use cookies and similar technologies.\n\nCookies may help the website remember preferences, understand visitor activity, improve performance, protect forms from misuse and support analytics or email tools.\n\nThe website may also use services such as hosting, analytics, email delivery, form processing or embedded media. These services may place their own cookies according to their own policies.\n\nVisitors can usually manage or block cookies through browser settings. Blocking cookies may affect some website features, including analytics, forms, embedded content or saved preferences.\n\nIf Vihana Foundation adds additional analytics, advertising, remarketing or third-party tools in the future, this policy should be updated with the names and purposes of those tools.\n\nThis is a draft cookie policy for launch preparation. Please review it before public launch.",
       buttonLabel: "Contact Us",
       buttonHref: "/contact-us",
       published: true,
@@ -570,7 +582,9 @@ export const defaultSiteContent: SiteContent = {
       slug: "disclaimer",
       title: "Disclaimer",
       description: "Important disclaimers about website content, program updates, donation information and legal/tax details.",
-      body: "The information on this website is provided in good faith for general awareness about Vihana Foundation and its initiatives.\n\nProgram details, impact numbers, photos, campaigns, legal information, donation details and tax-related notes may change as records are verified and updated.\n\nNothing on this website should be treated as legal, tax, medical, financial or professional advice. Donors should verify payment details and tax eligibility before making contributions.\n\nPhotos used on the website may include placeholder or representative images until real program photos are available with appropriate consent.\n\nThis page should be reviewed by a qualified legal advisor before public launch.",
+      imageUrl: "/images/generated/vihana-meal-support-photo.jpg",
+      body:
+        "The information on this website is provided in good faith for general awareness about Vihana Foundation, its values, programs and community initiatives.\n\nProgram details, impact numbers, photos, campaign dates, legal information, donation details and tax-related notes may change as records are verified and updated.\n\nNothing on this website should be treated as legal, tax, medical, financial or professional advice. Donors should verify payment details, registration information and tax eligibility before making any contribution.\n\nPhotos currently used on parts of the website may be placeholder or representative images until real program photos are available with proper consent. Real beneficiary photos should always be used responsibly and with dignity.\n\nVihana Foundation is committed to improving transparency as formal documents, reports and verified impact data become available.\n\nThis disclaimer should be reviewed by a qualified legal advisor before public launch.",
       buttonLabel: "Contact Us",
       buttonHref: "/contact-us",
       published: true,
@@ -580,7 +594,9 @@ export const defaultSiteContent: SiteContent = {
       slug: "refund-cancellation-policy",
       title: "Refund & Cancellation Policy",
       description: "How donation refund or cancellation requests may be handled by Vihana Foundation.",
-      body: "This Refund & Cancellation Policy applies to donation-related transactions where applicable.\n\nDonations are generally voluntary contributions toward charitable activities. Refund requests may be reviewed case by case, especially in situations such as duplicate payment, incorrect amount, failed transaction, mistaken transfer or unauthorized payment.\n\nTo request a refund review, contact Vihana Foundation with donor name, contact details, payment date, amount, payment method and transaction reference.\n\nApproved refunds, if any, may be returned to the original payment method or bank account after verification. Processing timelines depend on payment provider and banking systems.\n\nIf official donation receipts or tax documents have already been issued, refund processing may require cancellation or correction of those records.\n\nThis page should be reviewed by a qualified legal advisor before accepting public donations.",
+      imageUrl: "/images/generated/vihana-meal-support-photo.jpg",
+      body:
+        "This Refund & Cancellation Policy applies to donation-related transactions where applicable.\n\nDonations are generally voluntary contributions toward charitable activities. Refund requests may be reviewed case by case, especially in situations such as duplicate payment, incorrect amount, failed transaction, mistaken transfer or unauthorized payment.\n\nTo request a refund review, contact donate@vihanafoundation.org with the donor name, contact details, payment date, amount, payment method and transaction reference. Clear supporting details help the team verify the request faster.\n\nApproved refunds, if any, may be returned to the original payment method or bank account after verification. Processing timelines depend on the payment provider, bank and internal record review.\n\nIf an official donation receipt or tax document has already been issued, refund processing may require cancellation or correction of those records before the refund can be completed.\n\nThis is a draft policy for launch preparation. Please have it reviewed by a qualified legal advisor before accepting public donations.",
       buttonLabel: "Contact Us",
       buttonHref: "/contact-us",
       published: true,
@@ -617,10 +633,36 @@ function arrayOrDefault<T>(value: unknown, fallback: T[]): T[] {
 }
 
 function isOldPlaceholderPage(page: CmsPage) {
+  const oldDraftFragments = [
+    "Vihana Foundation was created to turn love, celebration and gratitude into practical help",
+    "The foundation is still growing its public story",
+    "We would love to hear from you.",
+    "This page should be reviewed by a qualified legal advisor before public launch.",
+    "This page should be reviewed by a qualified legal advisor before accepting public donations.",
+  ];
+
+  return oldDraftFragments.some((fragment) => page.body.includes(fragment));
+}
+
+function mergePageWithDefault(page: CmsPage): CmsPage {
+  const defaultPage = defaultSiteContent.pages.find((item) => item.slug === page.slug);
+
+  if (!defaultPage) {
+    return {
+      ...page,
+      imageUrl: page.imageUrl || "",
+    };
+  }
+
+  if (isOldPlaceholderPage(page)) {
+    return defaultPage;
+  }
+
   return (
-    page.slug === "about-vihana" &&
-    page.body.trim() ===
-      "Vihana Foundation was created to turn love, celebration and gratitude into practical help for children and families."
+    {
+      ...page,
+      imageUrl: page.imageUrl || defaultPage.imageUrl,
+    }
   );
 }
 
@@ -676,15 +718,7 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
     ),
   ];
   const pagesWithDefaults = [
-    ...pages.map((page) => {
-      const defaultPage = defaultSiteContent.pages.find((item) => item.slug === page.slug);
-
-      if (defaultPage && isOldPlaceholderPage(page)) {
-        return defaultPage;
-      }
-
-      return page;
-    }),
+    ...pages.map((page) => mergePageWithDefault(page)),
     ...defaultSiteContent.pages.filter(
       (defaultPage) => !pages.some((page) => page.slug === defaultPage.slug)
     ),

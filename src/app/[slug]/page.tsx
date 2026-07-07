@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -58,7 +59,21 @@ export default async function CmsPage({ params }: PageProps) {
               <p className="mt-4 text-base leading-7 text-slate-600 sm:mt-6 sm:text-xl sm:leading-8">{page.description}</p>
             </div>
 
-            <article className="mt-8 max-w-4xl rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:mt-12 sm:p-10">
+            {page.imageUrl ? (
+              <div className="mt-8 overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-sm sm:mt-12">
+                <Image
+                  src={page.imageUrl}
+                  alt={page.title}
+                  width={1400}
+                  height={720}
+                  unoptimized={page.imageUrl.startsWith("data:")}
+                  className="aspect-[16/9] w-full object-cover"
+                  priority
+                />
+              </div>
+            ) : null}
+
+            <article className="mt-6 max-w-4xl rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:mt-10 sm:p-10">
               <div className="whitespace-pre-line text-base leading-8 text-slate-700 sm:text-lg sm:leading-9">{page.body}</div>
 
               {page.buttonLabel && page.buttonHref ? (
