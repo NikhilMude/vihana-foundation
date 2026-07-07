@@ -7,7 +7,7 @@ import { SiteContent } from "@/lib/cmsContent";
 
 export default function Testimonials({ content }: { content: SiteContent }) {
   return (
-    <section className="bg-stone-50 py-10 md:py-16">
+    <section className="bg-stone-50 py-8 md:py-12">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -20,7 +20,7 @@ export default function Testimonials({ content }: { content: SiteContent }) {
           </div>
         </Reveal>
 
-        <div className="-mx-4 mt-8 flex snap-x gap-4 overflow-x-auto px-4 pb-4 sm:mx-0 sm:mt-10 sm:gap-5 sm:px-0">
+        <div className="-mx-4 mt-7 flex snap-x gap-4 overflow-x-auto px-4 pb-4 sm:mx-0 sm:mt-8 sm:gap-5 sm:px-0">
           {content.testimonials.map((item, index) => (
             <Reveal key={item.id} delay={index * 0.05}>
               <article className="min-w-[84vw] snap-start rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:min-w-[420px] sm:p-6">
@@ -29,7 +29,7 @@ export default function Testimonials({ content }: { content: SiteContent }) {
                 <div className="mt-5 flex items-center gap-3 sm:mt-6 sm:gap-4">
                   <div className="relative h-12 w-12 overflow-hidden rounded-full bg-teal-50">
                     {item.imageUrl ? (
-                      <Image src={item.imageUrl} alt={item.name || item.title} fill unoptimized className="object-cover" />
+                      <Image src={item.imageUrl} alt={item.name || item.title} fill unoptimized={item.imageUrl.startsWith("data:")} className="object-cover" />
                     ) : null}
                   </div>
                   <div className="min-w-0">

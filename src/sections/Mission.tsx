@@ -9,7 +9,7 @@ const icons = [BookOpen, Soup, HeartHandshake, ShieldCheck];
 
 export default function Mission({ content }: { content: SiteContent }) {
   return (
-    <section id="mission" className="bg-white py-10 md:py-16">
+    <section id="mission" className="bg-white py-8 md:py-12">
       <Container>
         <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-end lg:gap-12">
           <Reveal>
@@ -32,13 +32,13 @@ export default function Mission({ content }: { content: SiteContent }) {
         </div>
 
         <Reveal>
-          <div className="mt-8 grid overflow-hidden rounded-[8px] border border-slate-200 bg-slate-950 shadow-xl shadow-slate-900/10 lg:mt-10 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="mt-7 grid overflow-hidden rounded-[8px] border border-slate-200 bg-slate-950 shadow-xl shadow-slate-900/10 lg:mt-8 lg:grid-cols-[0.95fr_1.05fr]">
             <div className="relative min-h-[260px]">
               <Image
                 src={content.missionImageUrl || "/images/generated/vihana-meal-support-photo.jpg"}
                 alt="Vihana Foundation community support"
                 fill
-                unoptimized
+                unoptimized={content.missionImageUrl.startsWith("data:")}
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/55 to-transparent lg:hidden" />
@@ -58,7 +58,7 @@ export default function Mission({ content }: { content: SiteContent }) {
           </div>
         </Reveal>
 
-        <div className="mt-8 grid gap-3 md:grid-cols-2 lg:mt-10 lg:grid-cols-4 lg:gap-4">
+        <div className="mt-7 grid gap-3 md:grid-cols-2 lg:mt-8 lg:grid-cols-4 lg:gap-4">
           {content.missionPillars.map((item, index) => {
             const Icon = icons[index % icons.length];
 

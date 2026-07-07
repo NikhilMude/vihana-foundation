@@ -10,25 +10,25 @@ const promises = ["Education support", "Nutritious meals", "Health and wellness"
 
 export default function Hero({ content }: { content: SiteContent }) {
   return (
-    <section id="home" className="relative overflow-hidden bg-[linear-gradient(135deg,#f8fafc_0%,#ecfeff_48%,#fff7ed_100%)] pt-20 sm:pt-28">
+    <section id="home" className="relative overflow-hidden bg-[linear-gradient(135deg,#f8fafc_0%,#ecfeff_48%,#fff7ed_100%)] pt-20 sm:pt-24">
       <div className="absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,255,255,0))]" />
-      <Container className="grid items-center gap-8 pb-10 pt-6 sm:min-h-[calc(88vh-5rem)] sm:gap-10 sm:pb-12 sm:pt-8 lg:grid-cols-[1.02fr_0.98fr] lg:pb-16">
+      <Container className="grid items-center gap-7 pb-8 pt-5 sm:min-h-[calc(80vh-5rem)] sm:gap-9 sm:pb-10 sm:pt-7 lg:grid-cols-[1.02fr_0.98fr] lg:pb-12">
         <div className="relative z-10 max-w-3xl text-center lg:text-left">
           <div className="mx-auto inline-flex max-w-full items-center gap-2 rounded-full border border-amber-200 bg-white/85 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-700 shadow-sm backdrop-blur sm:px-4 sm:text-xs sm:tracking-[0.22em] lg:mx-0">
             <Gift className="h-4 w-4" />
             <span className="truncate">{content.heroBadge}</span>
           </div>
 
-          <h1 className="mx-auto mt-6 max-w-4xl font-[family-name:var(--font-playfair)] text-[2.75rem] font-bold leading-[0.98] text-slate-950 sm:mt-8 sm:text-6xl lg:mx-0 lg:text-7xl">
+          <h1 className="mx-auto mt-5 max-w-4xl font-[family-name:var(--font-playfair)] text-[2.75rem] font-bold leading-[0.98] text-slate-950 sm:mt-7 sm:text-6xl lg:mx-0 lg:text-7xl">
             {content.heroTitle}
             <span className="block text-teal-700">{content.heroHighlight}</span>
           </h1>
 
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:mt-7 sm:text-xl sm:leading-8 lg:mx-0">
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-slate-600 sm:mt-6 sm:text-xl sm:leading-8 lg:mx-0">
             {content.heroDescription}
           </p>
 
-          <div className="mt-7 flex flex-col gap-3 sm:mt-9 sm:flex-row sm:justify-center lg:justify-start">
+          <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:justify-center lg:justify-start">
             <Button asChild size="lg" className="h-12 w-full rounded-full bg-teal-700 px-7 text-base hover:bg-teal-800 sm:w-auto">
               <SmartNavLink href={content.heroPrimaryHref}>
                 <HeartHandshake className="mr-2 h-5 w-5" />
@@ -44,7 +44,7 @@ export default function Hero({ content }: { content: SiteContent }) {
             </Button>
           </div>
 
-          <div className="mx-auto mt-7 grid max-w-md gap-3 text-left sm:mt-10 sm:max-w-none sm:grid-cols-3 lg:mx-0">
+          <div className="mx-auto mt-6 grid max-w-md gap-3 text-left sm:mt-8 sm:max-w-none sm:grid-cols-3 lg:mx-0">
             {promises.map((promise) => (
               <div key={promise} className="flex items-center gap-2 rounded-full bg-white/70 px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm sm:bg-transparent sm:px-0 sm:shadow-none">
                 <CheckCircle2 className="h-5 w-5 text-teal-700" />

@@ -40,15 +40,18 @@ export default function Footer({
   navigation: NavigationItem[];
 }) {
   const socialLinks = content.socialLinks.filter((item) => item.href.trim());
+  const exploreLinks = navigation
+    .filter((item) => item.href !== "/donor")
+    .filter((item, index, items) => items.findIndex((link) => link.href === item.href) === index);
   const legalPages = content.pages.filter((page) =>
     page.published &&
-    ["privacy-policy", "terms-and-conditions", "cookie-policy", "disclaimer", "refund-cancellation-policy"].includes(page.slug)
+    ["privacy-policy", "terms-and-conditions", "cookie-policy", "disclaimer", "refund-cancellation-policy", "refund-and-cancellation-policy"].includes(page.slug)
   );
 
   return (
-    <footer className="bg-slate-950 py-10 text-white sm:py-16">
+    <footer className="bg-slate-950 py-8 text-white sm:py-12">
       <Container>
-        <div className="grid gap-8 lg:grid-cols-[1.15fr_0.75fr_0.75fr_1fr] lg:gap-10">
+        <div className="grid gap-7 lg:grid-cols-[1.15fr_0.75fr_0.75fr_1fr] lg:gap-10">
           <div>
             <div className="[&_p]:text-white [&_p:last-child]:text-slate-400">
               <Logo brandName={content.brandName} brandTagline={content.brandTagline} logoImageUrl={content.logoImageUrl} />
@@ -99,8 +102,8 @@ export default function Footer({
               Explore
             </h3>
 
-            <div className="mt-5 grid gap-3">
-              {navigation.map((item) => (
+            <div className="mt-4 grid gap-2.5">
+              {exploreLinks.map((item) => (
                 <SmartNavLink
                   key={item.label}
                   href={item.href}
@@ -109,9 +112,6 @@ export default function Footer({
                   {item.label}
                 </SmartNavLink>
               ))}
-              <SmartNavLink href="/donor" className="text-sm font-bold text-amber-300 transition hover:text-white">
-                Donor Login
-              </SmartNavLink>
             </div>
           </div>
 
@@ -121,7 +121,7 @@ export default function Footer({
                 {content.footerLegalTitle}
               </h3>
 
-              <div className="mt-5 grid gap-3">
+              <div className="mt-4 grid gap-2.5">
                 {legalPages.map((page) => (
                   <SmartNavLink
                     key={page.id}
@@ -140,7 +140,7 @@ export default function Footer({
               Contact
             </h3>
 
-            <div className="mt-5 grid gap-4 text-sm text-slate-400">
+            <div className="mt-4 grid gap-3 text-sm text-slate-400">
               <p className="flex min-w-0 items-center gap-3 break-words">
                 <Mail className="h-4 w-4 text-amber-300" />
                 <span className="min-w-0 break-all">{content.contactEmail}</span>
@@ -159,7 +159,7 @@ export default function Footer({
           </div>
         </div>
 
-        <div className="mt-8 border-t border-white/10 pt-6 sm:mt-12">
+        <div className="mt-8 border-t border-white/10 pt-5 sm:mt-10">
           <p className="text-sm text-slate-500">Copyright 2026 Vihana Foundation. All rights reserved.</p>
         </div>
       </Container>

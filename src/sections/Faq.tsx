@@ -4,7 +4,7 @@ import { SiteContent } from "@/lib/cmsContent";
 
 export default function Faq({ content }: { content: SiteContent }) {
   return (
-    <section className="bg-white py-10 md:py-16">
+    <section className="bg-white py-8 md:py-12">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -17,7 +17,7 @@ export default function Faq({ content }: { content: SiteContent }) {
           </div>
         </Reveal>
 
-        <div className="mx-auto mt-8 grid max-w-4xl gap-3">
+        <div className="mx-auto mt-7 grid max-w-4xl gap-3">
           {content.faqs.map((item) => (
             <details key={item.id} className="group rounded-[8px] border border-slate-200 bg-slate-50 p-4 open:bg-white open:shadow-sm sm:p-5">
               <summary className="cursor-pointer text-base font-bold leading-7 text-slate-950 sm:text-lg">

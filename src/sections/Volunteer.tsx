@@ -9,9 +9,9 @@ const icons = [Gift, HandHeart, Mail];
 
 export default function Volunteer({ content }: { content: SiteContent }) {
   return (
-    <section id="volunteer" className="bg-white py-10 md:py-16">
+    <section id="volunteer" className="bg-white py-8 md:py-12">
       <Container>
-        <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-10">
+        <div className="grid gap-7 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:gap-8">
           <Reveal>
             <div>
               <span className="text-xs font-bold uppercase tracking-[0.22em] text-amber-600 sm:text-sm sm:tracking-[0.26em]">

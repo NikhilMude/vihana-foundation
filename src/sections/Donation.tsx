@@ -29,7 +29,7 @@ export default function Donation({ content }: { content: SiteContent }) {
   ];
 
   return (
-    <section id="donate" className="bg-stone-50 py-10 md:py-16">
+    <section id="donate" className="bg-stone-50 py-8 md:py-12">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -48,13 +48,13 @@ export default function Donation({ content }: { content: SiteContent }) {
         </Reveal>
 
         <Reveal>
-          <div className="mt-8 grid overflow-hidden rounded-[8px] bg-slate-950 shadow-xl shadow-slate-900/10 lg:mt-10 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="mt-7 grid overflow-hidden rounded-[8px] bg-slate-950 shadow-xl shadow-slate-900/10 lg:mt-8 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="relative min-h-[260px] lg:order-2">
               <Image
                 src={content.donationImageUrl || "/images/generated/vihana-meal-support-photo.jpg"}
                 alt="Vihana Foundation donation campaign"
                 fill
-                unoptimized
+                unoptimized={content.donationImageUrl.startsWith("data:")}
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent" />
@@ -73,7 +73,7 @@ export default function Donation({ content }: { content: SiteContent }) {
           </div>
         </Reveal>
 
-        <div className="mt-8 grid gap-4 lg:mt-10 lg:grid-cols-3 lg:gap-5">
+        <div className="mt-7 grid gap-4 lg:mt-8 lg:grid-cols-3 lg:gap-5">
           {donationOptions.map((option, index) => {
             const Icon = option.icon;
 

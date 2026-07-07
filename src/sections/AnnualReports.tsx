@@ -7,7 +7,7 @@ import { SiteContent } from "@/lib/cmsContent";
 
 export default function AnnualReports({ content }: { content: SiteContent }) {
   return (
-    <section className="bg-stone-50 py-10 md:py-16">
+    <section className="bg-stone-50 py-8 md:py-12">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -20,7 +20,7 @@ export default function AnnualReports({ content }: { content: SiteContent }) {
           </div>
         </Reveal>
 
-        <div className="mx-auto mt-8 grid max-w-4xl gap-4">
+        <div className="mx-auto mt-7 grid max-w-4xl gap-4">
           {content.annualReports.map((item, index) => (
             <Reveal key={item.id} delay={index * 0.05}>
               <article className="grid gap-4 rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-6">

@@ -39,10 +39,10 @@ export default function Newsletter({ content }: { content: SiteContent }) {
   }
 
   return (
-    <section className="bg-white py-10 md:py-16">
+    <section className="bg-white py-8 md:py-12">
       <Container>
         <Reveal>
-          <div className="mx-auto max-w-4xl rounded-[8px] border border-slate-200 bg-stone-50 p-5 text-center shadow-sm sm:p-10">
+          <div className="mx-auto max-w-4xl rounded-[8px] border border-slate-200 bg-stone-50 p-5 text-center shadow-sm sm:p-8">
             <Mail className="mx-auto h-10 w-10 text-teal-700" />
             <h2 className="mt-4 font-[family-name:var(--font-playfair)] text-[2rem] font-bold leading-tight text-slate-950 sm:mt-5 sm:text-4xl">
               {content.newsletterHeading}

@@ -70,7 +70,7 @@ export default function DonationIntentForm() {
   }
 
   return (
-    <div className="mt-8 grid items-start gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+    <div className="mt-6 grid items-start gap-5 lg:mt-7 lg:grid-cols-[1.05fr_0.95fr]">
       <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/8 sm:p-6">
         <div className="grid grid-cols-2 gap-3">
           {["Indian Citizen", "Foreign Citizen / OCI"].map((type) => (

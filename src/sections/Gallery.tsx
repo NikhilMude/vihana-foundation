@@ -15,7 +15,7 @@ export default function Gallery({ content, items }: { content: SiteContent; item
   const [selected, setSelected] = useState<GalleryItem | null>(null);
 
   return (
-    <section id="gallery" className="bg-stone-50 py-10 md:py-16">
+    <section id="gallery" className="bg-stone-50 py-8 md:py-12">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -29,7 +29,7 @@ export default function Gallery({ content, items }: { content: SiteContent; item
           </div>
         </Reveal>
 
-        <div className="mt-8 grid gap-4 lg:mt-10 lg:grid-cols-[1.1fr_0.9fr] lg:gap-5">
+        <div className="mt-7 grid gap-4 lg:mt-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-5">
           <Reveal>
             <div className="flex min-h-[260px] flex-col justify-end rounded-[8px] bg-[linear-gradient(135deg,#0f766e,#0ea5e9)] p-5 text-white shadow-xl shadow-slate-900/10 sm:min-h-[420px] sm:p-7">
               <Camera className="h-9 w-9 text-amber-200 sm:h-10 sm:w-10" />
@@ -59,7 +59,7 @@ export default function Gallery({ content, items }: { content: SiteContent; item
                         width={600}
                         height={380}
                         className="h-auto w-full object-cover"
-                        unoptimized
+                        unoptimized={moment.imageUrl.startsWith("data:")}
                         loading="lazy"
                       />
                     ) : null}
@@ -89,7 +89,7 @@ export default function Gallery({ content, items }: { content: SiteContent; item
             >
               <X className="h-5 w-5" />
             </button>
-            <Image src={selected.imageUrl} alt={selected.title} width={1200} height={800} unoptimized className="max-h-[75vh] w-full object-contain" />
+            <Image src={selected.imageUrl} alt={selected.title} width={1200} height={800} unoptimized={selected.imageUrl.startsWith("data:")} className="max-h-[75vh] w-full object-contain" />
             <div className="p-4 sm:p-5">
               <h3 className="text-xl font-bold text-slate-950">{selected.title}</h3>
               <p className="mt-2 text-slate-600">{selected.description}</p>

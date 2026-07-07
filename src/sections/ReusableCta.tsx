@@ -8,11 +8,11 @@ import { SiteContent } from "@/lib/cmsContent";
 
 export default function ReusableCta({ content }: { content: SiteContent }) {
   return (
-    <section className="bg-white py-10 md:py-16">
+    <section className="bg-white py-8 md:py-12">
       <Container>
         <Reveal>
           <div
-            className="rounded-[8px] p-5 text-white shadow-xl shadow-slate-900/10 sm:p-10 lg:p-12"
+            className="rounded-[8px] p-5 text-white shadow-xl shadow-slate-900/10 sm:p-8 lg:p-10"
             style={{ background: content.ctaBackground || "#0f766e" }}
           >
             <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">

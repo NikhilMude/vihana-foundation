@@ -9,7 +9,7 @@ const noteIcons = [CalendarHeart, HandCoins, BadgeCheck];
 
 export default function Impact({ content }: { content: SiteContent }) {
   return (
-    <section id="impact" className="bg-teal-800 py-10 text-white md:py-16">
+    <section id="impact" className="bg-teal-800 py-8 text-white md:py-12">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -27,7 +27,7 @@ export default function Impact({ content }: { content: SiteContent }) {
           </div>
         </Reveal>
 
-        <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-2 lg:mt-10 lg:grid-cols-4 lg:gap-4">
+        <div className="mt-7 grid grid-cols-2 gap-3 md:grid-cols-2 lg:mt-8 lg:grid-cols-4 lg:gap-4">
           {content.impactStats.map((item, index) => (
             <Reveal key={item.id} delay={index * 0.05}>
               <div className="rounded-[8px] border border-white/15 bg-white/10 p-4 text-center backdrop-blur sm:p-6">
@@ -42,7 +42,7 @@ export default function Impact({ content }: { content: SiteContent }) {
           ))}
         </div>
 
-        <div className="mt-8 grid gap-3 lg:mt-10 lg:grid-cols-3 lg:gap-4">
+        <div className="mt-7 grid gap-3 lg:mt-8 lg:grid-cols-3 lg:gap-4">
           {content.impactNotes.map((note, index) => {
             const Icon = noteIcons[index % noteIcons.length];
 

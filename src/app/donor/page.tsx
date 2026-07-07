@@ -30,8 +30,8 @@ export default async function DonorPage() {
       <Navbar content={content} navigation={content.navigationItems} />
       <VisitTracker />
 
-      <main className="pt-20 sm:pt-28">
-        <section className="py-8 sm:py-12">
+      <main className="pt-20 sm:pt-24">
+        <section className="py-6 sm:py-10">
           <Container>
             <DonorPortal donor={donor} donations={donations} />
           </Container>

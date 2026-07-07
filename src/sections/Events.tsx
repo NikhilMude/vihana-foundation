@@ -8,7 +8,7 @@ import { SiteContent } from "@/lib/cmsContent";
 
 export default function Events({ content }: { content: SiteContent }) {
   return (
-    <section className="bg-white py-10 md:py-16">
+    <section className="bg-white py-8 md:py-12">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -21,13 +21,13 @@ export default function Events({ content }: { content: SiteContent }) {
           </div>
         </Reveal>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:mt-10 lg:grid-cols-3">
+        <div className="mt-7 grid gap-4 md:grid-cols-2 lg:mt-8 lg:grid-cols-3">
           {content.eventItems.map((item, index) => (
             <Reveal key={item.id} delay={index * 0.05}>
               <article className="overflow-hidden rounded-[8px] border border-slate-200 bg-stone-50 shadow-sm">
                 <div className="relative h-48 bg-teal-50">
                   {item.imageUrl ? (
-                    <Image src={item.imageUrl} alt={item.title} fill unoptimized className="object-cover" />
+                    <Image src={item.imageUrl} alt={item.title} fill unoptimized={item.imageUrl.startsWith("data:")} className="object-cover" />
                   ) : (
                     <div className="flex h-full items-center justify-center text-teal-700">
                       <CalendarDays className="h-10 w-10" />
