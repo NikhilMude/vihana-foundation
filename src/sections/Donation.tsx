@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { BadgeIndianRupee, Building2, Copy, FileCheck2, QrCode } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
@@ -43,6 +44,32 @@ export default function Donation({ content }: { content: SiteContent }) {
             <p className="mt-4 text-base leading-7 text-slate-600 sm:mt-6 sm:text-lg sm:leading-8">
               {content.donateDescription}
             </p>
+          </div>
+        </Reveal>
+
+        <Reveal>
+          <div className="mt-8 grid overflow-hidden rounded-[8px] bg-slate-950 shadow-xl shadow-slate-900/10 lg:mt-10 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="relative min-h-[260px] lg:order-2">
+              <Image
+                src={content.donationImageUrl || "/images/generated/vihana-meal-support-photo.jpg"}
+                alt="Vihana Foundation donation campaign"
+                fill
+                unoptimized
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent" />
+            </div>
+            <div className="flex flex-col justify-center p-5 text-white sm:p-8 lg:p-10">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-300">
+                {content.donationStoryEyebrow}
+              </p>
+              <h3 className="mt-4 font-[family-name:var(--font-playfair)] text-[2rem] font-bold leading-tight sm:text-4xl">
+                {content.donationStoryTitle}
+              </h3>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                {content.donationStoryDescription}
+              </p>
+            </div>
           </div>
         </Reveal>
 

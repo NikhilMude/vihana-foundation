@@ -55,13 +55,22 @@ export type SiteContent = {
   heroHighlight: string;
   heroDescription: string;
   heroImageUrl: string;
+  missionImageUrl: string;
+  donationImageUrl: string;
   heroPrimaryLabel: string;
   heroPrimaryHref: string;
   heroSecondaryLabel: string;
   heroSecondaryHref: string;
+  heroStatValue: string;
+  heroStatLabel: string;
+  heroMiniTitle: string;
+  heroMiniDescription: string;
   missionTitle: string;
   missionEyebrow: string;
   missionDescription: string;
+  missionStoryEyebrow: string;
+  missionStoryTitle: string;
+  missionStoryDescription: string;
   programsTitle: string;
   programsEyebrow: string;
   programsDescription: string;
@@ -78,6 +87,9 @@ export type SiteContent = {
   donateTitle: string;
   donateEyebrow: string;
   donateDescription: string;
+  donationStoryEyebrow: string;
+  donationStoryTitle: string;
+  donationStoryDescription: string;
   upiId: string;
   bankAccountName: string;
   bankAccountNumber: string;
@@ -154,15 +166,25 @@ export const defaultSiteContent: SiteContent = {
   heroHighlight: "A Thousand Smiles.",
   heroDescription:
     "Vihana Foundation turns celebrations into meaningful care for children through learning support, nourishing meals, health access and community-led kindness.",
-  heroImageUrl: "/illustrations/hero.png",
+  heroImageUrl: "/images/generated/vihana-hero-photo.jpg",
+  missionImageUrl: "/images/generated/vihana-meal-support-photo.jpg",
+  donationImageUrl: "/images/generated/vihana-meal-support-photo.jpg",
   heroPrimaryLabel: "Join the Movement",
   heroPrimaryHref: "#volunteer",
   heroSecondaryLabel: "Our Story",
   heroSecondaryHref: "#mission",
+  heroStatValue: "10K+",
+  heroStatLabel: "Meals shared",
+  heroMiniTitle: "Birthday to impact",
+  heroMiniDescription: "A simple celebration can become food, care and confidence.",
   missionTitle: "Turning personal celebration into public good.",
   missionEyebrow: "Our Mission",
   missionDescription:
     "Vihana Foundation was created from a simple belief: joy becomes more powerful when it is shared. Each initiative helps children feel seen, supported and ready to build a brighter future.",
+  missionStoryEyebrow: "From celebration to care",
+  missionStoryTitle: "A birthday can become books, meals, care and confidence.",
+  missionStoryDescription:
+    "This is the heart of Vihana Foundation: turning family joy into practical support that children can feel in their everyday lives.",
   programsTitle: "Focused care for the moments that shape childhood.",
   programsEyebrow: "Our Programs",
   programsDescription:
@@ -184,6 +206,10 @@ export const defaultSiteContent: SiteContent = {
   donateEyebrow: "Donate",
   donateDescription:
     "Donation information is ready as a website section. Replace the placeholders with your verified charity payment details before accepting public donations.",
+  donationStoryEyebrow: "Active giving moment",
+  donationStoryTitle: "Your support can become a meal, a notebook, or a reason to return to class.",
+  donationStoryDescription:
+    "Use this section for your current campaign. Add a real drive photo later from the CMS to make the appeal more trustworthy and personal.",
   upiId: "test-vihana@upi",
   bankAccountName: "Vihana Foundation Test",
   bankAccountNumber: "000000000000",
@@ -207,7 +233,7 @@ export const defaultSiteContent: SiteContent = {
   metaDescription:
     "Vihana Foundation turns celebrations into education, nutrition, healthcare and community support for children and families.",
   metaKeywords: "Vihana Foundation, charity, NGO, children, education, nutrition, healthcare, birthday campaign",
-  ogImageUrl: "/illustrations/hero.png",
+  ogImageUrl: "/images/generated/vihana-hero-photo.jpg",
   floatingDonateText: "Donate",
   floatingDonateHref: "#donate",
   floatingDonateColor: "#0f766e",
@@ -259,7 +285,7 @@ export const defaultSiteContent: SiteContent = {
     { id: "cta", label: "Donation CTA", visible: true },
     { id: "testimonials", label: "Testimonials", visible: false },
     { id: "faq", label: "FAQ", visible: true },
-    { id: "gallery", label: "Gallery", visible: false },
+    { id: "gallery", label: "Gallery", visible: true },
     { id: "news", label: "News", visible: false },
     { id: "newsletter", label: "Newsletter", visible: true },
     { id: "donate", label: "Donation Details", visible: true },
@@ -292,6 +318,7 @@ export const defaultSiteContent: SiteContent = {
       id: "education",
       title: "Education Support",
       description: "School kits, scholarships, digital access and mentoring that reduce barriers to learning.",
+      imageUrl: "/images/generated/vihana-story-photo.jpg",
       linkLabel: "Support this program",
       linkHref: "#volunteer",
     },
@@ -299,6 +326,7 @@ export const defaultSiteContent: SiteContent = {
       id: "food",
       title: "Food and Nutrition",
       description: "Meal drives, ration support and nutrition-focused outreach for children and families.",
+      imageUrl: "/images/generated/vihana-meal-support-photo.jpg",
       linkLabel: "Support this program",
       linkHref: "#volunteer",
     },
@@ -306,6 +334,7 @@ export const defaultSiteContent: SiteContent = {
       id: "health",
       title: "Health and Wellness",
       description: "Medical camps, wellness awareness and preventive care through trusted local partners.",
+      imageUrl: "/images/generated/vihana-hero-photo.jpg",
       linkLabel: "Support this program",
       linkHref: "#volunteer",
     },
@@ -313,6 +342,7 @@ export const defaultSiteContent: SiteContent = {
       id: "community",
       title: "Community and Environment",
       description: "Clean surroundings, tree plantation and civic initiatives that strengthen neighborhoods.",
+      imageUrl: "/images/generated/vihana-meal-support-photo.jpg",
       linkLabel: "Support this program",
       linkHref: "#volunteer",
     },
@@ -385,7 +415,7 @@ export const defaultSiteContent: SiteContent = {
     title: "A school kit that became a fresh start.",
     description:
       "With timely support, a child received learning materials and the encouragement to return to class with confidence.",
-    imageUrl: "",
+    imageUrl: "/images/generated/vihana-story-photo.jpg",
     linkLabel: "Support More Children",
     linkHref: "#donate",
   },
@@ -396,7 +426,7 @@ export const defaultSiteContent: SiteContent = {
       role: "Community volunteer",
       quote:
         "The most meaningful part is seeing a simple birthday campaign become real help for children and families.",
-      imageUrl: "",
+      imageUrl: "/images/generated/vihana-meal-support-photo.jpg",
       title: "",
       description: "",
     },
@@ -436,7 +466,7 @@ export const defaultSiteContent: SiteContent = {
       date: "2026-07-07",
       summary: "A celebration dedicated to meals, learning support and smiles.",
       description: "A celebration dedicated to meals, learning support and smiles.",
-      imageUrl: "",
+      imageUrl: "/images/generated/vihana-hero-photo.jpg",
       linkLabel: "Read More",
       linkHref: "/about-vihana",
     },
@@ -470,21 +500,21 @@ export const defaultGalleryItems: GalleryItem[] = [
     id: "meal-drives",
     title: "Meal Drives",
     description: "Fresh, nourishing food shared with children and families.",
-    imageUrl: "",
+    imageUrl: "/images/generated/vihana-meal-support-photo.jpg",
     tag: "Nutrition",
   },
   {
     id: "school-support",
     title: "School Support",
     description: "Kits, supplies and mentoring that make learning easier.",
-    imageUrl: "",
+    imageUrl: "/images/generated/vihana-story-photo.jpg",
     tag: "Education",
   },
   {
     id: "health-camps",
     title: "Health Camps",
     description: "Preventive care and wellness awareness in local communities.",
-    imageUrl: "",
+    imageUrl: "/images/generated/vihana-hero-photo.jpg",
     tag: "Health",
   },
 ];

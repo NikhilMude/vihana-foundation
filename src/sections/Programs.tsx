@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowUpRight, GraduationCap, HeartPulse, Soup, Trees } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
@@ -34,22 +35,36 @@ export default function Programs({ content }: { content: SiteContent }) {
 
             return (
               <Reveal key={program.title} delay={index * 0.06}>
-                <article className="group flex h-full flex-col rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/8 sm:p-6">
-                  <div className={`flex h-11 w-11 items-center justify-center rounded-[8px] sm:h-12 sm:w-12 ${accents[index % accents.length]}`}>
-                    <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <article className="group flex h-full flex-col overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-900/8">
+                  {program.imageUrl ? (
+                    <div className="relative h-40 bg-teal-50">
+                      <Image
+                        src={program.imageUrl}
+                        alt={program.title}
+                        fill
+                        unoptimized
+                        className="object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                  ) : null}
+
+                  <div className="flex flex-1 flex-col p-5 sm:p-6">
+                    <div className={`flex h-11 w-11 items-center justify-center rounded-[8px] sm:h-12 sm:w-12 ${accents[index % accents.length]}`}>
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                    </div>
+
+                    <h3 className="mt-5 text-lg font-bold text-slate-950 sm:mt-6 sm:text-xl">{program.title}</h3>
+
+                    <p className="mt-2 flex-1 text-sm leading-6 text-slate-600 sm:mt-3 sm:text-base sm:leading-7">{program.description}</p>
+
+                    <Link
+                      href={program.linkHref || "#volunteer"}
+                      className="mt-7 inline-flex items-center text-sm font-bold text-teal-700 transition group-hover:text-teal-800"
+                    >
+                      {program.linkLabel || "Support this program"}
+                      <ArrowUpRight className="ml-2 h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    </Link>
                   </div>
-
-                  <h3 className="mt-5 text-lg font-bold text-slate-950 sm:mt-6 sm:text-xl">{program.title}</h3>
-
-                  <p className="mt-2 flex-1 text-sm leading-6 text-slate-600 sm:mt-3 sm:text-base sm:leading-7">{program.description}</p>
-
-                  <Link
-                    href={program.linkHref || "#volunteer"}
-                    className="mt-7 inline-flex items-center text-sm font-bold text-teal-700 transition group-hover:text-teal-800"
-                  >
-                    {program.linkLabel || "Support this program"}
-                    <ArrowUpRight className="ml-2 h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
                 </article>
               </Reveal>
             );

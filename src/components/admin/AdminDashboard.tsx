@@ -110,6 +110,10 @@ const contentFields: { key: keyof SiteContent; label: string; multiline?: boolea
   { key: "heroPrimaryHref", label: "Hero primary button link" },
   { key: "heroSecondaryLabel", label: "Hero secondary button text" },
   { key: "heroSecondaryHref", label: "Hero secondary button link" },
+  { key: "heroStatValue", label: "Hero stat value" },
+  { key: "heroStatLabel", label: "Hero stat label" },
+  { key: "heroMiniTitle", label: "Hero small card title" },
+  { key: "heroMiniDescription", label: "Hero small card description", multiline: true },
   { key: "metaTitle", label: "SEO title" },
   { key: "metaDescription", label: "SEO description", multiline: true },
   { key: "metaKeywords", label: "SEO keywords" },
@@ -121,6 +125,9 @@ const contentFields: { key: keyof SiteContent; label: string; multiline?: boolea
   { key: "missionTitle", label: "Mission title" },
   { key: "missionEyebrow", label: "Mission small label" },
   { key: "missionDescription", label: "Mission description", multiline: true },
+  { key: "missionStoryEyebrow", label: "Mission photo section small label" },
+  { key: "missionStoryTitle", label: "Mission photo section title" },
+  { key: "missionStoryDescription", label: "Mission photo section description", multiline: true },
   { key: "programsTitle", label: "Programs title" },
   { key: "programsEyebrow", label: "Programs small label" },
   { key: "programsDescription", label: "Programs description", multiline: true },
@@ -137,6 +144,9 @@ const contentFields: { key: keyof SiteContent; label: string; multiline?: boolea
   { key: "donateTitle", label: "Donate title" },
   { key: "donateEyebrow", label: "Donate small label" },
   { key: "donateDescription", label: "Donate description", multiline: true },
+  { key: "donationStoryEyebrow", label: "Donation photo section small label" },
+  { key: "donationStoryTitle", label: "Donation photo section title" },
+  { key: "donationStoryDescription", label: "Donation photo section description", multiline: true },
   { key: "ctaHeading", label: "CTA banner heading" },
   { key: "ctaDescription", label: "CTA banner description", multiline: true },
   { key: "ctaButtonText", label: "CTA button text" },
@@ -740,6 +750,48 @@ export default function AdminDashboard({
                   height={520}
                   unoptimized
                   className="mt-5 max-h-[420px] w-full rounded-[8px] object-contain"
+                />
+              ) : null}
+            </section>
+
+            <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-950">Mission Story Image</h2>
+              <p className="mt-2 text-slate-600">Upload the image used in the mission storytelling section.</p>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) => handleImageUpload(event, (value) => updateContent("missionImageUrl", value))}
+                className="mt-5 w-full rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm"
+              />
+              {content.missionImageUrl ? (
+                <Image
+                  src={content.missionImageUrl}
+                  alt="Mission story preview"
+                  width={760}
+                  height={520}
+                  unoptimized
+                  className="mt-5 max-h-[420px] w-full rounded-[8px] object-cover"
+                />
+              ) : null}
+            </section>
+
+            <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-950">Donation Campaign Image</h2>
+              <p className="mt-2 text-slate-600">Upload the image used near donation and campaign storytelling.</p>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) => handleImageUpload(event, (value) => updateContent("donationImageUrl", value))}
+                className="mt-5 w-full rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm"
+              />
+              {content.donationImageUrl ? (
+                <Image
+                  src={content.donationImageUrl}
+                  alt="Donation campaign preview"
+                  width={760}
+                  height={520}
+                  unoptimized
+                  className="mt-5 max-h-[420px] w-full rounded-[8px] object-cover"
                 />
               ) : null}
             </section>

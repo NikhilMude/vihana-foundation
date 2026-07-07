@@ -10,9 +10,10 @@ const promises = ["Education support", "Nutritious meals", "Health and wellness"
 
 export default function Hero({ content }: { content: SiteContent }) {
   return (
-    <section id="home" className="relative overflow-hidden bg-[linear-gradient(135deg,#f8fafc_0%,#ecfeff_50%,#fff7ed_100%)] pt-20 sm:pt-28">
+    <section id="home" className="relative overflow-hidden bg-[linear-gradient(135deg,#f8fafc_0%,#ecfeff_48%,#fff7ed_100%)] pt-20 sm:pt-28">
+      <div className="absolute inset-x-0 top-0 h-40 bg-[linear-gradient(180deg,rgba(255,255,255,0.92),rgba(255,255,255,0))]" />
       <Container className="grid items-center gap-8 pb-10 pt-6 sm:min-h-[calc(88vh-5rem)] sm:gap-10 sm:pb-12 sm:pt-8 lg:grid-cols-[1.02fr_0.98fr] lg:pb-16">
-        <div className="max-w-3xl text-center lg:text-left">
+        <div className="relative z-10 max-w-3xl text-center lg:text-left">
           <div className="mx-auto inline-flex max-w-full items-center gap-2 rounded-full border border-amber-200 bg-white/85 px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-amber-700 shadow-sm backdrop-blur sm:px-4 sm:text-xs sm:tracking-[0.22em] lg:mx-0">
             <Gift className="h-4 w-4" />
             <span className="truncate">{content.heroBadge}</span>
@@ -53,30 +54,31 @@ export default function Hero({ content }: { content: SiteContent }) {
           </div>
         </div>
 
-        <div className="relative mx-auto w-full max-w-[25rem] lg:max-w-none">
-          <div className="relative overflow-hidden">
+        <div className="relative z-10 mx-auto w-full max-w-[26rem] lg:max-w-none">
+          <div className="relative overflow-hidden rounded-[8px] border border-white/70 bg-white p-2 shadow-2xl shadow-slate-900/15">
+            <div className="absolute inset-x-8 -bottom-10 h-24 rounded-full bg-teal-500/20 blur-3xl" />
             <Image
               src={content.heroImageUrl || "/illustrations/hero.png"}
               alt="Children supported by Vihana Foundation programs"
               width={760}
               height={760}
               priority
-              className="mx-auto h-auto w-full max-w-[24rem] object-contain mix-blend-multiply sm:max-w-[32rem] lg:max-w-none"
+              className="relative aspect-[4/3] w-full rounded-[8px] object-cover"
             />
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-4 sm:gap-4">
-            <div className="rounded-[8px] bg-white p-4 shadow-xl shadow-slate-900/10 sm:p-5">
-              <p className="text-2xl font-bold text-teal-700 sm:text-3xl">10K+</p>
+          <div className="-mt-8 grid grid-cols-2 gap-3 px-4 sm:gap-4">
+            <div className="relative rounded-[8px] bg-white p-4 shadow-xl shadow-slate-900/10 sm:p-5">
+              <p className="text-2xl font-bold text-teal-700 sm:text-3xl">{content.heroStatValue}</p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Meals shared
+                {content.heroStatLabel}
               </p>
             </div>
 
-            <div className="rounded-[8px] bg-slate-950 p-4 text-white shadow-xl shadow-slate-900/20 sm:p-5">
-              <p className="text-sm font-semibold text-amber-200">Birthday to impact</p>
+            <div className="relative rounded-[8px] bg-slate-950 p-4 text-white shadow-xl shadow-slate-900/20 sm:p-5">
+              <p className="text-sm font-semibold text-amber-200">{content.heroMiniTitle}</p>
               <p className="mt-1 text-sm leading-6 text-slate-300">
-                A simple celebration can become food, care and confidence.
+                {content.heroMiniDescription}
               </p>
             </div>
           </div>

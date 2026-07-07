@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { BookOpen, HeartHandshake, ShieldCheck, Soup } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
@@ -29,6 +30,33 @@ export default function Mission({ content }: { content: SiteContent }) {
             </p>
           </Reveal>
         </div>
+
+        <Reveal>
+          <div className="mt-8 grid overflow-hidden rounded-[8px] border border-slate-200 bg-slate-950 shadow-xl shadow-slate-900/10 lg:mt-10 lg:grid-cols-[0.95fr_1.05fr]">
+            <div className="relative min-h-[260px]">
+              <Image
+                src={content.missionImageUrl || "/images/generated/vihana-meal-support-photo.jpg"}
+                alt="Vihana Foundation community support"
+                fill
+                unoptimized
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/55 to-transparent lg:hidden" />
+            </div>
+
+            <div className="flex flex-col justify-center p-5 text-white sm:p-8 lg:p-10">
+              <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-300">
+                {content.missionStoryEyebrow}
+              </p>
+              <h3 className="mt-4 font-[family-name:var(--font-playfair)] text-[2rem] font-bold leading-tight sm:text-4xl">
+                {content.missionStoryTitle}
+              </h3>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-300 sm:text-base">
+                {content.missionStoryDescription}
+              </p>
+            </div>
+          </div>
+        </Reveal>
 
         <div className="mt-8 grid gap-3 md:grid-cols-2 lg:mt-10 lg:grid-cols-4 lg:gap-4">
           {content.missionPillars.map((item, index) => {
