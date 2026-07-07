@@ -12,6 +12,7 @@ import { NavigationItem, SiteContent } from "@/lib/cmsContent";
 export default function Navbar({ content, navigation }: { content: SiteContent; navigation: NavigationItem[] }) {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const menuNavigation = navigation.filter((item) => item.href !== "/donor" && item.href !== "#donate" && item.href !== "/#donate");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -34,7 +35,7 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
         <Logo brandName={content.brandName} brandTagline={content.brandTagline} logoImageUrl={content.logoImageUrl} />
 
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Main navigation">
-          {navigation.filter((item) => item.href !== "/donor").map((item) => (
+          {menuNavigation.map((item) => (
             <SmartNavLink
               key={item.label}
               href={item.href}
@@ -79,7 +80,7 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
       >
         <Container className="py-4">
           <div className="flex flex-col gap-1">
-            {navigation.map((item) => (
+            {menuNavigation.map((item) => (
               <SmartNavLink
                 key={item.label}
                 href={item.href}

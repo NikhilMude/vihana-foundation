@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { Download, HeartHandshake, Loader2, LogIn, LogOut, UserPlus } from "lucide-react";
+import { Download, HeartHandshake, Info, Loader2, LogIn, LogOut, UserPlus } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 
@@ -59,6 +59,7 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
   const [mode, setMode] = useState<"login" | "register">(donor ? "login" : "register");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
+  const [foreignNotice, setForeignNotice] = useState("");
   const total = useMemo(() => donations.reduce((sum, item) => sum + toNumber(item.amount), 0), [donations]);
 
   async function submitAuth(event: FormEvent<HTMLFormElement>, endpoint: string) {
@@ -201,10 +202,23 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
             <>
               <input name="name" required placeholder="Full name" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
               <input name="phone" placeholder="Phone" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
-              <select name="donorType" defaultValue="Indian Citizen" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600">
-                <option>Indian Citizen</option>
-                <option>Foreign Citizen / OCI</option>
-              </select>
+              <input type="hidden" name="donorType" value="Indian Citizen" />
+              <div className="rounded-[8px] border border-teal-200 bg-teal-50 px-4 py-3 text-sm font-bold text-teal-900">
+                Indian citizen donor account
+              </div>
+              <button
+                type="button"
+                onClick={() => setForeignNotice("Foreign citizen / OCI donor accounts are currently unavailable while compliance and payment setup is being updated. Please contact Vihana Foundation for volunteering, partnership, or non-financial support.")}
+                className="rounded-[8px] border border-amber-200 bg-amber-50 px-4 py-3 text-left text-sm font-bold text-amber-900 transition hover:bg-amber-100"
+              >
+                Foreign citizen / OCI supporter?
+              </button>
+              {foreignNotice ? (
+                <div className="flex items-start gap-3 rounded-[8px] bg-rose-50 px-4 py-3 text-sm font-semibold leading-6 text-rose-900">
+                  <Info className="mt-0.5 h-5 w-5 shrink-0" />
+                  {foreignNotice}
+                </div>
+              ) : null}
               <input name="pan" placeholder="PAN (optional)" className="h-12 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
               <textarea name="address" rows={3} placeholder="Address for receipt records" className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-teal-600" />
             </>

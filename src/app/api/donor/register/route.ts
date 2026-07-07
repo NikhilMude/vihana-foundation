@@ -45,6 +45,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: false, message: "Enter name, valid email and minimum 8 character password." }, { status: 400 });
     }
 
+    if (donorType === "Foreign Citizen / OCI") {
+      return NextResponse.json(
+        {
+          ok: false,
+          message:
+            "Foreign citizen / OCI donor accounts are currently unavailable while compliance and payment setup is being updated.",
+        },
+        { status: 403 }
+      );
+    }
+
     const id = donorDocumentId(email);
     const existing = await getDocument(`donors/${id}`);
 
