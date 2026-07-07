@@ -15,7 +15,7 @@ export default function Programs({ content }: { content: SiteContent }) {
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
             <span className="text-sm font-bold uppercase tracking-[0.26em] text-amber-600">
-              Our Programs
+              {content.programsEyebrow}
             </span>
 
             <h2 className="mt-5 font-[family-name:var(--font-playfair)] text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">

@@ -1,38 +1,78 @@
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import type { Metadata } from "next";
 
-import Hero from "@/sections/Hero";
-import Mission from "@/sections/Mission";
-import Programs from "@/sections/Programs";
-import WhyChooseUs from "@/sections/WhyChooseUs";
-import Impact from "@/sections/Impact";
-import Gallery from "@/sections/Gallery";
+import VisitTracker from "@/components/analytics/VisitTracker";
+import Footer from "@/components/layout/Footer";
+import FloatingDonate from "@/components/layout/FloatingDonate";
+import Navbar from "@/components/layout/Navbar";
 import Donation from "@/sections/Donation";
+import Faq from "@/sections/Faq";
+import FeaturedStory from "@/sections/FeaturedStory";
+import Gallery from "@/sections/Gallery";
+import Hero from "@/sections/Hero";
+import Impact from "@/sections/Impact";
+import Mission from "@/sections/Mission";
+import News from "@/sections/News";
+import Newsletter from "@/sections/Newsletter";
+import Programs from "@/sections/Programs";
+import ReusableCta from "@/sections/ReusableCta";
+import Testimonials from "@/sections/Testimonials";
 import Volunteer from "@/sections/Volunteer";
-import { getGalleryItems, getSiteContent } from "@/lib/siteData";
+import WhyChooseUs from "@/sections/WhyChooseUs";
+import { getGalleryItems, getSiteContent, getVisitorStats } from "@/lib/siteData";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const content = await getSiteContent();
+
+  return {
+    title: content.metaTitle,
+    description: content.metaDescription,
+    keywords: content.metaKeywords,
+    openGraph: {
+      title: content.metaTitle,
+      description: content.metaDescription,
+      images: content.ogImageUrl ? [content.ogImageUrl] : undefined,
+    },
+  };
+}
 
 export default async function Home() {
   const content = await getSiteContent();
   const galleryItems = await getGalleryItems();
+  const visitorStats = await getVisitorStats();
+
+  const sectionMap = {
+    hero: <Hero key="hero" content={content} />,
+    mission: <Mission key="mission" content={content} />,
+    programs: <Programs key="programs" content={content} />,
+    why: <WhyChooseUs key="why" content={content} />,
+    impact: <Impact key="impact" content={content} />,
+    story: <FeaturedStory key="story" content={content} />,
+    cta: <ReusableCta key="cta" content={content} />,
+    testimonials: <Testimonials key="testimonials" content={content} />,
+    faq: <Faq key="faq" content={content} />,
+    gallery: <Gallery key="gallery" content={content} items={galleryItems} />,
+    news: <News key="news" content={content} />,
+    newsletter: <Newsletter key="newsletter" content={content} />,
+    donate: <Donation key="donate" content={content} />,
+    volunteer: <Volunteer key="volunteer" content={content} />,
+  };
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-950">
       <Navbar navigation={content.navigationItems} />
+      <VisitTracker />
 
       <main className="overflow-x-hidden">
-        <Hero content={content} />
-        <Mission content={content} />
-        <Programs content={content} />
-        <WhyChooseUs content={content} />
-        <Impact content={content} />
-        <Gallery content={content} items={galleryItems} />
-        <Donation content={content} />
-        <Volunteer content={content} />
+        {content.sectionOrder
+          .filter((section) => section.visible)
+          .map((section) => sectionMap[section.id as keyof typeof sectionMap])
+          .filter(Boolean)}
       </main>
 
-      <Footer content={content} navigation={content.navigationItems} />
+      <FloatingDonate content={content} />
+      <Footer content={content} navigation={content.navigationItems} visitorCount={visitorStats.total} />
     </div>
   );
 }

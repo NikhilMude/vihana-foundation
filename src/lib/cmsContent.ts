@@ -9,8 +9,23 @@ export type EditableItem = {
   description: string;
   tag?: string;
   value?: string;
+  icon?: string;
+  imageUrl?: string;
+  name?: string;
+  role?: string;
+  quote?: string;
+  question?: string;
+  answer?: string;
+  date?: string;
+  summary?: string;
   linkLabel?: string;
   linkHref?: string;
+};
+
+export type SectionConfig = {
+  id: string;
+  label: string;
+  visible: boolean;
 };
 
 export type CmsPage = {
@@ -35,17 +50,23 @@ export type SiteContent = {
   heroSecondaryLabel: string;
   heroSecondaryHref: string;
   missionTitle: string;
+  missionEyebrow: string;
   missionDescription: string;
   programsTitle: string;
+  programsEyebrow: string;
   programsDescription: string;
   whyTitle: string;
+  whyEyebrow: string;
   whyDescription: string;
   impactTitle: string;
+  impactEyebrow: string;
   impactDescription: string;
   galleryTitle: string;
+  galleryEyebrow: string;
   galleryFeatureTitle: string;
   galleryFeatureDescription: string;
   donateTitle: string;
+  donateEyebrow: string;
   donateDescription: string;
   upiId: string;
   bankAccountName: string;
@@ -53,17 +74,47 @@ export type SiteContent = {
   bankIfsc: string;
   bankName: string;
   volunteerTitle: string;
+  volunteerEyebrow: string;
   volunteerDescription: string;
   contactEmail: string;
   contactPhone: string;
   contactLocation: string;
+  metaTitle: string;
+  metaDescription: string;
+  metaKeywords: string;
+  ogImageUrl: string;
+  floatingDonateText: string;
+  floatingDonateHref: string;
+  floatingDonateColor: string;
+  floatingDonateTextColor: string;
+  ctaHeading: string;
+  ctaDescription: string;
+  ctaButtonText: string;
+  ctaButtonHref: string;
+  ctaBackground: string;
+  storyEyebrow: string;
+  testimonialsEyebrow: string;
+  testimonialsTitle: string;
+  faqEyebrow: string;
+  faqTitle: string;
+  newsEyebrow: string;
+  newsTitle: string;
+  newsletterHeading: string;
+  newsletterDescription: string;
+  newsletterPlaceholder: string;
+  newsletterButtonText: string;
   navigationItems: NavigationItem[];
+  sectionOrder: SectionConfig[];
   missionPillars: EditableItem[];
   programCards: EditableItem[];
   whyFeatures: EditableItem[];
   impactStats: EditableItem[];
   impactNotes: EditableItem[];
   volunteerActions: EditableItem[];
+  featuredStory: EditableItem;
+  testimonials: EditableItem[];
+  faqs: EditableItem[];
+  newsItems: EditableItem[];
   pages: CmsPage[];
 };
 
@@ -87,22 +138,28 @@ export const defaultSiteContent: SiteContent = {
   heroSecondaryLabel: "Our Story",
   heroSecondaryHref: "#mission",
   missionTitle: "Turning personal celebration into public good.",
+  missionEyebrow: "Our Mission",
   missionDescription:
     "Vihana Foundation was created from a simple belief: joy becomes more powerful when it is shared. Each initiative helps children feel seen, supported and ready to build a brighter future.",
   programsTitle: "Focused care for the moments that shape childhood.",
+  programsEyebrow: "Our Programs",
   programsDescription:
     "Each program is practical, measurable and built with community partners who understand what children need on the ground.",
   whyTitle: "Compassion that is organized, transparent and close to the community.",
+  whyEyebrow: "Why Vihana",
   whyDescription:
     "A beautiful mission needs disciplined execution. Vihana Foundation brings warmth and structure together so every contribution has a clear path to impact.",
   impactTitle: "Small acts become measurable change.",
+  impactEyebrow: "Our Impact",
   impactDescription:
     "These numbers represent shared meals, steady learning, timely care and volunteers choosing to show up.",
   galleryTitle: "Moments of kindness, captured in action.",
+  galleryEyebrow: "Gallery",
   galleryFeatureTitle: "A celebration becomes a child's brighter tomorrow.",
   galleryFeatureDescription:
     "The gallery will grow with real photos from drives, school outreach, health camps and birthday campaigns.",
   donateTitle: "Give with clarity and confidence.",
+  donateEyebrow: "Donate",
   donateDescription:
     "Donation information is ready as a website section. Replace the placeholders with your verified charity payment details before accepting public donations.",
   upiId: "vihanafoundation@upi",
@@ -111,11 +168,39 @@ export const defaultSiteContent: SiteContent = {
   bankIfsc: "Add IFSC",
   bankName: "Add bank name",
   volunteerTitle: "Help make Vihana's birthday a reason for many children to smile.",
+  volunteerEyebrow: "Volunteer",
   volunteerDescription:
     "Start with one act: sponsor a meal, contribute school supplies, volunteer at a drive or build a birthday campaign with your family.",
   contactEmail: "hello@vihanafoundation.org",
   contactPhone: "+91 98765 43210",
   contactLocation: "India",
+  metaTitle: "Vihana Foundation | Every Birthday. A Thousand Smiles.",
+  metaDescription:
+    "Vihana Foundation turns celebrations into education, nutrition, healthcare and community support for children and families.",
+  metaKeywords: "Vihana Foundation, charity, NGO, children, education, nutrition, healthcare, birthday campaign",
+  ogImageUrl: "/illustrations/hero.png",
+  floatingDonateText: "Donate",
+  floatingDonateHref: "#donate",
+  floatingDonateColor: "#0f766e",
+  floatingDonateTextColor: "#ffffff",
+  ctaHeading: "Make one celebration meaningful for many children.",
+  ctaDescription:
+    "Your support can become meals, learning materials, care and confidence for children who need it most.",
+  ctaButtonText: "Start a Birthday Campaign",
+  ctaButtonHref: "#volunteer",
+  ctaBackground: "#0f766e",
+  storyEyebrow: "Featured Story",
+  testimonialsEyebrow: "Testimonials",
+  testimonialsTitle: "Voices from the Vihana community.",
+  faqEyebrow: "FAQ",
+  faqTitle: "Questions families and supporters often ask.",
+  newsEyebrow: "News & Activities",
+  newsTitle: "Recent moments and upcoming work.",
+  newsletterHeading: "Stay connected with Vihana Foundation.",
+  newsletterDescription:
+    "Receive updates about campaigns, volunteer opportunities and stories of impact.",
+  newsletterPlaceholder: "Email address",
+  newsletterButtonText: "Subscribe",
   navigationItems: [
     { label: "Home", href: "#home" },
     { label: "About Vihana", href: "/about-vihana" },
@@ -125,6 +210,22 @@ export const defaultSiteContent: SiteContent = {
     { label: "Gallery", href: "#gallery" },
     { label: "Donate", href: "#donate" },
     { label: "Contact Us", href: "/contact-us" },
+  ],
+  sectionOrder: [
+    { id: "hero", label: "Hero", visible: true },
+    { id: "mission", label: "Mission", visible: true },
+    { id: "programs", label: "Programs", visible: true },
+    { id: "why", label: "Why Vihana", visible: true },
+    { id: "impact", label: "Impact Stats", visible: true },
+    { id: "story", label: "Featured Story", visible: true },
+    { id: "cta", label: "Donation CTA", visible: true },
+    { id: "testimonials", label: "Testimonials", visible: true },
+    { id: "faq", label: "FAQ", visible: true },
+    { id: "gallery", label: "Gallery", visible: true },
+    { id: "news", label: "News", visible: true },
+    { id: "newsletter", label: "Newsletter", visible: true },
+    { id: "donate", label: "Donation Details", visible: true },
+    { id: "volunteer", label: "Volunteer Form", visible: true },
   ],
   missionPillars: [
     {
@@ -240,6 +341,68 @@ export const defaultSiteContent: SiteContent = {
       description: "Collaborate through schools, companies, local groups or family campaigns.",
     },
   ],
+  featuredStory: {
+    id: "featured-story",
+    name: "A young learner",
+    title: "A school kit that became a fresh start.",
+    description:
+      "With timely support, a child received learning materials and the encouragement to return to class with confidence.",
+    imageUrl: "",
+    linkLabel: "Support More Children",
+    linkHref: "#donate",
+  },
+  testimonials: [
+    {
+      id: "testimonial-1",
+      name: "A Vihana Volunteer",
+      role: "Community volunteer",
+      quote:
+        "The most meaningful part is seeing a simple birthday campaign become real help for children and families.",
+      imageUrl: "",
+      title: "",
+      description: "",
+    },
+    {
+      id: "testimonial-2",
+      name: "Supporter Family",
+      role: "Birthday campaign donor",
+      quote:
+        "We wanted our celebration to carry kindness forward. Vihana Foundation made that possible.",
+      imageUrl: "",
+      title: "",
+      description: "",
+    },
+  ],
+  faqs: [
+    {
+      id: "faq-1",
+      question: "How can I support Vihana Foundation?",
+      answer:
+        "You can dedicate a birthday, volunteer, contribute to a program or partner with us for community initiatives.",
+      title: "",
+      description: "",
+    },
+    {
+      id: "faq-2",
+      question: "Can I volunteer with my family?",
+      answer:
+        "Yes. Family-led birthday campaigns and volunteer support are central to the foundation's spirit.",
+      title: "",
+      description: "",
+    },
+  ],
+  newsItems: [
+    {
+      id: "news-1",
+      title: "Birthday kindness campaign",
+      date: "2026-07-07",
+      summary: "A celebration dedicated to meals, learning support and smiles.",
+      description: "A celebration dedicated to meals, learning support and smiles.",
+      imageUrl: "",
+      linkLabel: "Read More",
+      linkHref: "/about-vihana",
+    },
+  ],
   pages: [
     {
       id: "about-vihana",
@@ -299,6 +462,7 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
   };
   const navigationItems = arrayOrDefault(merged.navigationItems, defaultSiteContent.navigationItems);
   const pages = arrayOrDefault(merged.pages, defaultSiteContent.pages);
+  const sectionOrder = arrayOrDefault(merged.sectionOrder, defaultSiteContent.sectionOrder);
   const navigationWithDefaults = [
     ...navigationItems,
     ...defaultSiteContent.navigationItems.filter(
@@ -315,12 +479,22 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
   return {
     ...merged,
     navigationItems: navigationWithDefaults,
+    sectionOrder: [
+      ...sectionOrder,
+      ...defaultSiteContent.sectionOrder.filter(
+        (defaultSection) => !sectionOrder.some((section) => section.id === defaultSection.id)
+      ),
+    ],
     missionPillars: arrayOrDefault(merged.missionPillars, defaultSiteContent.missionPillars),
     programCards: arrayOrDefault(merged.programCards, defaultSiteContent.programCards),
     whyFeatures: arrayOrDefault(merged.whyFeatures, defaultSiteContent.whyFeatures),
     impactStats: arrayOrDefault(merged.impactStats, defaultSiteContent.impactStats),
     impactNotes: arrayOrDefault(merged.impactNotes, defaultSiteContent.impactNotes),
     volunteerActions: arrayOrDefault(merged.volunteerActions, defaultSiteContent.volunteerActions),
+    featuredStory: merged.featuredStory || defaultSiteContent.featuredStory,
+    testimonials: arrayOrDefault(merged.testimonials, defaultSiteContent.testimonials),
+    faqs: arrayOrDefault(merged.faqs, defaultSiteContent.faqs),
+    newsItems: arrayOrDefault(merged.newsItems, defaultSiteContent.newsItems),
     pages: pagesWithDefaults,
   };
 }

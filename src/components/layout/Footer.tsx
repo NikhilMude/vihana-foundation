@@ -5,7 +5,15 @@ import { Container } from "@/components/ui/Container";
 import { Logo } from "@/components/ui/Logo";
 import { NavigationItem, SiteContent } from "@/lib/cmsContent";
 
-export default function Footer({ content, navigation }: { content: SiteContent; navigation: NavigationItem[] }) {
+export default function Footer({
+  content,
+  navigation,
+  visitorCount,
+}: {
+  content: SiteContent;
+  navigation: NavigationItem[];
+  visitorCount?: number;
+}) {
   return (
     <footer className="bg-slate-950 py-16 text-white">
       <Container>
@@ -63,9 +71,10 @@ export default function Footer({ content, navigation }: { content: SiteContent; 
         </div>
 
         <div className="mt-12 border-t border-white/10 pt-6">
-          <p className="text-sm text-slate-500">
-            Copyright 2026 Vihana Foundation. All rights reserved.
-          </p>
+          <div className="flex flex-col justify-between gap-3 text-sm text-slate-500 sm:flex-row">
+            <p>Copyright 2026 Vihana Foundation. All rights reserved.</p>
+            <p>Total visitors: {visitorCount ?? 0}</p>
+          </div>
         </div>
       </Container>
     </footer>

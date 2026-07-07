@@ -2,11 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
+import VisitTracker from "@/components/analytics/VisitTracker";
 import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { getSiteContent } from "@/lib/siteData";
+import { getSiteContent, getVisitorStats } from "@/lib/siteData";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ type PageProps = {
 export default async function CmsPage({ params }: PageProps) {
   const { slug } = await params;
   const content = await getSiteContent();
+  const visitorStats = await getVisitorStats();
   const page = content.pages.find((item) => item.slug === slug && item.published);
 
   if (!page) {
@@ -28,6 +30,7 @@ export default async function CmsPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-stone-50 text-slate-950">
       <Navbar navigation={content.navigationItems} />
+      <VisitTracker />
 
       <main className="pt-28">
         <section className="py-20">
@@ -61,7 +64,7 @@ export default async function CmsPage({ params }: PageProps) {
         </section>
       </main>
 
-      <Footer content={content} navigation={content.navigationItems} />
+      <Footer content={content} navigation={content.navigationItems} visitorCount={visitorStats.total} />
     </div>
   );
 }

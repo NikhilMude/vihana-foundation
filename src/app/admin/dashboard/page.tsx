@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import { isAdminAuthenticated } from "@/lib/adminAuth";
 import { listDocuments } from "@/lib/firestoreAdmin";
-import { getGalleryItems, getSiteContent } from "@/lib/siteData";
+import { getGalleryItems, getRecentVisitors, getSiteContent, getVisitorStats } from "@/lib/siteData";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +23,8 @@ export default async function AdminDashboardPage() {
   }
 
   let messages: Message[] = [];
+  const visitorStats = await getVisitorStats();
+  const visitors = await getRecentVisitors();
 
   try {
     messages = (await listDocuments("websiteMessages"))
@@ -45,6 +47,8 @@ export default async function AdminDashboardPage() {
       initialContent={await getSiteContent()}
       initialGalleryItems={await getGalleryItems()}
       initialMessages={messages}
+      initialVisitors={visitors}
+      visitorCount={visitorStats.total}
     />
   );
 }

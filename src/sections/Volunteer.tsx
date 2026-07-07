@@ -15,7 +15,7 @@ export default function Volunteer({ content }: { content: SiteContent }) {
           <Reveal>
             <div>
               <span className="text-sm font-bold uppercase tracking-[0.26em] text-amber-600">
-                Volunteer
+                {content.volunteerEyebrow}
               </span>
 
               <h2 className="mt-5 max-w-2xl font-[family-name:var(--font-playfair)] text-4xl font-bold leading-tight text-slate-950 sm:text-5xl">

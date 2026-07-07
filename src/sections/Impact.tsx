@@ -1,6 +1,7 @@
 import { BadgeCheck, CalendarHeart, HandCoins } from "lucide-react";
 
 import { Container } from "@/components/ui/Container";
+import AnimatedNumber from "@/components/ui/AnimatedNumber";
 import Reveal from "@/components/ui/Reveal";
 import { SiteContent } from "@/lib/cmsContent";
 
@@ -13,7 +14,7 @@ export default function Impact({ content }: { content: SiteContent }) {
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-sm font-bold uppercase tracking-[0.26em] text-amber-200">
-              Our Impact
+              {content.impactEyebrow}
             </p>
 
             <h2 className="mt-5 font-[family-name:var(--font-playfair)] text-4xl font-bold leading-tight sm:text-5xl">
@@ -30,7 +31,9 @@ export default function Impact({ content }: { content: SiteContent }) {
           {content.impactStats.map((item, index) => (
             <Reveal key={item.id} delay={index * 0.05}>
               <div className="rounded-[8px] border border-white/15 bg-white/10 p-6 text-center backdrop-blur">
-                <p className="text-4xl font-bold sm:text-5xl">{item.value}</p>
+                <p className="text-4xl font-bold sm:text-5xl">
+                  <AnimatedNumber value={item.value || item.title} />
+                </p>
                 <p className="mt-3 text-sm font-semibold uppercase tracking-[0.18em] text-teal-50/75">
                   {item.title}
                 </p>
