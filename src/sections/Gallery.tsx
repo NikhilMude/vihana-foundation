@@ -47,9 +47,16 @@ export default function Gallery({ content, items }: { content: SiteContent; item
               const Icon = fallbackIcons[index % fallbackIcons.length];
 
               return (
-                <Reveal key={moment.id || moment.title} delay={index * 0.06}>
-                  <button
-                    onClick={() => moment.imageUrl && setSelected(moment)}
+                  <Reveal key={moment.id || moment.title} delay={index * 0.06}>
+                  <a
+                    href={moment.imageUrl || "#"}
+                    onClick={(e) => {
+                      if (moment.imageUrl) {
+                        e.preventDefault();
+                        setSelected(moment);
+                      }
+                    }}
+                    role="button"
                     className="mb-3 w-full break-inside-avoid overflow-hidden rounded-[8px] border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:shadow-xl lg:mb-5"
                   >
                     {moment.imageUrl ? (
@@ -71,7 +78,7 @@ export default function Gallery({ content, items }: { content: SiteContent; item
                       <h3 className="mt-1 text-sm font-bold text-slate-950 sm:mt-2 sm:text-xl">{moment.title}</h3>
                       <p className="mt-1 text-xs leading-5 text-slate-600 sm:mt-2 sm:text-base sm:leading-7">{moment.description}</p>
                     </div>
-                  </button>
+                  </a>
                 </Reveal>
               );
             })}
