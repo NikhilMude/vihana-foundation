@@ -11,20 +11,23 @@ export default function Donation({ content }: { content: SiteContent }) {
     {
       icon: BadgeIndianRupee,
       title: "UPI",
-      value: content.upiId || "test-vihana@upi",
-      note: "Dummy test UPI. Replace before accepting real donations.",
+      value: content.upiId || "To be updated",
+      note: content.upiId ? "Use the verified UPI ID shown here." : "Verified UPI details will be published after approval.",
     },
     {
       icon: Building2,
       title: "Bank Transfer",
-      value: `${content.bankAccountName || "Vihana Foundation Test"} | ${content.bankAccountNumber || "000000000000"} | ${content.bankIfsc || "TEST0001234"}`,
-      note: content.bankName || "Test Bank",
+      value:
+        content.bankAccountName && content.bankAccountNumber && content.bankIfsc
+          ? `${content.bankAccountName} | ${content.bankAccountNumber} | ${content.bankIfsc}`
+          : "To be updated",
+      note: content.bankName || "Verified bank details will be published after approval.",
     },
     {
       icon: QrCode,
       title: "QR Code",
-      value: "TEST-QR-VIHANA",
-      note: "Dummy QR reference for testing only.",
+      value: "To be updated",
+      note: "Verified QR payment details will be published after approval.",
     },
   ];
 

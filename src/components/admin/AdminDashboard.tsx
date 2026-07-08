@@ -570,11 +570,11 @@ const pageWorkspaces: {
     id: "legal",
     title: "Legal Pages",
     description: "Privacy Policy, Terms, Cookie Policy, Disclaimer and Refund Policy pages.",
-    guide: ["Open each legal page.", "Update placeholders before public launch.", "Keep donation policy language legally reviewed."],
+    guide: ["Open each legal page.", "Add final registration, PAN and 80G details after verification.", "Keep donation policy language legally reviewed."],
     actions: [
       { label: "Privacy Policy", tab: "pages", pageSlug: "privacy-policy" },
       { label: "Terms", tab: "pages", pageSlug: "terms-and-conditions" },
-      { label: "Refund Policy", tab: "pages", pageSlug: "refund-and-cancellation-policy" },
+      { label: "Refund Policy", tab: "pages", pageSlug: "refund-cancellation-policy" },
     ],
   },
   {
