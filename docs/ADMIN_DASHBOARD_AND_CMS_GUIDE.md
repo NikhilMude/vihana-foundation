@@ -51,6 +51,7 @@ Use the CMS for website content only.
 - Receipt design text and receipt number settings
 - Email templates
 - Social media icons and links
+- Dashboard Testing enable/disable setting
 - Visitor list
 - Website messages
 
@@ -177,6 +178,35 @@ Vihana@123
 
 Ask the donor to reset the password after first login.
 
+### Dashboard Testing
+
+Dashboard Testing is a controlled module for creating sample donor accounts, donations, receipts and accounting records.
+
+To use it:
+
+1. In CMS, keep `Dashboard testing enabled (true/false)` set to `true`.
+2. In Admin Operations Dashboard, give the user `Dashboard testing` permission.
+3. Open Donations & Receipts.
+4. Download the test sample Excel file.
+5. Edit the file in Excel.
+6. Upload the completed file.
+7. Click Upload Test Data.
+
+The uploaded test sheet creates:
+
+- Test donor accounts
+- Test donation records
+- Test receipt numbers
+- Test accounting receipt records
+
+Temporary password for created test donors:
+
+```txt
+Vihana@123
+```
+
+Set `Dashboard testing enabled (true/false)` to `false` in CMS before final public launch if you do not want this module visible or usable.
+
 ### Donor Management
 
 Admins can:
@@ -226,6 +256,7 @@ Common permission examples:
 - Receipts view/export
 - Accounting view/create/delete
 - Reports view/export
+- Dashboard testing
 - Donor create/edit/view
 - Dashboard user create/edit/delete
 - Messages view

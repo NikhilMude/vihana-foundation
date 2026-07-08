@@ -644,10 +644,43 @@ POST /api/admin/donations/seed-test
 Permission:
 
 ```txt
-donations:create
+dashboard:test
 ```
 
 Use only for testing dashboard reports.
+
+CMS must also have:
+
+```txt
+dashboardTestingEnabled = true
+```
+
+Body:
+
+```json
+{
+  "rows": [
+    {
+      "name": "Vihana Test Donor",
+      "email": "vihana.test@example.com",
+      "phone": "9876500000",
+      "amount": "5000",
+      "date": "2026-07-09",
+      "method": "Cash",
+      "purpose": "Child Education",
+      "pan": "",
+      "address": "Test donor address"
+    }
+  ]
+}
+```
+
+Notes:
+
+- This endpoint creates or updates test donor accounts.
+- It creates donation, receipt and accounting test records.
+- Temporary password for created test donors is `Vihana@123`.
+- Disable Dashboard Testing from CMS before public launch if you do not want test seeding available.
 
 ### Create Accounting Record
 

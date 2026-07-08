@@ -258,6 +258,7 @@ const contentFields: { key: keyof SiteContent; label: string; multiline?: boolea
   { key: "newsletterWelcomeEmailBody", label: "Newsletter welcome email body", multiline: true },
   { key: "newsletterEmailSubject", label: "Newsletter email subject" },
   { key: "newsletterEmailBody", label: "Newsletter email body", multiline: true },
+  { key: "dashboardTestingEnabled", label: "Dashboard testing enabled (true/false)" },
   { key: "upiId", label: "UPI ID" },
   { key: "bankAccountName", label: "Bank account name" },
   { key: "bankAccountNumber", label: "Bank account number" },

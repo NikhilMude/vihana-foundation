@@ -472,6 +472,16 @@
           "name": "Seed Test Donation Data",
           "request": {
             "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rows\": [\n    {\n      \"name\": \"Vihana Test Donor\",\n      \"email\": \"vihana.test@example.com\",\n      \"phone\": \"9876500000\",\n      \"amount\": \"5000\",\n      \"date\": \"2026-07-09\",\n      \"method\": \"Cash\",\n      \"purpose\": \"Child Education\",\n      \"pan\": \"\",\n      \"address\": \"Test donor address\"\n    }\n  ]\n}"
+            },
             "url": {
               "raw": "{{baseUrl}}/api/admin/donations/seed-test",
               "host": ["{{baseUrl}}"],

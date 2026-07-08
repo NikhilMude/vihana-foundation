@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 import { AdminPermission, AdminSession } from "@/lib/adminAuth";
 import { SiteContent } from "@/lib/cmsContent";
+import { testDonationDonors, testDonationSchedule } from "@/lib/testDonationSeed";
 
 type DonationRecord = {
   id: string;
@@ -115,6 +116,7 @@ const permissionGroups: { title: string; description: string; permissions: Admin
   { title: "Accounting", description: "Expenses, bills and annual records", permissions: ["accounting:view", "accounting:create", "accounting:edit", "accounting:delete"] },
   { title: "Donors", description: "Donor account creation and profiles", permissions: ["donors:view", "donors:create", "donors:edit", "donors:delete"] },
   { title: "Reports", description: "Dashboard summaries and exports", permissions: ["reports:view", "reports:export"] },
+  { title: "Dashboard Testing", description: "Seed and upload dashboard test data", permissions: ["dashboard:test"] },
   { title: "Dashboard Users", description: "Create and restrict admin users", permissions: ["users:view", "users:create", "users:edit", "users:delete"] },
   { title: "Community", description: "Messages, newsletter and visitors", permissions: ["messages:view", "newsletter:view", "newsletter:send", "visitors:view"] },
 ];
@@ -138,6 +140,7 @@ const permissionLabels: Record<AdminPermission, string> = {
   "donors:delete": "Delete donors",
   "reports:view": "View reports",
   "reports:export": "Export reports",
+  "dashboard:test": "Dashboard testing",
   "users:view": "View users",
   "users:create": "Create users",
   "users:edit": "Edit users",
@@ -418,11 +421,15 @@ export default function AdminOperationsDashboard({
   });
   const [bulkRows, setBulkRows] = useState<BulkDonationRow[]>([]);
   const [bulkUploading, setBulkUploading] = useState(false);
+  const [testRows, setTestRows] = useState<BulkDonationRow[]>([]);
+  const [testUploading, setTestUploading] = useState(false);
   const pageSize = 6;
 
   const can = (permission: AdminPermission) => currentAdmin.owner || currentAdmin.permissions.includes(permission);
   const canOpenCms = can("cms:view") || can("cms:edit");
   const canExport = can("reports:export");
+  const dashboardTestingEnabled = String(content.dashboardTestingEnabled || "true").toLowerCase() !== "false";
+  const canUseDashboardTesting = dashboardTestingEnabled && can("dashboard:test");
 
   const filteredDonations = useMemo(() => {
     const search = query.trim().toLowerCase();
@@ -566,12 +573,49 @@ export default function AdminOperationsDashboard({
     );
   }
 
+  function downloadTestDonationSample() {
+    const headers = ["Donor full name", "email", "phone", "Amount", "Date", "Payment Method", "Purpose", "PAN", "Address"];
+    const rows = testDonationDonors.flatMap((donor) => {
+      const [start, end] = donor.range;
+
+      return testDonationSchedule.slice(start, end).map(([amount, date, method, purpose]) => [
+        donor.name,
+        donor.email,
+        donor.phone,
+        amount,
+        date,
+        method,
+        purpose,
+        "",
+        "Test donor address for dashboard validation",
+      ]);
+    });
+    const tableRows = [headers, ...rows]
+      .map((row, rowIndex) => `<tr>${row.map((cell) => `<${rowIndex ? "td" : "th"}>${cell}</${rowIndex ? "td" : "th"}>`).join("")}</tr>`)
+      .join("");
+
+    downloadTextFile(
+      "vihana-dashboard-test-donation-data.xls",
+      `<!doctype html><html><head><meta charset="utf-8" /></head><body><table>${tableRows}</table></body></html>`,
+      "application/vnd.ms-excel;charset=utf-8"
+    );
+  }
+
   async function handleBulkFile(file?: File) {
     if (!file) return;
     const text = await file.text();
     const rows = bulkRowsFromSheet(text);
     setBulkRows(rows);
     setStatus(`${rows.length} donation rows ready. Review and click Import Donations.`);
+  }
+
+  async function handleTestDonationFile(file?: File) {
+    if (!file) return;
+    const text = await file.text();
+    const rows = bulkRowsFromSheet(text);
+
+    setTestRows(rows);
+    setStatus(`${rows.length} dashboard test rows ready. Review and click Upload Test Data.`);
   }
 
   async function importBulkDonations() {
@@ -607,13 +651,17 @@ export default function AdminOperationsDashboard({
   }
 
   async function seedTestDonations() {
-    if (!can("donations:create") || !window.confirm("Create dashboard test donors, donations, receipts and accounting records? Existing test records will be updated.")) return;
-    setSaving(true);
+    if (!canUseDashboardTesting || !testRows.length || !window.confirm("Create dashboard test donors, donations, receipts and accounting records from the uploaded sheet? Existing matching test records will be updated.")) return;
+    setTestUploading(true);
     setStatus("Creating test donation data...");
 
-    const response = await fetch("/api/admin/donations/seed-test", { method: "POST" });
+    const response = await fetch("/api/admin/donations/seed-test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rows: testRows }),
+    });
     const result = (await response.json()) as { ok: boolean; message?: string };
-    setSaving(false);
+    setTestUploading(false);
 
     if (!response.ok || !result.ok) {
       setStatus(result.message || "Could not create test donation data.");
@@ -621,6 +669,7 @@ export default function AdminOperationsDashboard({
     }
 
     setStatus(`${result.message || "Test donation data created."} Refreshing dashboard...`);
+    setTestRows([]);
     window.setTimeout(() => window.location.reload(), 900);
   }
 
@@ -1112,17 +1161,40 @@ export default function AdminOperationsDashboard({
                   ) : null}
                 </div>
               </div>
-              <div className="mt-5 rounded-[8px] border border-amber-200 bg-amber-50 p-4">
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-700">Dashboard testing</p>
-                <h3 className="mt-2 font-black text-slate-950">Create sample test data</h3>
-                <p className="mt-1 text-sm leading-6 text-slate-700">
-                  Creates 6 donor accounts, 52 donation records, matching receipts and accounting records from your Excel test data.
-                </p>
-                <Button type="button" onClick={seedTestDonations} disabled={saving} className="mt-3 h-10 rounded-full bg-slate-950 px-5 font-black text-white hover:bg-slate-800">
-                  {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-                  Create Test Donation Data
-                </Button>
-              </div>
+              {canUseDashboardTesting ? (
+                <div className="mt-5 rounded-[8px] border border-amber-200 bg-amber-50 p-4">
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-700">Dashboard testing</p>
+                  <h3 className="mt-2 font-black text-slate-950">Upload sample test donation sheet</h3>
+                  <p className="mt-1 text-sm leading-6 text-slate-700">
+                    Download the sample, edit it in Excel, upload it here and the system will create test donor accounts, donations, receipts and accounting records.
+                  </p>
+                  <div className="mt-3 grid gap-2">
+                    <Button type="button" variant="outline" onClick={downloadTestDonationSample} className="h-10 rounded-full px-4">
+                      <Download className="mr-2 h-4 w-4" />
+                      Download Test Sample Excel
+                    </Button>
+                    <label className="grid gap-2 rounded-[8px] border border-dashed border-amber-300 bg-white/75 p-3 text-sm font-semibold text-slate-700">
+                      Upload completed test Excel or CSV
+                      <input
+                        type="file"
+                        accept=".xls,.csv,application/vnd.ms-excel,text/csv"
+                        onChange={(event) => void handleTestDonationFile(event.target.files?.[0])}
+                        className="text-sm"
+                      />
+                    </label>
+                    {testRows.length ? (
+                      <div className="rounded-[8px] bg-white p-3 text-sm text-slate-900">
+                        <p className="font-black">{testRows.length} test rows ready</p>
+                        <p className="mt-1 text-xs font-semibold text-slate-600">Temporary password for created test donors: Vihana@123.</p>
+                        <Button type="button" onClick={seedTestDonations} disabled={testUploading} className="mt-3 h-10 rounded-full bg-slate-950 px-5 font-black text-white hover:bg-slate-800">
+                          {testUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                          Upload Test Data
+                        </Button>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
             </div>
 
             <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">

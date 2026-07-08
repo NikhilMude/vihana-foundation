@@ -185,6 +185,7 @@ export type SiteContent = {
   newsletterWelcomeEmailBody: string;
   newsletterEmailSubject: string;
   newsletterEmailBody: string;
+  dashboardTestingEnabled: string;
   navigationItems: NavigationItem[];
   socialLinks: SocialLink[];
   sectionOrder: SectionConfig[];
@@ -374,6 +375,7 @@ export const defaultSiteContent: SiteContent = {
   newsletterEmailSubject: "Vihana Foundation Update",
   newsletterEmailBody:
     "Dear supporter,\n\nThank you for being part of the Vihana Foundation community.\n\nWe are grateful for your kindness and support.\n\nWith gratitude,\nVihana Foundation",
+  dashboardTestingEnabled: "true",
   navigationItems: [
     { label: "Home", href: "#home" },
     { label: "About Vihana", href: "/about-vihana" },
