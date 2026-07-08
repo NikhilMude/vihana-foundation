@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 
 import AdminDashboard from "@/components/admin/AdminDashboard";
-import { isAdminAuthenticated } from "@/lib/adminAuth";
+import { getAdminSession } from "@/lib/adminAuth";
 import { listDocuments } from "@/lib/firestoreAdmin";
 import {
   getDonationIntents,
@@ -51,8 +51,16 @@ type AccountingRecord = {
 };
 
 export default async function AdminDashboardPage() {
-  if (!(await isAdminAuthenticated())) {
-    redirect("/admin");
+  const currentAdmin = await getAdminSession();
+
+  if (!currentAdmin) {
+    redirect("/donor");
+  }
+
+  const cmsPermissions = ["overview", "pageStudio", "content", "email", "media", "navigation", "order", "sections", "pages", "gallery"];
+
+  if (!currentAdmin.owner && !currentAdmin.permissions.some((permission) => cmsPermissions.includes(permission))) {
+    redirect("/admin/operations");
   }
 
   const [

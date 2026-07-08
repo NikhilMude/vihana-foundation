@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 
-import { isAdminAuthenticated } from "@/lib/adminAuth";
+import { requireAdminPermission } from "@/lib/adminAuth";
 import { listDocuments } from "@/lib/firestoreAdmin";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  if (!(await isAdminAuthenticated())) {
+  if (!(await requireAdminPermission("messages"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { isAdminAuthenticated } from "@/lib/adminAuth";
+import { requireAdminPermission } from "@/lib/adminAuth";
 import { addDocument, deleteDocument } from "@/lib/firestoreAdmin";
 import { getGalleryItems, invalidateSiteDataCache } from "@/lib/siteData";
 
 export const runtime = "nodejs";
 
 export async function GET() {
-  if (!(await isAdminAuthenticated())) {
+  if (!(await requireAdminPermission("gallery"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
@@ -15,7 +15,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!(await isAdminAuthenticated())) {
+  if (!(await requireAdminPermission("gallery"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!(await isAdminAuthenticated())) {
+  if (!(await requireAdminPermission("gallery"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 

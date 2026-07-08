@@ -16,7 +16,6 @@ import {
   Settings,
   Trash2,
   Users,
-  BadgeIndianRupee,
   Download,
   HelpCircle,
   Mail,
@@ -328,8 +327,6 @@ const quickActions: { tab: Tab; title: string; description: string; icon: typeof
   { tab: "media", title: "Change Images", description: "Logo, favicon, hero image, mission image and donation image.", icon: ImagePlus },
   { tab: "sections", title: "Edit Cards", description: "Programs, impact numbers, FAQ, news, events and reports.", icon: LayoutList },
   { tab: "navigation", title: "Menu & Social Links", description: "Website menu, footer links and social media.", icon: Navigation },
-  { tab: "donations", title: "Donation Reports", description: "Donation records, donor reports and CSV downloads.", icon: BadgeIndianRupee },
-  { tab: "accounting", title: "Accounting", description: "Expenses, receipts, bills and annual statements.", icon: ReceiptText },
 ];
 
 const socialIconPresets = [
@@ -677,12 +674,11 @@ const pageWorkspaces: {
   {
     id: "donate",
     title: "Donate Page",
-    description: "Donation copy, UPI, bank details, legal trust signals and donation reports.",
-    guide: ["Update donation text and payment details.", "Review transaction reports.", "Keep legal trust information accurate."],
+    description: "Donation copy, UPI, bank details and legal trust signals.",
+    guide: ["Update donation text and payment details.", "Keep legal trust information accurate.", "Use Admin Operations for donation and receipt records."],
     actions: [
       { label: "Donate Text", tab: "content", contentGroup: "donate" },
       { label: "Donation Image", tab: "media" },
-      { label: "Donation Reports", tab: "donations" },
     ],
   },
   {
@@ -716,17 +712,6 @@ const pageWorkspaces: {
       { label: "Newsletter Text", tab: "content", contentGroup: "news" },
       { label: "Email Template", tab: "email" },
       { label: "Subscribers", tab: "subscribers" },
-    ],
-  },
-  {
-    id: "accounting",
-    title: "Accounting & Compliance",
-    description: "Donation ledger, expenses, receipts, bills, statements and supporting documents.",
-    guide: ["Add expenses, bills and receipt records.", "Attach bill or receipt documents.", "Export CSV for accountant or annual reporting."],
-    actions: [
-      { label: "Accounting Register", tab: "accounting" },
-      { label: "Donation Reports", tab: "donations" },
-      { label: "Annual Reports", tab: "sections", listKey: "annualReports" },
     ],
   },
   {
@@ -952,9 +937,6 @@ export default function AdminDashboard({
       { id: "navigation" as const, label: "Menu & Social", icon: Navigation },
       { id: "order" as const, label: "Homepage Order", icon: Settings },
       { id: "email" as const, label: "Email Composer", icon: Mail },
-      { id: "donations" as const, label: "Donations", icon: BadgeIndianRupee },
-      { id: "accounting" as const, label: "Accounting", icon: ReceiptText },
-      { id: "donors" as const, label: "Donors", icon: Users },
       { id: "messages" as const, label: "Messages", icon: Inbox },
       { id: "subscribers" as const, label: "Newsletter", icon: Mail },
       { id: "visitors" as const, label: "Visitors", icon: Users },
@@ -1107,30 +1089,6 @@ export default function AdminDashboard({
       }
     });
 
-    donations.forEach((item) => {
-      if (matches(item.name, item.email, item.phone, item.amount, item.method, item.transactionId, item.purpose, item.status, item.createdAt)) {
-        results.push({
-          id: `donation-${item.id}`,
-          title: item.name || item.email || "Donation record",
-          description: `Donations / ${item.amount || "Amount not entered"}`,
-          tab: "donations",
-          action: () => setTab("donations"),
-        });
-      }
-    });
-
-    donors.forEach((item) => {
-      if (matches(item.name, item.email, item.phone, item.donorType, item.pan, item.address, item.createdAt)) {
-        results.push({
-          id: `donor-${item.id}`,
-          title: item.name || item.email || "Donor account",
-          description: "Donors / Accounts",
-          tab: "donors",
-          action: () => setTab("donors"),
-        });
-      }
-    });
-
     messages.forEach((item) => {
       if (matches(item.name, item.email, item.phone, item.interest, item.message, item.createdAt)) {
         results.push({
@@ -1155,18 +1113,6 @@ export default function AdminDashboard({
       }
     });
 
-    accountingRecords.forEach((item) => {
-      if (matches(item.type, item.title, item.amount, item.category, item.date, item.party, item.reference, item.status, item.notes)) {
-        results.push({
-          id: `accounting-${item.id}`,
-          title: item.title || "Accounting record",
-          description: `Accounting / ${item.type || "Record"}`,
-          tab: "accounting",
-          action: () => setTab("accounting"),
-        });
-      }
-    });
-
     visitors.forEach((item) => {
       if (matches(item.path, item.referrer, item.language, item.timezone, item.ipAddress, item.createdAt)) {
         results.push({
@@ -1180,7 +1126,7 @@ export default function AdminDashboard({
     });
 
     return results.slice(0, 18);
-  }, [accountingRecords, content, donations, donors, galleryItems, messages, searchQuery, subscribers, visitors]);
+  }, [content, galleryItems, messages, searchQuery, subscribers, visitors]);
   const donationSummary = useMemo(() => {
     const total = donations.reduce((sum, donation) => sum + currencyAmount(donation.amount), 0);
     const receiptCount = donations.filter((donation) => donation.receiptRequired === "Yes").length;
@@ -1816,7 +1762,7 @@ export default function AdminDashboard({
               <p className="text-xs font-bold uppercase tracking-[0.22em] text-teal-700">CMS Finder</p>
               <h2 className="mt-1 text-xl font-bold text-slate-950">Search anything you want to update</h2>
               <p className="mt-1 text-sm leading-6 text-slate-600">
-                Search page names, hero text, donations, emails, gallery items, FAQ, menu links or visitors. Click a result to open the correct editor.
+                Search page names, hero text, emails, gallery items, FAQ, menu links or visitors. Click a result to open the correct editor.
               </p>
             </div>
             <div className="rounded-[8px] bg-amber-50 px-4 py-3 text-sm font-bold leading-6 text-amber-900 lg:max-w-sm">
@@ -2025,9 +1971,6 @@ export default function AdminDashboard({
             <section className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
               {[
                 ["Messages", messages.length],
-                ["Donations", donations.length],
-                ["Accounting", accountingRecords.length],
-                ["Donors", donors.length],
                 ["Subscribers", subscribers.length],
                 ["Visitors", visitorCount],
               ].map(([label, value]) => (

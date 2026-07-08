@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { isAdminAuthenticated } from "@/lib/adminAuth";
+import { requireAdminPermission } from "@/lib/adminAuth";
 import { sendEmail } from "@/lib/email";
 import { addDocument, listDocuments } from "@/lib/firestoreAdmin";
 import { getSiteContent } from "@/lib/siteData";
@@ -8,7 +8,7 @@ import { getSiteContent } from "@/lib/siteData";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  if (!(await isAdminAuthenticated())) {
+  if (!(await requireAdminPermission("subscribers"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 

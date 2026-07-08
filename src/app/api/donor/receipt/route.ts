@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { isAdminAuthenticated } from "@/lib/adminAuth";
+import { hasAdminPermission } from "@/lib/adminAuth";
 import { getAuthenticatedDonor } from "@/lib/donorAuth";
 import { createReceiptPdf } from "@/lib/receiptPdf";
 import { getDonationIntents, getSiteContent } from "@/lib/siteData";
@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const donor = await getAuthenticatedDonor();
-  const isAdmin = await isAdminAuthenticated();
+  const isAdmin = await hasAdminPermission("donations");
 
   if (!donor && !isAdmin) {
     return NextResponse.json({ ok: false, message: "Please login to download receipt." }, { status: 401 });

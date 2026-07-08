@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { isAdminAuthenticated } from "@/lib/adminAuth";
+import { requireAdminPermission } from "@/lib/adminAuth";
 import { mergeSiteContent, SiteContent } from "@/lib/cmsContent";
 import { getSiteContent, invalidateSiteDataCache } from "@/lib/siteData";
 import { setDocument } from "@/lib/firestoreAdmin";
@@ -8,7 +8,7 @@ import { setDocument } from "@/lib/firestoreAdmin";
 export const runtime = "nodejs";
 
 export async function GET() {
-  if (!(await isAdminAuthenticated())) {
+  if (!(await requireAdminPermission("content"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
@@ -16,7 +16,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  if (!(await isAdminAuthenticated())) {
+  if (!(await requireAdminPermission("content"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
