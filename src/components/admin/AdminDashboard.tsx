@@ -341,6 +341,112 @@ const socialIconPresets = [
   { label: "Website", mark: "WWW" },
 ];
 
+const cmsGuardrails = [
+  ["Hero title", "Keep each headline line under 28 characters. Put the emotional word in the highlighted title field."],
+  ["Section titles", "Aim for 35-55 characters. Long titles should be split naturally with commas or short phrases."],
+  ["Descriptions", "Use 120-180 characters for section descriptions and 220 characters maximum for card descriptions."],
+  ["Buttons", "Keep button text between 2-4 words, for example Donate Now, Join Us, Our Story."],
+  ["Gallery/Event cards", "Use short titles under 45 characters and descriptions under 140 characters."],
+  ["Legal pages", "Long text is fine, but use short paragraphs separated by blank lines."],
+];
+
+const imageGuardrails = [
+  ["Logo", "Square PNG/SVG, 512 x 512 px recommended, transparent background preferred."],
+  ["Favicon", "Square PNG/SVG, 64 x 64 or 512 x 512 px. Keep it simple with no text."],
+  ["Hero image", "Landscape 1600 x 1100 px, under 700 KB, subject centered for mobile crop."],
+  ["Page images", "Landscape 1400 x 720 px, under 700 KB, avoid text inside images."],
+  ["Gallery/Event images", "Landscape 1200 x 900 px or 4:3 ratio, under 700 KB."],
+  ["Team photos", "Square 800 x 800 px, face centered, consistent lighting."],
+];
+
+const mediaUploadTips: Record<string, string> = {
+  logoImageUrl: "Recommended: square 512 x 512 px PNG/SVG, transparent background, under 700 KB. Avoid tiny text inside the logo.",
+  faviconImageUrl: "Recommended: square 64 x 64 or 512 x 512 px PNG/SVG, under 200 KB. Use only the icon mark, no words.",
+  heroImageUrl: "Recommended: landscape 1600 x 1100 px, under 700 KB. Keep the main face/subject centered for mobile cropping.",
+  missionImageUrl: "Recommended: landscape 1400 x 900 px, under 700 KB. Use warm real program-style photos with space around faces.",
+  donationImageUrl: "Recommended: landscape 1400 x 900 px, under 700 KB. Avoid text in the image and keep people centered.",
+};
+
+const fieldGuides: Partial<Record<keyof SiteContent, string>> = {
+  brandName: "Recommended: 2-4 words. Example: Vihana Foundation.",
+  brandTagline: "Recommended: 3-6 words. Example: Small Steps. Lifelong Impact.",
+  heroTitle: "Recommended: under 28 characters. Keep this as the first bold line.",
+  heroHighlight: "Recommended: under 28 characters. Use the emotional highlight here.",
+  heroDescription: "Recommended: 120-180 characters. Keep it warm, clear and easy to read on mobile.",
+  heroPrimaryLabel: "Recommended: 2-4 words. Example: Join the Movement.",
+  heroSecondaryLabel: "Recommended: 2-4 words. Example: Our Story.",
+  missionTitle: "Recommended: 35-55 characters. Avoid very long single-line headings.",
+  missionDescription: "Recommended: 120-180 characters. One clear paragraph works best.",
+  programsTitle: "Recommended: 35-60 characters. Keep it scan-friendly.",
+  programsDescription: "Recommended: 120-180 characters.",
+  impactTitle: "Recommended: 35-55 characters.",
+  galleryTitle: "Recommended: 35-55 characters.",
+  galleryFeatureTitle: "Recommended: 45 characters or less.",
+  galleryFeatureDescription: "Recommended: 120-160 characters.",
+  donateTitle: "Recommended: 35-55 characters.",
+  donateDescription: "Recommended: 140-220 characters. Mention trust and clarity.",
+  ctaHeading: "Recommended: 35-60 characters.",
+  ctaDescription: "Recommended: 120-180 characters.",
+  newsletterHeading: "Recommended: 35-55 characters.",
+  newsletterDescription: "Recommended: 120-160 characters.",
+  contactEmail: "Use a working inbox, for example contact@vihanafoundation.org.",
+  contactPhone: "Use country code format, for example +91 98765 43210.",
+  metaTitle: "Recommended: 50-60 characters for Google results.",
+  metaDescription: "Recommended: 140-160 characters for Google results.",
+};
+
+function getFieldGuide(field: { key: keyof SiteContent; label: string; multiline?: boolean }) {
+  if (fieldGuides[field.key]) {
+    return fieldGuides[field.key];
+  }
+
+  if (isColorField(field.key)) {
+    return "Use a 6-digit hex color, for example #0f766e.";
+  }
+
+  if (field.label.toLowerCase().includes("title")) {
+    return "Recommended: 35-60 characters so headings stay clean on mobile.";
+  }
+
+  if (field.label.toLowerCase().includes("description") || field.multiline) {
+    return "Recommended: 120-180 characters unless this is a legal/page body field.";
+  }
+
+  if (field.label.toLowerCase().includes("button")) {
+    return "Recommended: 2-4 words.";
+  }
+
+  return "Keep this concise. Short text prevents layout breaks on mobile.";
+}
+
+function getFieldPlaceholder(field: { key: keyof SiteContent; label: string; multiline?: boolean }) {
+  if (isColorField(field.key)) {
+    return "#0f766e";
+  }
+
+  if (field.key === "brandName") {
+    return "Vihana Foundation";
+  }
+
+  if (field.key === "brandTagline") {
+    return "Small Steps. Lifelong Impact.";
+  }
+
+  if (field.label.toLowerCase().includes("button")) {
+    return "Donate Now";
+  }
+
+  if (field.label.toLowerCase().includes("title")) {
+    return "Short, clear heading";
+  }
+
+  if (field.multiline) {
+    return "Write one clear paragraph. Keep it short for mobile.";
+  }
+
+  return field.label;
+}
+
 const contentGroups: {
   id: string;
   label: string;
@@ -1694,6 +1800,30 @@ export default function AdminDashboard({
               </div>
 
               <div className="mt-6 grid gap-4 lg:grid-cols-2">
+                <div className="rounded-[8px] border border-teal-100 bg-teal-50 p-4">
+                  <h3 className="text-sm font-black uppercase tracking-[0.18em] text-teal-900">Safe Text Lengths</h3>
+                  <div className="mt-3 grid gap-2">
+                    {cmsGuardrails.map(([label, detail]) => (
+                      <p key={label} className="text-sm leading-6 text-teal-950">
+                        <span className="font-bold">{label}:</span> {detail}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[8px] border border-amber-100 bg-amber-50 p-4">
+                  <h3 className="text-sm font-black uppercase tracking-[0.18em] text-amber-900">Image Size Guide</h3>
+                  <div className="mt-3 grid gap-2">
+                    {imageGuardrails.map(([label, detail]) => (
+                      <p key={label} className="text-sm leading-6 text-amber-950">
+                        <span className="font-bold">{label}:</span> {detail}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-4 lg:grid-cols-2">
                 {pageWorkspaces.map((workspace) => (
                   <article key={workspace.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-5">
                     <div className="flex items-start justify-between gap-4">
@@ -1830,6 +1960,16 @@ export default function AdminDashboard({
                   <h3 className="font-bold text-teal-950">{activeContentGroup.label}</h3>
                   <p className="mt-1 text-sm leading-6 text-teal-800">{activeContentGroup.description}</p>
                 </div>
+                <div className="my-4 rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-slate-500">Editing guide</p>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    {cmsGuardrails.slice(0, 4).map(([label, detail]) => (
+                      <p key={label} className="text-xs leading-5 text-slate-600">
+                        <span className="font-bold text-slate-900">{label}:</span> {detail}
+                      </p>
+                    ))}
+                  </div>
+                </div>
             <div className="grid gap-5 lg:grid-cols-2">
               {visibleContentFields.map((field) => (
                 <label key={field.key} className={field.multiline ? "lg:col-span-2" : ""}>
@@ -1838,6 +1978,7 @@ export default function AdminDashboard({
                     <textarea
                       rows={4}
                       value={String(content[field.key])}
+                      placeholder={getFieldPlaceholder(field)}
                       onChange={(event) => updateContent(field.key, event.target.value)}
                       className="mt-2 w-full resize-none rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-teal-600 focus:bg-white"
                     />
@@ -1854,11 +1995,13 @@ export default function AdminDashboard({
                       ) : null}
                       <input
                         value={String(content[field.key])}
+                        placeholder={getFieldPlaceholder(field)}
                         onChange={(event) => updateContent(field.key, event.target.value)}
                         className={`${isColorField(field.key) ? "" : "mt-2"} h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600 focus:bg-white`}
                       />
                     </div>
                   )}
+                  <p className="mt-2 text-xs leading-5 text-slate-500">{getFieldGuide(field)}</p>
                 </label>
               ))}
             </div>
@@ -1965,9 +2108,25 @@ export default function AdminDashboard({
 
         {tab === "media" ? (
           <div className="mt-6 grid gap-6">
+            <section className="rounded-[8px] border border-amber-100 bg-amber-50 p-5 shadow-sm">
+              <h2 className="text-xl font-bold text-amber-950">Image Upload Guide</h2>
+              <p className="mt-2 text-sm leading-6 text-amber-900">
+                Keep images compressed under 700 KB. Avoid placing important faces or text near the edges because mobile screens crop images differently.
+              </p>
+              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {imageGuardrails.map(([label, detail]) => (
+                  <div key={label} className="rounded-[8px] bg-white/70 p-3">
+                    <p className="text-sm font-black text-slate-950">{label}</p>
+                    <p className="mt-1 text-xs leading-5 text-slate-600">{detail}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
             <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-bold text-slate-950">Website Logo</h2>
               <p className="mt-2 text-slate-600">Upload the logo shown in the header and footer.</p>
+              <p className="mt-3 rounded-[8px] bg-teal-50 px-3 py-2 text-sm font-semibold leading-6 text-teal-900">{mediaUploadTips.logoImageUrl}</p>
               <input
                 type="file"
                 accept="image/*"
@@ -1994,6 +2153,7 @@ export default function AdminDashboard({
             <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-bold text-slate-950">Favicon</h2>
               <p className="mt-2 text-slate-600">Upload the small browser-tab icon. A square PNG/SVG works best.</p>
+              <p className="mt-3 rounded-[8px] bg-teal-50 px-3 py-2 text-sm font-semibold leading-6 text-teal-900">{mediaUploadTips.faviconImageUrl}</p>
               <input
                 type="file"
                 accept="image/*"
@@ -2020,6 +2180,7 @@ export default function AdminDashboard({
             <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-bold text-slate-950">Hero Image</h2>
               <p className="mt-2 text-slate-600">Upload the main image shown at the top of the homepage.</p>
+              <p className="mt-3 rounded-[8px] bg-teal-50 px-3 py-2 text-sm font-semibold leading-6 text-teal-900">{mediaUploadTips.heroImageUrl}</p>
               <input
                 type="file"
                 accept="image/*"
@@ -2041,6 +2202,7 @@ export default function AdminDashboard({
             <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-bold text-slate-950">Mission Story Image</h2>
               <p className="mt-2 text-slate-600">Upload the image used in the mission storytelling section.</p>
+              <p className="mt-3 rounded-[8px] bg-teal-50 px-3 py-2 text-sm font-semibold leading-6 text-teal-900">{mediaUploadTips.missionImageUrl}</p>
               <input
                 type="file"
                 accept="image/*"
@@ -2062,6 +2224,7 @@ export default function AdminDashboard({
             <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-bold text-slate-950">Donation Campaign Image</h2>
               <p className="mt-2 text-slate-600">Upload the image used near donation and campaign storytelling.</p>
+              <p className="mt-3 rounded-[8px] bg-teal-50 px-3 py-2 text-sm font-semibold leading-6 text-teal-900">{mediaUploadTips.donationImageUrl}</p>
               <input
                 type="file"
                 accept="image/*"
@@ -2159,6 +2322,9 @@ export default function AdminDashboard({
                       <Trash2 className="h-4 w-4" />
                     </button>
                     <div className="grid gap-3 md:col-span-3 md:grid-cols-[1fr_auto] md:items-center">
+                      <p className="text-xs leading-5 text-slate-500 md:col-span-2">
+                        Icon guide: square PNG/SVG, 128 x 128 px or 512 x 512 px, transparent background, under 200 KB.
+                      </p>
                       <input
                         type="file"
                         accept="image/*"
@@ -2323,6 +2489,9 @@ export default function AdminDashboard({
                         className="rounded-[8px] border border-slate-200 px-4 py-3 lg:col-span-2"
                         placeholder={listHelp[listKey].bodyLabel}
                       />
+                      <p className="text-xs leading-5 text-slate-500 lg:col-span-2">
+                        Text guide: keep titles under 45 characters, descriptions under 140 characters, and button text under 4 words.
+                      </p>
                       <input value={item.linkLabel || ""} onChange={(event) => updateListItem(listKey, index, "linkLabel", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button text, if needed" />
                       <div className="flex gap-3">
                         <input value={item.linkHref || ""} onChange={(event) => updateListItem(listKey, index, "linkHref", event.target.value)} className="h-11 flex-1 rounded-[8px] border border-slate-200 px-4" placeholder="Button link, if needed" />
@@ -2352,6 +2521,9 @@ export default function AdminDashboard({
                         onChange={(event) => handleImageUpload(event, (value) => updateListItem(listKey, index, "imageUrl", value))}
                         className="rounded-[8px] border border-dashed border-slate-300 bg-white p-3 text-sm lg:col-span-2"
                       />
+                      <p className="text-xs leading-5 text-slate-500 lg:col-span-2">
+                        Image guide: use 1200 x 900 px for cards/events/gallery, 800 x 800 px for team photos, under 700 KB.
+                      </p>
                       {listKey === "annualReports" ? (
                         <input
                           type="file"
@@ -2421,6 +2593,7 @@ export default function AdminDashboard({
                     <input value={activePage.title} onChange={(event) => updatePage(safeActivePageIndex, "title", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Page title" />
                     <input value={activePage.slug} onChange={(event) => updatePage(safeActivePageIndex, "slug", event.target.value.replace(/[^a-z0-9-]/g, "-"))} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="page-url" />
                     <input value={activePage.description} onChange={(event) => updatePage(safeActivePageIndex, "description", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4 lg:col-span-2" placeholder="Short description" />
+                    <p className="text-xs leading-5 text-slate-500 lg:col-span-2">Page text guide: title under 55 characters, description 120-160 characters, body can be longer with short paragraphs separated by blank lines.</p>
                     <input value={activePage.imageUrl || ""} onChange={(event) => updatePage(safeActivePageIndex, "imageUrl", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4 lg:col-span-2" placeholder="Page image URL" />
                     <div className="grid gap-3 lg:col-span-2 lg:grid-cols-[0.7fr_1.3fr]">
                       <input
@@ -2437,6 +2610,7 @@ export default function AdminDashboard({
                         </div>
                       )}
                     </div>
+                    <p className="text-xs leading-5 text-slate-500 lg:col-span-2">Page image guide: landscape 1400 x 720 px, under 700 KB, no text inside image.</p>
                     <textarea value={activePage.body} onChange={(event) => updatePage(safeActivePageIndex, "body", event.target.value)} rows={10} className="rounded-[8px] border border-slate-200 px-4 py-3 lg:col-span-2" placeholder="Page content" />
                     <input value={activePage.buttonLabel} onChange={(event) => updatePage(safeActivePageIndex, "buttonLabel", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button label" />
                     <input value={activePage.buttonHref} onChange={(event) => updatePage(safeActivePageIndex, "buttonHref", event.target.value)} className="h-11 rounded-[8px] border border-slate-200 px-4" placeholder="Button link" />
@@ -2455,6 +2629,9 @@ export default function AdminDashboard({
           <div className="mt-6 grid gap-6 lg:grid-cols-[0.85fr_1.15fr]">
             <form onSubmit={addGalleryItem} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-bold text-slate-950">Add Gallery Item</h2>
+              <p className="mt-2 rounded-[8px] bg-teal-50 px-3 py-2 text-sm font-semibold leading-6 text-teal-900">
+                Gallery guide: image 1200 x 900 px, under 700 KB. Title under 45 characters, description under 140 characters.
+              </p>
               <input name="title" required className="mt-5 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" placeholder="Title" />
               <input name="tag" className="mt-4 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" placeholder="Tag" />
               <textarea name="description" required rows={4} className="mt-4 w-full resize-none rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-teal-600" placeholder="Description" />
