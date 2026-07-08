@@ -1,8 +1,8 @@
 "use client";
 
-import { ArrowUpRight, FileImage, FileSpreadsheet, FileText, Globe2, Mail, MessageCircle, Share2 } from "lucide-react";
+import { useState } from "react";
+import { ArrowUpRight, FileImage, FileSpreadsheet, FileText, Globe2, Mail, MessageCircle, Share2, X } from "lucide-react";
 
-import SmartNavLink from "@/components/layout/SmartNavLink";
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
 import { EditableItem, SiteContent } from "@/lib/cmsContent";
@@ -15,6 +15,38 @@ function reportIcon(type?: string) {
   if (normalized.includes("external") || normalized.includes("link")) return Globe2;
   if (normalized.includes("pdf") || normalized.includes("doc") || normalized.includes("word") || normalized.includes("ppt") || normalized.includes("presentation")) return FileText;
   return FileText;
+}
+
+function getPreviewKind(item: EditableItem) {
+  const normalizedTag = String(item.tag || "").toLowerCase();
+  const href = String(item.linkHref || "");
+  const extension = href.split(".").pop()?.split(/[#?]/)[0]?.toLowerCase() || "";
+
+  const imageExtensions = ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "tiff"];
+  const documentExtensions = ["doc", "docx", "xls", "xlsx", "ppt", "pptx"];
+
+  const isImage = normalizedTag.includes("image") || imageExtensions.includes(extension);
+  const isPdf = normalizedTag.includes("pdf") || extension === "pdf";
+  const isOffice = normalizedTag.includes("excel") || normalizedTag.includes("sheet") || normalizedTag.includes("word") || normalizedTag.includes("ppt") || documentExtensions.includes(extension);
+  const isExternal = normalizedTag.includes("external") || normalizedTag.includes("link") || /^(https?:)?\/\//.test(href) && !href.includes(window.location.host);
+
+  if (isImage) {
+    return { kind: "image", label: "Image", previewable: true } as const;
+  }
+
+  if (isPdf) {
+    return { kind: "pdf", label: "PDF", previewable: true } as const;
+  }
+
+  if (isOffice) {
+    return { kind: "office", label: "Office document", previewable: false } as const;
+  }
+
+  if (isExternal) {
+    return { kind: "external", label: "External link", previewable: false } as const;
+  }
+
+  return { kind: "unknown", label: "File", previewable: false } as const;
 }
 
 function shareText(item: EditableItem, content: SiteContent) {
@@ -30,6 +62,20 @@ async function shareReport(item: EditableItem, content: SiteContent) {
 }
 
 export default function AnnualReports({ content }: { content: SiteContent }) {
+  const [viewerItem, setViewerItem] = useState<EditableItem | null>(null);
+
+  function closeViewer() {
+    setViewerItem(null);
+  }
+
+  function openViewer(item: EditableItem) {
+    if (!item.linkHref) {
+      return;
+    }
+
+    setViewerItem(item);
+  }
+
   return (
     <section className="overflow-hidden bg-stone-50 py-6 md:py-12">
       <Container>
@@ -73,10 +119,14 @@ export default function AnnualReports({ content }: { content: SiteContent }) {
                     <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{item.description}</p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {item.linkHref ? (
-                        <SmartNavLink href={item.linkHref} className="inline-flex h-9 items-center rounded-full bg-teal-700 px-3 text-xs font-black text-white hover:bg-teal-800">
+                        <button
+                          type="button"
+                          onClick={() => openViewer(item)}
+                          className="inline-flex h-9 items-center rounded-full bg-teal-700 px-3 text-xs font-black text-white hover:bg-teal-800"
+                        >
                           {item.linkLabel || "View"}
                           <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
-                        </SmartNavLink>
+                        </button>
                       ) : (
                         <span className="inline-flex h-9 items-center rounded-full border border-slate-200 bg-slate-100 px-3 text-xs font-black text-slate-500">
                           No link provided
@@ -103,6 +153,74 @@ export default function AnnualReports({ content }: { content: SiteContent }) {
           </div>
         </div>
       </Container>
+
+      {viewerItem ? (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/80 p-4">
+          <div className="relative w-full max-w-5xl overflow-hidden rounded-[12px] bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">{viewerItem.tag || "PDF"}</p>
+                <h2 className="text-lg font-black text-slate-950">{viewerItem.title}</h2>
+              </div>
+              <button type="button" onClick={closeViewer} className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-700 hover:bg-slate-200">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="h-[70vh] bg-slate-950">
+              {(() => {
+                const preview = getPreviewKind(viewerItem);
+
+                if (preview.kind === "image") {
+                  return (
+                    <img src={viewerItem.linkHref} alt={viewerItem.title} className="h-full w-full object-contain bg-slate-950" />
+                  );
+                }
+
+                if (preview.kind === "pdf") {
+                  return (
+                    <iframe
+                      src={viewerItem.linkHref}
+                      title={viewerItem.title}
+                      className="h-full w-full border-0"
+                    />
+                  );
+                }
+
+                return (
+                  <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center text-slate-200">
+                    <div className="rounded-full bg-slate-800 p-4 text-amber-400">
+                      <FileText className="h-8 w-8" />
+                    </div>
+                    <div>
+                      <p className="text-lg font-bold text-white">{preview.label} preview unavailable</p>
+                      <p className="mt-2 max-w-xl text-sm text-slate-300">
+                        This file type cannot be displayed directly in the browser. Use the button below to open or download it.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-3">
+                      <a
+                        href={viewerItem.linkHref}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex h-11 items-center rounded-full bg-teal-700 px-5 text-sm font-black text-white hover:bg-teal-800"
+                      >
+                        Open file
+                      </a>
+                      <a
+                        href={viewerItem.linkHref}
+                        download
+                        className="inline-flex h-11 items-center rounded-full border border-slate-200 bg-white px-5 text-sm font-black text-slate-900 hover:bg-slate-50"
+                      >
+                        Download
+                      </a>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
