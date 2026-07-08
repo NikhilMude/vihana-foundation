@@ -84,6 +84,35 @@ h5 {
   color: #134e4a;
 }
 
+.vf-scroll-shell {
+  scrollbar-width: none;
+}
+
+.vf-scroll-shell::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes vf-horizontal-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .vf-auto-scroll {
+    animation: vf-horizontal-scroll 36s linear infinite;
+  }
+
+  .vf-auto-scroll:hover,
+  .vf-auto-scroll:focus-within {
+    animation-play-state: paused;
+  }
+}
+
 @theme inline {
   --font-heading: var(--font-playfair);
   --font-sans: var(--font-inter);

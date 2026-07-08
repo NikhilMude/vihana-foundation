@@ -563,10 +563,41 @@ export const defaultSiteContent: SiteContent = {
     {
       id: "event-1",
       title: "Birthday Kindness Drive",
-      value: "To be announced",
-      description: "A community campaign for school kits, nutritious meals and volunteer participation.",
+      value: "Monthly campaign",
+      description: "A family-led giving drive for school kits, nutritious meals and volunteer participation.",
       imageUrl: "/images/generated/vihana-meal-support-photo.jpg",
+      tag: "Community outreach",
       linkLabel: "Register Interest",
+      linkHref: "#volunteer",
+    },
+    {
+      id: "event-school-kits",
+      title: "School Kit Support Day",
+      value: "Planning stage",
+      description: "A focused drive to prepare notebooks, stationery and learning essentials for children.",
+      imageUrl: "/images/generated/vihana-story-photo.jpg",
+      tag: "Education support",
+      linkLabel: "Volunteer",
+      linkHref: "#volunteer",
+    },
+    {
+      id: "event-meal-support",
+      title: "Nourishing Meals Outreach",
+      value: "To be scheduled",
+      description: "A meal support activity designed with local partners and volunteers for children and families.",
+      imageUrl: "/images/generated/vihana-meal-support-photo.jpg",
+      tag: "Nutrition",
+      linkLabel: "Support This",
+      linkHref: "#donate",
+    },
+    {
+      id: "event-health-awareness",
+      title: "Health Awareness Camp",
+      value: "Partner outreach",
+      description: "A planned wellness session covering basic health awareness, hygiene and family support resources.",
+      imageUrl: "/images/generated/vihana-hero-photo.jpg",
+      tag: "Health and wellness",
+      linkLabel: "Partner With Us",
       linkHref: "#volunteer",
     },
   ],
@@ -729,6 +760,21 @@ function arrayOrDefault<T>(value: unknown, fallback: T[]): T[] {
   return Array.isArray(value) ? (value as T[]) : fallback;
 }
 
+function eventItemsOrDefault(value: unknown) {
+  const items = arrayOrDefault(value, defaultSiteContent.eventItems);
+
+  if (
+    items.length === 1 &&
+    items[0]?.id === "event-1" &&
+    items[0]?.title === "Birthday Kindness Drive" &&
+    items[0]?.value === "To be announced"
+  ) {
+    return defaultSiteContent.eventItems;
+  }
+
+  return items;
+}
+
 function isOldPlaceholderPage(page: CmsPage) {
   const oldDraftFragments = [
     "Vihana Foundation was created to turn love, celebration and gratitude into practical help",
@@ -854,7 +900,7 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
     testimonials: arrayOrDefault(merged.testimonials, defaultSiteContent.testimonials),
     faqs: arrayOrDefault(merged.faqs, defaultSiteContent.faqs),
     newsItems: arrayOrDefault(merged.newsItems, defaultSiteContent.newsItems),
-    eventItems: arrayOrDefault(merged.eventItems, defaultSiteContent.eventItems),
+    eventItems: eventItemsOrDefault(merged.eventItems),
     annualReports: arrayOrDefault(merged.annualReports, defaultSiteContent.annualReports),
     teamMembers: arrayOrDefault(merged.teamMembers, defaultSiteContent.teamMembers),
     pages: pagesWithDefaults,

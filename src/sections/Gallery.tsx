@@ -13,6 +13,8 @@ const fallbackColors = ["bg-amber-100 text-amber-800", "bg-sky-100 text-sky-800"
 
 export default function Gallery({ content, items }: { content: SiteContent; items: GalleryItem[] }) {
   const [selected, setSelected] = useState<GalleryItem | null>(null);
+  const shouldAutoScroll = items.length > 1;
+  const visibleItems = shouldAutoScroll ? [...items, ...items] : items;
 
   return (
     <section id="gallery" className="bg-stone-50 py-5 md:py-9">
@@ -42,12 +44,17 @@ export default function Gallery({ content, items }: { content: SiteContent; item
             </div>
           </Reveal>
 
-          <div className="columns-2 gap-3 sm:columns-2 lg:columns-2 lg:gap-4">
-            {items.map((moment, index) => {
+          <div className="vf-scroll-shell overflow-x-auto overflow-y-hidden">
+            <div className={`flex w-max gap-3 pb-2 ${shouldAutoScroll ? "vf-auto-scroll" : ""}`}>
+            {visibleItems.map((moment, index) => {
               const Icon = fallbackIcons[index % fallbackIcons.length];
 
               return (
-                  <Reveal key={moment.id || moment.title} delay={index * 0.06}>
+                <div
+                  key={`${moment.id || moment.title}-${index}`}
+                  className="w-[72vw] max-w-[18rem] shrink-0 snap-start animate-in fade-in slide-in-from-bottom-3 duration-700 sm:w-[17rem] lg:w-[19rem]"
+                  style={{ animationDelay: `${(index % items.length) * 0.04}s`, animationFillMode: "both" }}
+                >
                   <a
                     href={moment.imageUrl || "#"}
                     onClick={(e) => {
@@ -57,7 +64,7 @@ export default function Gallery({ content, items }: { content: SiteContent; item
                       }
                     }}
                     role="button"
-                    className="mb-3 w-full break-inside-avoid overflow-hidden rounded-[8px] border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:shadow-xl lg:mb-4"
+                    className="block h-full overflow-hidden rounded-[8px] border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:shadow-xl"
                   >
                     {moment.imageUrl ? (
                       <Image
@@ -79,9 +86,10 @@ export default function Gallery({ content, items }: { content: SiteContent; item
                       <p className="mt-1 text-xs leading-5 text-slate-600 sm:text-sm sm:leading-6">{moment.description}</p>
                     </div>
                   </a>
-                </Reveal>
+                </div>
               );
             })}
+            </div>
           </div>
         </div>
       </Container>
