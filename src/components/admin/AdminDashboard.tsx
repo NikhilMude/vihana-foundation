@@ -658,6 +658,12 @@ const contentGroups: {
     description: "Google/social sharing metadata.",
     fields: ["metaTitle", "metaDescription", "metaKeywords", "ogImageUrl"],
   },
+  {
+    id: "dashboard",
+    label: "Dashboard Settings",
+    description: "Turn admin dashboard test tools on or off before launch.",
+    fields: ["dashboardTestingEnabled"],
+  },
 ];
 
 const pageWorkspaces: {
@@ -2096,7 +2102,16 @@ export default function AdminDashboard({
               {visibleContentFields.map((field) => (
                 <label key={field.key} className={field.multiline ? "lg:col-span-2" : ""}>
                   <span className="text-sm font-bold text-slate-800">{field.label}</span>
-                  {field.multiline ? (
+                  {field.key === "dashboardTestingEnabled" ? (
+                    <select
+                      value={String(content.dashboardTestingEnabled || "true").toLowerCase() === "false" ? "false" : "true"}
+                      onChange={(event) => updateContent("dashboardTestingEnabled", event.target.value)}
+                      className="mt-2 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 font-semibold outline-none focus:border-teal-600 focus:bg-white"
+                    >
+                      <option value="true">Enabled - show dashboard testing tools</option>
+                      <option value="false">Disabled - hide dashboard testing tools</option>
+                    </select>
+                  ) : field.multiline ? (
                     <textarea
                       rows={4}
                       value={String(content[field.key])}

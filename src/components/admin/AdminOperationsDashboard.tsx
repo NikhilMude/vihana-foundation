@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
 import { AdminPermission, AdminSession } from "@/lib/adminAuth";
 import { SiteContent } from "@/lib/cmsContent";
-import { testDonationDonors, testDonationSchedule } from "@/lib/testDonationSeed";
 
 type DonationRecord = {
   id: string;
@@ -169,6 +168,18 @@ function dateKey(value?: string, mode: "day" | "month" = "month") {
   if (!date) return "No date";
   if (mode === "day") return date.toISOString().slice(0, 10);
   return date.toLocaleString("en-IN", { month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
+}
+
+function monthSortValue(label: string) {
+  const parsed = new Date(`01 ${label}`);
+
+  return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+}
+
+function sortMonthRows(rows: [string, number][], direction: "asc" | "desc" = "asc") {
+  return [...rows].sort(([a], [b]) =>
+    direction === "asc" ? monthSortValue(a) - monthSortValue(b) : monthSortValue(b) - monthSortValue(a)
+  );
 }
 
 function financialYearKey(value?: string) {
@@ -379,7 +390,9 @@ function reportRowsFor(
     return acc;
   }, {});
 
-  return Object.entries(grouped).sort(([, a], [, b]) => b - a).slice(0, 12);
+  const rows = Object.entries(grouped);
+
+  return (groupBy === "month" ? sortMonthRows(rows, "desc") : rows.sort(([, a], [, b]) => b - a)).slice(0, 12);
 }
 
 export default function AdminOperationsDashboard({
@@ -485,7 +498,7 @@ export default function AdminOperationsDashboard({
       expenses,
       net: totalReceived - expenses,
       monthReceived,
-      byMonth: Object.entries(byMonth).slice(-6),
+      byMonth: sortMonthRows(Object.entries(byMonth), "asc").slice(-6),
       byPurpose: Object.entries(byPurpose).sort(([, a], [, b]) => b - a).slice(0, 5),
     };
   }, [accountingRecords, donations]);
@@ -524,7 +537,7 @@ export default function AdminOperationsDashboard({
       label: donorFilter === "All" ? "All donors" : donorOptions.find(([key]) => key === donorFilter)?.[1] || "Selected donor",
       total,
       count: source.length,
-      byMonth: Object.entries(byMonth).slice(-8).reverse(),
+      byMonth: sortMonthRows(Object.entries(byMonth), "desc").slice(0, 8),
       byFinancialYear: Object.entries(byFinancialYear).sort(([a], [b]) => b.localeCompare(a)),
     };
   }, [donations, donorFilter, donorOptions, filteredDonations]);
@@ -558,10 +571,7 @@ export default function AdminOperationsDashboard({
 
   function downloadBulkSample() {
     const headers = ["Donor full name", "email", "phone", "Amount", "Date", "Payment Method", "Purpose", "PAN", "Address"];
-    const rows = [
-      ["Example Donor", "donor@example.com", "9876543210", "1000", "2026-07-09", "Cash", "General Fund", "", "Pune, Maharashtra"],
-      ["Existing Donor", "existing@example.com", "9876500000", "2500", "2026-07-10", "UPI", "Health Support", "ABCDE1234F", "Mumbai, Maharashtra"],
-    ];
+    const rows: string[][] = [];
     const tableRows = [headers, ...rows]
       .map((row, rowIndex) => `<tr>${row.map((cell) => `<${rowIndex ? "td" : "th"}>${cell}</${rowIndex ? "td" : "th"}>`).join("")}</tr>`)
       .join("");
@@ -575,21 +585,7 @@ export default function AdminOperationsDashboard({
 
   function downloadTestDonationSample() {
     const headers = ["Donor full name", "email", "phone", "Amount", "Date", "Payment Method", "Purpose", "PAN", "Address"];
-    const rows = testDonationDonors.flatMap((donor) => {
-      const [start, end] = donor.range;
-
-      return testDonationSchedule.slice(start, end).map(([amount, date, method, purpose]) => [
-        donor.name,
-        donor.email,
-        donor.phone,
-        amount,
-        date,
-        method,
-        purpose,
-        "",
-        "Test donor address for dashboard validation",
-      ]);
-    });
+    const rows: string[][] = [];
     const tableRows = [headers, ...rows]
       .map((row, rowIndex) => `<tr>${row.map((cell) => `<${rowIndex ? "td" : "th"}>${cell}</${rowIndex ? "td" : "th"}>`).join("")}</tr>`)
       .join("");
@@ -904,24 +900,26 @@ export default function AdminOperationsDashboard({
       <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         {status ? <div className="mt-4 rounded-[8px] bg-teal-50 px-4 py-3 text-sm font-bold text-teal-900 shadow-sm">{status}</div> : null}
 
-        <section className="mt-4 grid gap-3 md:grid-cols-4">
+        <section className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {[
             ["Total received", formatCurrency(metrics.totalReceived), BadgeIndianRupee, "bg-teal-700"],
             ["This month", formatCurrency(metrics.monthReceived), BarChart3, "bg-sky-700"],
             ["Expenses", formatCurrency(metrics.expenses), ReceiptText, "bg-amber-600"],
             ["Net balance", formatCurrency(metrics.net), ShieldCheck, "bg-slate-900"],
           ].map(([label, value, Icon, color]) => (
-            <div key={String(label)} className="rounded-[8px] border border-slate-200 bg-white p-4 shadow-sm">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-[8px] ${color} text-white`}>
-                <Icon className="h-5 w-5" />
+            <div key={String(label)} className="flex items-center gap-3 rounded-[8px] border border-slate-200 bg-white p-3 shadow-sm">
+              <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] ${color} text-white`}>
+                <Icon className="h-4 w-4" />
               </div>
-              <p className="mt-4 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">{String(label)}</p>
-              <p className="mt-1 text-2xl font-black text-slate-950">{String(value)}</p>
+              <div className="min-w-0">
+                <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-500">{String(label)}</p>
+                <p className="truncate text-lg font-black text-slate-950">{String(value)}</p>
+              </div>
             </div>
           ))}
         </section>
 
-        <nav className="mt-4 rounded-[8px] border border-slate-200 bg-white p-2 shadow-sm">
+        <nav className="mt-3 rounded-[8px] border border-slate-200 bg-white p-2 shadow-sm">
           <div className="flex flex-wrap gap-2">
             {[
               ["overview", "Dashboard", LayoutDashboard],
@@ -934,7 +932,7 @@ export default function AdminOperationsDashboard({
                 key={String(id)}
                 type="button"
                 onClick={() => setTab(id as OpsTab)}
-                className={`inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-bold transition ${tab === id ? "bg-teal-700 text-white" : "bg-slate-50 text-slate-700 hover:bg-teal-50"}`}
+                className={`inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-bold transition ${tab === id ? "bg-teal-700 text-white" : "bg-slate-50 text-slate-700 hover:bg-teal-50"}`}
               >
                 <Icon className="h-4 w-4" />
                 {String(label)}
@@ -1106,8 +1104,8 @@ export default function AdminOperationsDashboard({
         ) : null}
 
         {tab === "donations" ? (
-          <section className="mt-4 grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
-            <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+          <section className="mt-4 grid gap-4 lg:grid-cols-[1.25fr_0.75fr]">
+            <div className="order-2 rounded-[8px] border border-slate-200 bg-white p-4 shadow-sm lg:order-2">
               <h2 className="text-xl font-black text-slate-950">Record donation</h2>
               <p className="mt-1 text-sm text-slate-600">Cash, UPI, bank transfer or cheque received offline.</p>
               {can("donations:create") ? (
@@ -1197,7 +1195,7 @@ export default function AdminOperationsDashboard({
               ) : null}
             </div>
 
-            <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="order-1 rounded-[8px] border border-slate-200 bg-white p-4 shadow-sm lg:order-1">
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                   <div>

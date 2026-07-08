@@ -184,13 +184,15 @@ Dashboard Testing is a controlled module for creating sample donor accounts, don
 
 To use it:
 
-1. In CMS, keep `Dashboard testing enabled (true/false)` set to `true`.
-2. In Admin Operations Dashboard, give the user `Dashboard testing` permission.
-3. Open Donations & Receipts.
-4. Download the test sample Excel file.
-5. Edit the file in Excel.
-6. Upload the completed file.
-7. Click Upload Test Data.
+1. In CMS, open `Website Text`.
+2. Choose `Dashboard Settings`.
+3. Set `Dashboard testing enabled (true/false)` to `Enabled`.
+4. In Admin Operations Dashboard, give the user `Dashboard testing` permission.
+5. Open Donations & Receipts.
+6. Download the blank test sample Excel file.
+7. Fill the file in Excel.
+8. Upload the completed file.
+9. Click Upload Test Data.
 
 The uploaded test sheet creates:
 
@@ -206,6 +208,8 @@ Vihana@123
 ```
 
 Set `Dashboard testing enabled (true/false)` to `false` in CMS before final public launch if you do not want this module visible or usable.
+
+The normal office donation upload sample is also a blank Excel template. Fill the columns, upload the file, and the system will create donor accounts when a valid email is present.
 
 ### Donor Management
 
