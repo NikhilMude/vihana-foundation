@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getAuthenticatedDonorEmail } from "@/lib/donorAuth";
+import { getAuthenticatedDonor } from "@/lib/donorAuth";
 import { addDocument } from "@/lib/firestoreAdmin";
 import { renderEmailTemplate, sendEmail, textToEmailHtml } from "@/lib/email";
 import { getSiteContent } from "@/lib/siteData";
@@ -42,9 +42,10 @@ function receiptNumber() {
 export async function POST(request: Request) {
   try {
     const payload = (await request.json()) as DonationPayload;
-    const name = clean(payload.name);
-    const email = clean(payload.email).toLowerCase();
-    const phone = clean(payload.phone);
+    const donor = await getAuthenticatedDonor();
+    const name = clean(payload.name) || donor?.name || "";
+    const email = (clean(payload.email) || donor?.email || "").toLowerCase();
+    const phone = clean(payload.phone) || donor?.phone || "";
     const amount = clean(payload.amount);
     const method = clean(payload.method) || "UPI";
     const transactionId = clean(payload.transactionId) || "Test / pending";
@@ -52,10 +53,9 @@ export async function POST(request: Request) {
     const donorType = clean(payload.donorType) || "Indian Citizen";
     const frequency = clean(payload.frequency) || "One Time";
     const purpose = clean(payload.purpose) || "General Fund";
-    const pan = clean(payload.pan).toUpperCase();
-    const address = clean(payload.address);
+    const pan = (clean(payload.pan) || donor?.pan || "").toUpperCase();
+    const address = clean(payload.address) || donor?.address || "";
     const receiptRequired = clean(payload.receiptRequired) || "No";
-    const donorEmail = await getAuthenticatedDonorEmail();
 
     if (!name || !isEmail(email) || !amount) {
       return NextResponse.json({ ok: false, message: "Please enter name, email and amount." }, { status: 400 });
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
       pan,
       address,
       receiptRequired,
-      donorEmail: donorEmail || email,
+      donorEmail: donor?.email || email,
       message,
       status: transactionId === "Test / pending" ? "Pledged / pending payment" : "Self-reported / awaiting verification",
       receiptNumber: generatedReceiptNumber,

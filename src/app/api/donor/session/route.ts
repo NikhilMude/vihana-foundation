@@ -15,5 +15,8 @@ export async function GET() {
     authenticated: true,
     name: donor.name,
     email: donor.email,
+    phone: donor.phone,
+    pan: donor.pan,
+    address: donor.address,
   });
 }

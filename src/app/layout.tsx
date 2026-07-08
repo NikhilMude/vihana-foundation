@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+import CookieConsent from "@/components/layout/CookieConsent";
 import HashScrollManager from "@/components/layout/HashScrollManager";
 
 export const metadata: Metadata = {
@@ -30,6 +31,7 @@ export default function RootLayout({
       <body>
         <HashScrollManager />
         {children}
+        <CookieConsent />
       </body>
     </html>
   );
