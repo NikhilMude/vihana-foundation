@@ -11,7 +11,15 @@ export default function LaunchingSoon({ content }: { content: SiteContent }) {
     <main className="min-h-screen overflow-hidden bg-[linear-gradient(135deg,#f8fafc_0%,#ecfeff_48%,#fff7ed_100%)] text-slate-950">
       <Container className="flex min-h-screen flex-col py-5">
         <div className="flex items-center justify-between">
-          <Logo brandName={content.brandName} brandTagline={content.brandTagline} logoImageUrl={content.logoImageUrl} />
+          <Logo
+            brandName={content.brandName}
+            brandTagline={content.brandTagline}
+            logoImageUrl={content.logoImageUrl}
+            logoMarkColor={content.logoMarkColor}
+            logoAccentColor={content.logoAccentColor}
+            logoTextColor={content.logoTextColor}
+            logoTaglineColor={content.logoTaglineColor}
+          />
           <Link
             href={`mailto:${content.contactEmail}`}
             className="inline-flex h-10 items-center gap-2 rounded-full bg-white/80 px-4 text-sm font-bold text-teal-800 shadow-sm backdrop-blur hover:bg-white"
@@ -29,7 +37,7 @@ export default function LaunchingSoon({ content }: { content: SiteContent }) {
             </div>
 
             <h1 className="mx-auto mt-5 max-w-4xl font-[family-name:var(--font-playfair)] text-[2.7rem] font-bold leading-[0.98] text-slate-950 sm:text-6xl lg:mx-0 lg:text-7xl">
-              Every Birthday. A Thousand Smiles.
+              Small Steps. Lifelong Impact.
             </h1>
 
             <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-600 sm:text-lg sm:leading-8 lg:mx-0">

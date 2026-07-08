@@ -54,11 +54,19 @@ export default function Footer({
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-[1.15fr_0.75fr_0.75fr_1fr] lg:gap-10">
           <div>
             <div className="[&_p]:text-white [&_p:last-child]:text-slate-400">
-              <Logo brandName={content.brandName} brandTagline={content.brandTagline} logoImageUrl={content.logoImageUrl} />
+              <Logo
+                brandName={content.brandName}
+                brandTagline={content.brandTagline}
+                logoImageUrl={content.logoImageUrl}
+                logoMarkColor={content.logoMarkColor}
+                logoAccentColor={content.logoAccentColor}
+                logoTextColor="#ffffff"
+                logoTaglineColor={content.logoAccentColor}
+              />
             </div>
 
             <p className="mt-3 max-w-md text-sm leading-5 text-slate-400 sm:mt-6 sm:text-base sm:leading-7">
-              Every Birthday. A Thousand Smiles. Building kinder communities through education, nutrition, health and dignity.
+              Small Steps. Lifelong Impact. Building kinder communities through education, nutrition, health and dignity.
             </p>
 
             {socialLinks.length ? (

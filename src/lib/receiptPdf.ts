@@ -68,6 +68,27 @@ function textLine(x: number, y: number, size: number, text: string, font = "F1")
   return `BT /${font} ${size} Tf ${x} ${y} Td (${pdfEscape(text)}) Tj ET`;
 }
 
+function hexToRgb(value: string, fallback: string) {
+  const hex = /^#[0-9a-fA-F]{6}$/.test(value) ? value : fallback;
+  const bigint = Number.parseInt(hex.slice(1), 16);
+
+  return [((bigint >> 16) & 255) / 255, ((bigint >> 8) & 255) / 255, (bigint & 255) / 255];
+}
+
+function fillColor(value: string, fallback = "#0f766e") {
+  return `${hexToRgb(value, fallback).map((item) => item.toFixed(3)).join(" ")} rg`;
+}
+
+function strokeColor(value: string, fallback = "#0f766e") {
+  return `${hexToRgb(value, fallback).map((item) => item.toFixed(3)).join(" ")} RG`;
+}
+
+function circlePath(cx: number, cy: number, r: number) {
+  const c = r * 0.5522847498;
+
+  return `${cx + r} ${cy} m ${cx + r} ${cy + c} ${cx + c} ${cy + r} ${cx} ${cy + r} c ${cx - c} ${cy + r} ${cx - r} ${cy + c} ${cx - r} ${cy} c ${cx - r} ${cy - c} ${cx - c} ${cy - r} ${cx} ${cy - r} c ${cx + c} ${cy - r} ${cx + r} ${cy - c} ${cx + r} ${cy} c`;
+}
+
 export function createReceiptPdf(content: SiteContent, donation: ReceiptDonation) {
   const receiptNumber = donation.receiptNumber || donation.id || "Pending";
   const receiptDate = formatDate(donation.receiptIssuedAt || donation.createdAt);
@@ -89,7 +110,8 @@ export function createReceiptPdf(content: SiteContent, donation: ReceiptDonation
     ["Transaction Reference", donation.transactionId || "Not recorded"],
   ];
   const foundationRows = [
-    ["Foundation", `${content.brandName} ${content.brandTagline}`.trim()],
+    ["Foundation", content.brandName || "Vihana Foundation"],
+    ["Tagline", content.brandTagline || "Small Steps. Lifelong Impact."],
     ["Email", content.contactEmail || "contact@vihanafoundation.org"],
     ["Phone", content.contactPhone || "Not added"],
     ["UPI", content.upiId || "Not added"],
@@ -99,12 +121,23 @@ export function createReceiptPdf(content: SiteContent, donation: ReceiptDonation
     ["PAN", content.panNumber || "Not added"],
     ["Legal status", content.legalStatusNote || "Legal details pending verification"],
   ];
+  const primaryColor = content.logoMarkColor || content.brandPrimaryColor || "#0f766e";
+  const accentColor = content.logoAccentColor || content.brandSecondaryColor || "#fbbf24";
   const commands: string[] = [
     "0.96 0.98 0.98 rg 0 0 595 842 re f",
-    "0.02 0.48 0.44 rg 0 792 595 50 re f",
+    `${fillColor(primaryColor)} 0 792 595 50 re f`,
     "1 1 1 rg",
-    textLine(52, 805, 18, `${content.brandName} ${content.brandTagline}`, "F2"),
-    "0.02 0.48 0.44 rg",
+    "1 1 1 rg 52 802 34 30 re f",
+    strokeColor(primaryColor),
+    "2.1 w",
+    "69 820 m 72 828 84 827 85 817 c 85 811 77 807 69 800 c 61 807 53 811 53 817 c 54 827 66 828 69 820 c S",
+    `${fillColor(accentColor)} ${circlePath(69, 824, 3)} f`,
+    strokeColor(accentColor),
+    "1.7 w 69 832 m 69 836 l S 62 830 m 59 834 l S 76 830 m 79 834 l S",
+    "1 1 1 rg",
+    textLine(96, 817, 16, content.brandName || "Vihana Foundation", "F2"),
+    textLine(96, 803, 8, content.brandTagline || "Small Steps. Lifelong Impact."),
+    fillColor(primaryColor),
     textLine(52, 742, 28, content.receiptTitle || "Donation Receipt", "F2"),
     textLine(52, 718, 12, content.receiptSubtitle || "Provisional acknowledgement"),
     textLine(398, 742, 10, `Receipt`, "F2"),

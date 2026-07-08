@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 
 import VisitTracker from "@/components/analytics/VisitTracker";
+import BrandTheme from "@/components/layout/BrandTheme";
 import Footer from "@/components/layout/Footer";
 import FloatingDonate from "@/components/layout/FloatingDonate";
 import FloatingWhatsApp from "@/components/layout/FloatingWhatsApp";
@@ -36,6 +37,9 @@ export async function generateMetadata(): Promise<Metadata> {
     title: content.metaTitle,
     description: content.metaDescription,
     keywords: content.metaKeywords,
+    icons: {
+      icon: content.faviconImageUrl || "/favicon.svg",
+    },
     openGraph: {
       title: content.metaTitle,
       description: content.metaDescription,
@@ -49,7 +53,12 @@ export default async function Home() {
   const requestHeaders = await headers();
 
   if (shouldShowLaunchSoon(requestHeaders.get("host"))) {
-    return <LaunchingSoon content={content} />;
+    return (
+      <>
+        <BrandTheme content={content} />
+        <LaunchingSoon content={content} />
+      </>
+    );
   }
 
   const galleryItems = await getGalleryItems();
@@ -95,6 +104,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-950">
+      <BrandTheme content={content} />
       <Navbar content={content} navigation={content.navigationItems} />
       <VisitTracker />
 

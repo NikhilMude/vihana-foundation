@@ -1,6 +1,6 @@
 export const SITE = {
   name: "Vihana Foundation",
-  tagline: "Every Birthday. A Thousand Smiles.",
+  tagline: "Small Steps. Lifelong Impact.",
   hero: {
     badge: "Founded in honor of Vihana",
     title: "Every Birthday.",

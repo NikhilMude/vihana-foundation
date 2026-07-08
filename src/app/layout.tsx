@@ -10,12 +10,12 @@ export const metadata: Metadata = {
   description:
     "Vihana Foundation turns celebrations into education, nutrition, healthcare and community support for children and families.",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.svg",
   },
   openGraph: {
     title: "Vihana Foundation | Small Steps. Lifelong Impact.",
     description:
-      "Every Birthday. A Thousand Smiles. Creating opportunities for children through care, learning and kindness.",
+      "Small Steps. Lifelong Impact. Creating opportunities for children through care, learning and kindness.",
     type: "website",
     images: ["/illustrations/hero.png"],
   },

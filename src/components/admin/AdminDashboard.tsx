@@ -159,6 +159,16 @@ type SearchResult = {
 const contentFields: { key: keyof SiteContent; label: string; multiline?: boolean }[] = [
   { key: "brandName", label: "Website logo name" },
   { key: "brandTagline", label: "Website tagline" },
+  { key: "faviconImageUrl", label: "Favicon image URL" },
+  { key: "brandPrimaryColor", label: "Palette primary color" },
+  { key: "brandSecondaryColor", label: "Palette gold/secondary color" },
+  { key: "brandAccentColor", label: "Palette accent color" },
+  { key: "brandTextColor", label: "Palette text color" },
+  { key: "brandBackgroundColor", label: "Palette background color" },
+  { key: "logoMarkColor", label: "Logo mark color" },
+  { key: "logoAccentColor", label: "Logo sunrise accent color" },
+  { key: "logoTextColor", label: "Logo text color" },
+  { key: "logoTaglineColor", label: "Logo tagline color" },
   { key: "heroBadge", label: "Hero badge" },
   { key: "heroTitle", label: "Hero title" },
   { key: "heroHighlight", label: "Hero highlighted title" },
@@ -277,6 +287,10 @@ const contentFields: { key: keyof SiteContent; label: string; multiline?: boolea
   { key: "footerLegalTitle", label: "Footer legal links title" },
 ];
 
+function isColorField(key: keyof SiteContent) {
+  return String(key).toLowerCase().includes("color") || key === "ctaBackground";
+}
+
 const listLabels: Record<ListKey, string> = {
   missionPillars: "Mission Cards",
   programCards: "Program Cards",
@@ -311,7 +325,7 @@ const quickActions: { tab: Tab; title: string; description: string; icon: typeof
   { tab: "pageStudio", title: "Page Studio", description: "Start here to edit the website page by page.", icon: LayoutList },
   { tab: "content", title: "Edit Website Text", description: "Hero, mission, donate, contact, footer and SEO text.", icon: Pencil },
   { tab: "pages", title: "Edit Pages", description: "About, Contact, Legal pages and any new page.", icon: FileText },
-  { tab: "media", title: "Change Images", description: "Logo, hero image, mission image and donation image.", icon: ImagePlus },
+  { tab: "media", title: "Change Images", description: "Logo, favicon, hero image, mission image and donation image.", icon: ImagePlus },
   { tab: "sections", title: "Edit Cards", description: "Programs, impact numbers, FAQ, news, events and reports.", icon: LayoutList },
   { tab: "navigation", title: "Menu & Social Links", description: "Website menu, footer links and social media.", icon: Navigation },
   { tab: "donations", title: "Donation Reports", description: "Donation records, donor reports and CSV downloads.", icon: BadgeIndianRupee },
@@ -335,11 +349,21 @@ const contentGroups: {
 }[] = [
   {
     id: "home",
-    label: "Home / Hero",
-    description: "Main top section, buttons, hero stat and SEO preview image.",
+    label: "Brand / Hero",
+    description: "Logo text, favicon, palette, main top section, buttons, hero stat and SEO preview image.",
     fields: [
       "brandName",
       "brandTagline",
+      "faviconImageUrl",
+      "brandPrimaryColor",
+      "brandSecondaryColor",
+      "brandAccentColor",
+      "brandTextColor",
+      "brandBackgroundColor",
+      "logoMarkColor",
+      "logoAccentColor",
+      "logoTextColor",
+      "logoTaglineColor",
       "heroBadge",
       "heroTitle",
       "heroHighlight",
@@ -1818,11 +1842,22 @@ export default function AdminDashboard({
                       className="mt-2 w-full resize-none rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-teal-600 focus:bg-white"
                     />
                   ) : (
-                    <input
-                      value={String(content[field.key])}
-                      onChange={(event) => updateContent(field.key, event.target.value)}
-                      className="mt-2 h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600 focus:bg-white"
-                    />
+                    <div className={isColorField(field.key) ? "mt-2 flex gap-2" : ""}>
+                      {isColorField(field.key) ? (
+                        <input
+                          type="color"
+                          value={/^#[0-9a-fA-F]{6}$/.test(String(content[field.key])) ? String(content[field.key]) : "#0f766e"}
+                          onChange={(event) => updateContent(field.key, event.target.value)}
+                          className="h-12 w-14 shrink-0 cursor-pointer rounded-[8px] border border-slate-200 bg-white p-1"
+                          aria-label={`${field.label} picker`}
+                        />
+                      ) : null}
+                      <input
+                        value={String(content[field.key])}
+                        onChange={(event) => updateContent(field.key, event.target.value)}
+                        className={`${isColorField(field.key) ? "" : "mt-2"} h-12 w-full rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600 focus:bg-white`}
+                      />
+                    </div>
                   )}
                 </label>
               ))}
@@ -1951,6 +1986,32 @@ export default function AdminDashboard({
                   />
                   <Button type="button" onClick={() => updateContent("logoImageUrl", "")} className="h-10 rounded-full bg-slate-950 px-5 hover:bg-slate-800">
                     Remove Logo Image
+                  </Button>
+                </div>
+              ) : null}
+            </section>
+
+            <section className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-950">Favicon</h2>
+              <p className="mt-2 text-slate-600">Upload the small browser-tab icon. A square PNG/SVG works best.</p>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(event) => handleImageUpload(event, (value) => updateContent("faviconImageUrl", value))}
+                className="mt-5 w-full rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-4 text-sm"
+              />
+              {content.faviconImageUrl ? (
+                <div className="mt-5 flex items-center gap-4 rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+                  <Image
+                    src={content.faviconImageUrl}
+                    alt="Favicon preview"
+                    width={64}
+                    height={64}
+                    unoptimized
+                    className="h-12 w-12 rounded-[8px] object-contain"
+                  />
+                  <Button type="button" onClick={() => updateContent("faviconImageUrl", "/favicon.svg")} className="h-10 rounded-full bg-slate-950 px-5 hover:bg-slate-800">
+                    Use Default Favicon
                   </Button>
                 </div>
               ) : null}

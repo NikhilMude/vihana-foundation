@@ -51,6 +51,16 @@ export type SiteContent = {
   brandName: string;
   brandTagline: string;
   logoImageUrl: string;
+  faviconImageUrl: string;
+  brandPrimaryColor: string;
+  brandSecondaryColor: string;
+  brandAccentColor: string;
+  brandTextColor: string;
+  brandBackgroundColor: string;
+  logoMarkColor: string;
+  logoAccentColor: string;
+  logoTextColor: string;
+  logoTaglineColor: string;
   heroBadge: string;
   heroTitle: string;
   heroHighlight: string;
@@ -201,6 +211,16 @@ export const defaultSiteContent: SiteContent = {
   brandName: "Vihana Foundation",
   brandTagline: "Small Steps. Lifelong Impact.",
   logoImageUrl: "",
+  faviconImageUrl: "/favicon.svg",
+  brandPrimaryColor: "#0f766e",
+  brandSecondaryColor: "#fbbf24",
+  brandAccentColor: "#0ea5e9",
+  brandTextColor: "#020617",
+  brandBackgroundColor: "#fafaf8",
+  logoMarkColor: "#0f766e",
+  logoAccentColor: "#fbbf24",
+  logoTextColor: "#020617",
+  logoTaglineColor: "#0f766e",
   heroBadge: "Founded in honor of Vihana",
   heroTitle: "Every Birthday.",
   heroHighlight: "A Thousand Smiles.",

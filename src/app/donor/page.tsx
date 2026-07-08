@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 
 import VisitTracker from "@/components/analytics/VisitTracker";
 import DonorPortal from "@/components/donor/DonorPortal";
+import BrandTheme from "@/components/layout/BrandTheme";
 import Footer from "@/components/layout/Footer";
 import FloatingDonate from "@/components/layout/FloatingDonate";
 import FloatingWhatsApp from "@/components/layout/FloatingWhatsApp";
@@ -19,7 +20,12 @@ export default async function DonorPage() {
   const requestHeaders = await headers();
 
   if (shouldShowLaunchSoon(requestHeaders.get("host"))) {
-    return <LaunchingSoon content={content} />;
+    return (
+      <>
+        <BrandTheme content={content} />
+        <LaunchingSoon content={content} />
+      </>
+    );
   }
 
   const donor = await getAuthenticatedDonor();
@@ -27,6 +33,7 @@ export default async function DonorPage() {
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-950">
+      <BrandTheme content={content} />
       <Navbar content={content} navigation={content.navigationItems} />
       <VisitTracker />
 

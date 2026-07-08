@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
 import VisitTracker from "@/components/analytics/VisitTracker";
+import BrandTheme from "@/components/layout/BrandTheme";
 import Footer from "@/components/layout/Footer";
 import FloatingDonate from "@/components/layout/FloatingDonate";
 import FloatingWhatsApp from "@/components/layout/FloatingWhatsApp";
@@ -30,7 +31,12 @@ export default async function CmsPage({ params }: PageProps) {
   const requestHeaders = await headers();
 
   if (shouldShowLaunchSoon(requestHeaders.get("host"))) {
-    return <LaunchingSoon content={content} />;
+    return (
+      <>
+        <BrandTheme content={content} />
+        <LaunchingSoon content={content} />
+      </>
+    );
   }
 
   const page = content.pages.find((item) => item.slug === slug && item.published);
@@ -41,6 +47,7 @@ export default async function CmsPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-stone-50 text-slate-950">
+      <BrandTheme content={content} />
       <Navbar content={content} navigation={content.navigationItems} />
       <VisitTracker />
 

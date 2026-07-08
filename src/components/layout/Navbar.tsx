@@ -52,7 +52,15 @@ export default function Navbar({ content, navigation }: { content: SiteContent; 
       }`}
     >
       <Container className="flex h-14 items-center justify-between sm:h-20">
-        <Logo brandName={content.brandName} brandTagline={content.brandTagline} logoImageUrl={content.logoImageUrl} />
+        <Logo
+          brandName={content.brandName}
+          brandTagline={content.brandTagline}
+          logoImageUrl={content.logoImageUrl}
+          logoMarkColor={content.logoMarkColor}
+          logoAccentColor={content.logoAccentColor}
+          logoTextColor={content.logoTextColor}
+          logoTaglineColor={content.logoTaglineColor}
+        />
 
         <nav className="hidden items-center gap-8 lg:flex" aria-label="Main navigation">
           {menuNavigation.map((item) => (
