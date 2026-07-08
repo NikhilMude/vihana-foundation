@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const donor = await getAuthenticatedDonor();
-  const isAdmin = await hasAdminPermission("donations");
+  const isAdmin = await hasAdminPermission("receipts:view");
 
   if (!donor && !isAdmin) {
     return NextResponse.json({ ok: false, message: "Please login to download receipt." }, { status: 401 });

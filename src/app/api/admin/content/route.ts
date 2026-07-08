@@ -8,7 +8,7 @@ import { setDocument } from "@/lib/firestoreAdmin";
 export const runtime = "nodejs";
 
 export async function GET() {
-  if (!(await requireAdminPermission("content"))) {
+  if (!(await requireAdminPermission("cms:view"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
@@ -16,7 +16,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  if (!(await requireAdminPermission("content"))) {
+  if (!(await requireAdminPermission("cms:edit"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 

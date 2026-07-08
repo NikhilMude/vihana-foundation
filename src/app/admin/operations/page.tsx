@@ -41,8 +41,8 @@ export default async function AdminOperationsPage() {
   }
 
   const [donations, donors, accountingRecords, adminUsers] = await Promise.all([
-    currentAdmin.owner || currentAdmin.permissions.includes("donations") ? getDonationIntents() : Promise.resolve([]),
-    currentAdmin.owner || currentAdmin.permissions.includes("donors")
+    currentAdmin.owner || currentAdmin.permissions.includes("donations:view") || currentAdmin.permissions.includes("reports:view") ? getDonationIntents() : Promise.resolve([]),
+    currentAdmin.owner || currentAdmin.permissions.includes("donors:view")
       ? listDocuments("donors")
           .then((items) =>
             items
@@ -57,7 +57,7 @@ export default async function AdminOperationsPage() {
           )
           .catch(() => [] as Donor[])
       : Promise.resolve([]),
-    currentAdmin.owner || currentAdmin.permissions.includes("accounting")
+    currentAdmin.owner || currentAdmin.permissions.includes("accounting:view") || currentAdmin.permissions.includes("reports:view")
       ? listDocuments("accountingRecords")
           .then((items) =>
             items
@@ -72,7 +72,7 @@ export default async function AdminOperationsPage() {
           )
           .catch(() => [] as AccountingRecord[])
       : Promise.resolve([]),
-    currentAdmin.owner || currentAdmin.permissions.includes("users")
+    currentAdmin.owner || currentAdmin.permissions.includes("users:view")
       ? listDocuments("adminUsers")
           .then((items) =>
             items

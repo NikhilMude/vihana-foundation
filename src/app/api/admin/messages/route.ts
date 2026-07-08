@@ -6,7 +6,7 @@ import { listDocuments } from "@/lib/firestoreAdmin";
 export const runtime = "nodejs";
 
 export async function GET() {
-  if (!(await requireAdminPermission("messages"))) {
+  if (!(await requireAdminPermission("messages:view"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 

@@ -5,23 +5,32 @@ import { listDocuments } from "@/lib/firestoreAdmin";
 
 const cookieName = "vihana_admin";
 const allAdminPermissions = [
-  "overview",
-  "pageStudio",
-  "content",
-  "email",
-  "media",
-  "navigation",
-  "order",
-  "sections",
-  "pages",
-  "gallery",
-  "messages",
-  "donations",
-  "accounting",
-  "donors",
-  "users",
-  "subscribers",
-  "visitors",
+  "cms:view",
+  "cms:edit",
+  "donations:view",
+  "donations:create",
+  "donations:edit",
+  "donations:delete",
+  "receipts:view",
+  "receipts:create",
+  "accounting:view",
+  "accounting:create",
+  "accounting:edit",
+  "accounting:delete",
+  "donors:view",
+  "donors:create",
+  "donors:edit",
+  "donors:delete",
+  "reports:view",
+  "reports:export",
+  "users:view",
+  "users:create",
+  "users:edit",
+  "users:delete",
+  "messages:view",
+  "newsletter:view",
+  "newsletter:send",
+  "visitors:view",
 ] as const;
 
 export type AdminPermission = (typeof allAdminPermissions)[number];
@@ -102,9 +111,29 @@ export function verifyAdminPassword(password: string, storedHash: string) {
 }
 
 export function parsePermissions(value: unknown): AdminPermission[] {
+  const legacyGroups: Record<string, AdminPermission[]> = {
+    overview: ["cms:view"],
+    pageStudio: ["cms:view", "cms:edit"],
+    content: ["cms:view", "cms:edit"],
+    email: ["cms:view", "cms:edit"],
+    media: ["cms:view", "cms:edit"],
+    navigation: ["cms:view", "cms:edit"],
+    order: ["cms:view", "cms:edit"],
+    sections: ["cms:view", "cms:edit"],
+    pages: ["cms:view", "cms:edit"],
+    gallery: ["cms:view", "cms:edit"],
+    messages: ["messages:view"],
+    donations: ["donations:view", "donations:create", "donations:edit", "donations:delete", "receipts:view", "receipts:create", "reports:view", "reports:export"],
+    accounting: ["accounting:view", "accounting:create", "accounting:edit", "accounting:delete", "reports:view", "reports:export"],
+    donors: ["donors:view", "donors:create", "donors:edit", "donors:delete"],
+    users: ["users:view", "users:create", "users:edit", "users:delete"],
+    subscribers: ["newsletter:view", "newsletter:send"],
+    visitors: ["visitors:view"],
+  };
   const permissions = String(value || "")
     .split(",")
     .map((item) => item.trim())
+    .flatMap((item) => legacyGroups[item] || [item])
     .filter((item): item is AdminPermission => allAdminPermissions.includes(item as AdminPermission));
 
   return Array.from(new Set(permissions));

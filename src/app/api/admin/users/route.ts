@@ -22,7 +22,7 @@ function isEmail(value: string) {
 }
 
 export async function POST(request: Request) {
-  if (!(await requireAdminPermission("users"))) {
+  if (!(await requireAdminPermission("users:create"))) {
     return NextResponse.json({ ok: false, message: "You do not have access to manage admin users." }, { status: 403 });
   }
 
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!(await requireAdminPermission("users"))) {
+  if (!(await requireAdminPermission("users:delete"))) {
     return NextResponse.json({ ok: false, message: "You do not have access to manage admin users." }, { status: 403 });
   }
 
@@ -83,7 +83,7 @@ export async function DELETE(request: Request) {
 }
 
 export async function GET() {
-  if (!(await requireAdminPermission("users"))) {
+  if (!(await requireAdminPermission("users:view"))) {
     return NextResponse.json({ ok: false, message: "You do not have access to manage admin users." }, { status: 403 });
   }
 

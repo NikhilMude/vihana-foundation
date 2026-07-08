@@ -23,7 +23,7 @@ function clean(value: unknown, limit = 1200) {
 }
 
 export async function POST(request: Request) {
-  if (!(await requireAdminPermission("accounting"))) {
+  if (!(await requireAdminPermission("accounting:create"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!(await requireAdminPermission("accounting"))) {
+  if (!(await requireAdminPermission("accounting:delete"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 

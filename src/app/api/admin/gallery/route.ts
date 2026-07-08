@@ -7,7 +7,7 @@ import { getGalleryItems, invalidateSiteDataCache } from "@/lib/siteData";
 export const runtime = "nodejs";
 
 export async function GET() {
-  if (!(await requireAdminPermission("gallery"))) {
+  if (!(await requireAdminPermission("cms:view"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
@@ -15,7 +15,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!(await requireAdminPermission("gallery"))) {
+  if (!(await requireAdminPermission("cms:edit"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  if (!(await requireAdminPermission("gallery"))) {
+  if (!(await requireAdminPermission("cms:edit"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 

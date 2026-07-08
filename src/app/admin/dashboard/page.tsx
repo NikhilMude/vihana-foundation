@@ -57,9 +57,7 @@ export default async function AdminDashboardPage() {
     redirect("/donor");
   }
 
-  const cmsPermissions = ["overview", "pageStudio", "content", "email", "media", "navigation", "order", "sections", "pages", "gallery"];
-
-  if (!currentAdmin.owner && !currentAdmin.permissions.some((permission) => cmsPermissions.includes(permission))) {
+  if (!currentAdmin.owner && !currentAdmin.permissions.some((permission) => ["cms:view", "cms:edit"].includes(permission))) {
     redirect("/admin/operations");
   }
 

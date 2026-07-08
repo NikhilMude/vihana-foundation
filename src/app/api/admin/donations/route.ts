@@ -31,7 +31,7 @@ function receiptNumber() {
 }
 
 export async function POST(request: Request) {
-  if (!(await requireAdminPermission("donations"))) {
+  if (!(await requireAdminPermission("donations:create"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 

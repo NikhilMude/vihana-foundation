@@ -8,7 +8,7 @@ import { getSiteContent } from "@/lib/siteData";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  if (!(await requireAdminPermission("subscribers"))) {
+  if (!(await requireAdminPermission("newsletter:send"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
   }
 
