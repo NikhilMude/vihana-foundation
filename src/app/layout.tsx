@@ -6,14 +6,14 @@ import HashScrollManager from "@/components/layout/HashScrollManager";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://vihanafoundation.org"),
-  title: "Vihana Foundation | Every Birthday. A Thousand Smiles.",
+  title: "Vihana Foundation | Small Steps. Lifelong Impact.",
   description:
     "Vihana Foundation turns celebrations into education, nutrition, healthcare and community support for children and families.",
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
-    title: "Vihana Foundation",
+    title: "Vihana Foundation | Small Steps. Lifelong Impact.",
     description:
       "Every Birthday. A Thousand Smiles. Creating opportunities for children through care, learning and kindness.",
     type: "website",

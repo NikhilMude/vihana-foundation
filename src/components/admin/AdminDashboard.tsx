@@ -158,7 +158,7 @@ type SearchResult = {
 
 const contentFields: { key: keyof SiteContent; label: string; multiline?: boolean }[] = [
   { key: "brandName", label: "Website logo name" },
-  { key: "brandTagline", label: "Website logo small text" },
+  { key: "brandTagline", label: "Website tagline" },
   { key: "heroBadge", label: "Hero badge" },
   { key: "heroTitle", label: "Hero title" },
   { key: "heroHighlight", label: "Hero highlighted title" },

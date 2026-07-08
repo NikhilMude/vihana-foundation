@@ -198,8 +198,8 @@ export type GalleryItem = {
 };
 
 export const defaultSiteContent: SiteContent = {
-  brandName: "Vihana",
-  brandTagline: "Foundation",
+  brandName: "Vihana Foundation",
+  brandTagline: "Small Steps. Lifelong Impact.",
   logoImageUrl: "",
   heroBadge: "Founded in honor of Vihana",
   heroTitle: "Every Birthday.",
@@ -280,7 +280,7 @@ export const defaultSiteContent: SiteContent = {
   contactPhone: "+91 98765 43210",
   contactLocation: "India",
   footerLegalTitle: "Legal",
-  metaTitle: "Vihana Foundation | Every Birthday. A Thousand Smiles.",
+  metaTitle: "Vihana Foundation | Small Steps. Lifelong Impact.",
   metaDescription:
     "Vihana Foundation turns celebrations into education, nutrition, healthcare and community support for children and families.",
   metaKeywords: "Vihana Foundation, charity, NGO, children, education, nutrition, healthcare, birthday campaign",
@@ -862,6 +862,14 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
     bankIfsc: merged.bankIfsc === "TEST0001234" ? "" : merged.bankIfsc,
     bankName: merged.bankName === "Test Bank" ? "" : merged.bankName,
   };
+  const sanitizedBrandFields = {
+    brandName: merged.brandName === "Vihana" ? "Vihana Foundation" : merged.brandName,
+    brandTagline: merged.brandTagline === "Foundation" ? "Small Steps. Lifelong Impact." : merged.brandTagline,
+    metaTitle:
+      merged.metaTitle === "Vihana Foundation | Every Birthday. A Thousand Smiles."
+        ? "Vihana Foundation | Small Steps. Lifelong Impact."
+        : merged.metaTitle,
+  };
   const navigationItems = arrayOrDefault(merged.navigationItems, defaultSiteContent.navigationItems);
   const socialLinks = arrayOrDefault(merged.socialLinks, defaultSiteContent.socialLinks);
   const pages = arrayOrDefault(merged.pages, defaultSiteContent.pages);
@@ -882,6 +890,7 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
   return {
     ...merged,
     ...sanitizedPaymentFields,
+    ...sanitizedBrandFields,
     navigationItems: navigationWithDefaults,
     socialLinks,
     sectionOrder: [
