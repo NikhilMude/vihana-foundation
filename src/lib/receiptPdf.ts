@@ -79,10 +79,6 @@ function fillColor(value: string, fallback = "#0f766e") {
   return `${hexToRgb(value, fallback).map((item) => item.toFixed(3)).join(" ")} rg`;
 }
 
-function strokeColor(value: string, fallback = "#0f766e") {
-  return `${hexToRgb(value, fallback).map((item) => item.toFixed(3)).join(" ")} RG`;
-}
-
 function circlePath(cx: number, cy: number, r: number) {
   const c = r * 0.5522847498;
 
@@ -130,12 +126,9 @@ export function createReceiptPdf(content: SiteContent, donation: ReceiptDonation
     `${fillColor(primaryColor)} 44 748 507 4 re f`,
     "1 1 1 rg",
     `${fillColor(primaryColor)} 60 765 30 30 re f`,
-    "1 1 1 RG",
-    "2.0 w",
-    "75 783 m 78 790 88 789 88 781 c 88 776 82 773 75 767 c 68 773 62 776 62 781 c 62 789 72 790 75 783 c S",
-    `${fillColor(accentColor)} ${circlePath(75, 786, 2.8)} f`,
-    strokeColor(accentColor),
-    "1.5 w 75 793 m 75 796 l S 69 792 m 67 795 l S 81 792 m 83 795 l S",
+    `${fillColor(accentColor)} ${circlePath(75, 789, 3.2)} f`,
+    "1 1 1 rg",
+    textLine(67, 774, 10, "VF", "F2"),
     fillColor(content.logoTextColor || content.brandTextColor || "#020617", "#020617"),
     textLine(102, 783, 16, content.brandName || "Vihana Foundation", "F2"),
     fillColor(content.logoTaglineColor || primaryColor, primaryColor),

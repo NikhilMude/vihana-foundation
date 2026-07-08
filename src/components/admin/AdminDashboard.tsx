@@ -875,6 +875,20 @@ function currencyAmount(value?: string) {
   return Number(String(value || "").replace(/[^\d.]/g, "")) || 0;
 }
 
+function dateParts(value?: string) {
+  const date = value ? new Date(value) : new Date();
+
+  if (Number.isNaN(date.getTime())) {
+    return { day: "Unknown date", month: "Unknown month", year: "Unknown year" };
+  }
+
+  const day = date.toISOString().slice(0, 10);
+  const month = date.toLocaleString("en-IN", { month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
+  const year = date.toLocaleString("en-IN", { year: "numeric", timeZone: "Asia/Kolkata" });
+
+  return { day, month, year };
+}
+
 function downloadCsv(filename: string, rows: Record<string, string | number | undefined>[]) {
   const headers = Object.keys(rows[0] || { empty: "" });
   const csv = [
@@ -910,7 +924,7 @@ export default function AdminDashboard({
   const [galleryItems, setGalleryItems] = useState(initialGalleryItems);
   const [messages] = useState(initialMessages);
   const [visitors] = useState(initialVisitors);
-  const [donations] = useState(initialDonations);
+  const [donations, setDonations] = useState(initialDonations);
   const [donors] = useState(initialDonors);
   const [subscribers] = useState(initialSubscribers);
   const [accountingRecords, setAccountingRecords] = useState(initialAccountingRecords);
@@ -920,6 +934,7 @@ export default function AdminDashboard({
   const [accountingDocumentPreview, setAccountingDocumentPreview] = useState("");
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [donationSearch, setDonationSearch] = useState("");
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [contentGroup, setContentGroup] = useState(contentGroups[0].id);
   const [activePageId, setActivePageId] = useState(initialContent.pages[0]?.id || "");
@@ -1171,6 +1186,13 @@ export default function AdminDashboard({
     const receiptCount = donations.filter((donation) => donation.receiptRequired === "Yes").length;
     const monthlyCount = donations.filter((donation) => donation.frequency === "Monthly").length;
     const uniqueDonors = new Set(donations.map((donation) => donation.email?.toLowerCase()).filter(Boolean)).size;
+    const todayKey = dateParts(new Date().toISOString()).day;
+    const monthKey = dateParts(new Date().toISOString()).month;
+    const yearKey = dateParts(new Date().toISOString()).year;
+    const byDay: Record<string, number> = {};
+    const byMonth: Record<string, number> = {};
+    const byYear: Record<string, number> = {};
+    const byDonor: Record<string, number> = {};
     const byPurpose = donations.reduce<Record<string, number>>((accumulator, donation) => {
       const purpose = donation.purpose || "General Fund";
       accumulator[purpose] = (accumulator[purpose] || 0) + currencyAmount(donation.amount);
@@ -1182,8 +1204,59 @@ export default function AdminDashboard({
       return accumulator;
     }, {});
 
-    return { total, receiptCount, monthlyCount, uniqueDonors, byPurpose, byMethod };
+    donations.forEach((donation) => {
+      const amount = currencyAmount(donation.amount);
+      const parts = dateParts(donation.createdAt || donation.receiptIssuedAt);
+      const donorKey = donation.name || donation.email || donation.phone || "Unknown donor";
+      byDay[parts.day] = (byDay[parts.day] || 0) + amount;
+      byMonth[parts.month] = (byMonth[parts.month] || 0) + amount;
+      byYear[parts.year] = (byYear[parts.year] || 0) + amount;
+      byDonor[donorKey] = (byDonor[donorKey] || 0) + amount;
+    });
+
+    return {
+      total,
+      todayTotal: byDay[todayKey] || 0,
+      monthTotal: byMonth[monthKey] || 0,
+      yearTotal: byYear[yearKey] || 0,
+      receiptCount,
+      monthlyCount,
+      uniqueDonors,
+      byPurpose,
+      byMethod,
+      byDay: Object.entries(byDay).sort(([a], [b]) => b.localeCompare(a)).slice(0, 7),
+      byMonth: Object.entries(byMonth).slice(-6).reverse(),
+      byYear: Object.entries(byYear).sort(([a], [b]) => b.localeCompare(a)),
+      byDonor: Object.entries(byDonor).sort(([, a], [, b]) => b - a).slice(0, 10),
+    };
   }, [donations]);
+  const filteredDonations = useMemo(() => {
+    const query = donationSearch.trim().toLowerCase();
+
+    if (!query) {
+      return donations;
+    }
+
+    return donations.filter((donation) =>
+      [
+        donation.name,
+        donation.email,
+        donation.phone,
+        donation.amount,
+        donation.method,
+        donation.transactionId,
+        donation.purpose,
+        donation.receiptNumber,
+        donation.receiptStatus,
+        donation.status,
+        donation.createdAt,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(query)
+    );
+  }, [donationSearch, donations]);
   const accountingSummary = useMemo(() => {
     const byType = accountingRecords.reduce<Record<string, number>>((accumulator, record) => {
       const type = record.type || "Record";
@@ -1564,6 +1637,49 @@ export default function AdminDashboard({
       setGalleryItems((items) => items.filter((item) => item.id !== id));
       setStatus("Gallery item deleted.");
     }
+  }
+
+  async function addCashDonation(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setStatus("Recording cash donation...");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const response = await fetch("/api/admin/donations", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: String(formData.get("name") || ""),
+        email: String(formData.get("email") || ""),
+        phone: String(formData.get("phone") || ""),
+        amount: String(formData.get("amount") || ""),
+        method: String(formData.get("method") || "Cash"),
+        transactionId: String(formData.get("transactionId") || ""),
+        purpose: String(formData.get("purpose") || ""),
+        pan: String(formData.get("pan") || ""),
+        address: String(formData.get("address") || ""),
+        message: String(formData.get("message") || ""),
+        receiptRequired: "Yes",
+      }),
+    });
+    const result = (await response.json()) as { ok: boolean; donation?: DonationRecord; accountingRecord?: AccountingRecord; message?: string };
+
+    setSaving(false);
+
+    if (!response.ok || !result.donation) {
+      setStatus(result.message || "Could not record cash donation.");
+      return;
+    }
+
+    setDonations((records) => [result.donation as DonationRecord, ...records]);
+    if (result.accountingRecord) {
+      setAccountingRecords((records) => [result.accountingRecord as AccountingRecord, ...records]);
+    }
+    form.reset();
+    setStatus(`Cash donation recorded. Receipt ${result.donation.receiptNumber || "generated"} is ready.`);
   }
 
   async function addAccountingRecord(event: FormEvent<HTMLFormElement>) {
@@ -2692,55 +2808,87 @@ export default function AdminDashboard({
           <div className="mt-6 grid gap-4">
             <div className="grid gap-4 md:grid-cols-4">
               <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Total pledged</p>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Total received</p>
                 <h2 className="mt-2 text-3xl font-black text-slate-950">INR {donationSummary.total.toLocaleString("en-IN")}</h2>
               </div>
               <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Donors</p>
-                <h2 className="mt-2 text-3xl font-black text-slate-950">{donationSummary.uniqueDonors}</h2>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Today</p>
+                <h2 className="mt-2 text-3xl font-black text-slate-950">INR {donationSummary.todayTotal.toLocaleString("en-IN")}</h2>
               </div>
               <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Monthly pledges</p>
-                <h2 className="mt-2 text-3xl font-black text-slate-950">{donationSummary.monthlyCount}</h2>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">This month</p>
+                <h2 className="mt-2 text-3xl font-black text-slate-950">INR {donationSummary.monthTotal.toLocaleString("en-IN")}</h2>
               </div>
               <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Receipt requests</p>
-                <h2 className="mt-2 text-3xl font-black text-slate-950">{donationSummary.receiptCount}</h2>
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">This year</p>
+                <h2 className="mt-2 text-3xl font-black text-slate-950">INR {donationSummary.yearTotal.toLocaleString("en-IN")}</h2>
               </div>
             </div>
 
-            <div className="grid gap-4 lg:grid-cols-2">
-              <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 className="text-lg font-bold text-slate-950">Purpose report</h2>
-                <div className="mt-4 grid gap-3">
-                  {Object.entries(donationSummary.byPurpose).map(([purpose, total]) => (
-                    <div key={purpose} className="flex items-center justify-between rounded-[8px] bg-slate-50 px-4 py-3 text-sm">
-                      <span className="font-bold text-slate-700">{purpose}</span>
-                      <span className="font-black text-teal-700">INR {total.toLocaleString("en-IN")}</span>
-                    </div>
+            <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+              <form onSubmit={addCashDonation} className="rounded-[8px] border border-teal-200 bg-white p-5 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-600">Cash receipt</p>
+                <h2 className="mt-2 text-xl font-black text-slate-950">Record offline donation</h2>
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Use this when a donor gives cash or an offline transfer. A receipt number is generated instantly.
+                </p>
+                <datalist id="admin-donor-emails">
+                  {donors.map((donor) => (
+                    <option key={donor.id} value={donor.email}>
+                      {donor.name}
+                    </option>
                   ))}
+                </datalist>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <input name="name" required placeholder="Donor name" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                  <input name="email" type="email" list="admin-donor-emails" placeholder="Email, if available" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                  <input name="phone" placeholder="Phone" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                  <input name="amount" required inputMode="numeric" placeholder="Amount received" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                  <select name="method" defaultValue="Cash" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600">
+                    <option>Cash</option>
+                    <option>UPI</option>
+                    <option>Bank Transfer</option>
+                    <option>Cheque</option>
+                  </select>
+                  <select name="purpose" defaultValue="General Fund" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600">
+                    <option>General Fund</option>
+                    <option>Child Education</option>
+                    <option>Nutritious Meals</option>
+                    <option>Health and Wellness</option>
+                    <option>Birthday Kindness Drive</option>
+                  </select>
+                  <input name="transactionId" placeholder="Reference / cheque no. optional" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                  <input name="pan" placeholder="PAN for receipt, optional" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 uppercase outline-none focus:border-teal-600" />
+                  <textarea name="address" rows={2} placeholder="Address for receipt records" className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-teal-600 sm:col-span-2" />
+                  <textarea name="message" rows={2} placeholder="Internal note or dedication" className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-teal-600 sm:col-span-2" />
                 </div>
-              </div>
+                <Button disabled={saving} className="mt-4 h-11 rounded-full bg-teal-700 px-6 hover:bg-teal-800">
+                  {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ReceiptText className="mr-2 h-4 w-4" />}
+                  Save Cash Donation & Generate Receipt
+                </Button>
+              </form>
 
               <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
                 <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                  <h2 className="text-lg font-bold text-slate-950">Export reports</h2>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => downloadCsv("vihana-donation-report.csv", donations)}
-                    className="h-10 rounded-full"
-                    disabled={!donations.length}
-                  >
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-600">Reports</p>
+                    <h2 className="mt-2 text-xl font-black text-slate-950">Donation dashboard</h2>
+                  </div>
+                  <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-donation-report.csv", donations)} className="h-10 rounded-full" disabled={!donations.length}>
                     <Download className="mr-2 h-4 w-4" />
                     Donation CSV
                   </Button>
                 </div>
-                <div className="mt-4 grid gap-3">
-                  {Object.entries(donationSummary.byMethod).map(([method, count]) => (
-                    <div key={method} className="flex items-center justify-between rounded-[8px] bg-slate-50 px-4 py-3 text-sm">
-                      <span className="font-bold text-slate-700">{method}</span>
-                      <span className="font-black text-teal-700">{count} records</span>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {[
+                    ["Donors", donationSummary.uniqueDonors],
+                    ["Monthly pledges", donationSummary.monthlyCount],
+                    ["Receipt requests", donationSummary.receiptCount],
+                    ["Records", donations.length],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-[8px] bg-slate-50 px-4 py-3">
+                      <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">{label}</p>
+                      <p className="mt-1 text-2xl font-black text-slate-950">{value}</p>
                     </div>
                   ))}
                 </div>
@@ -2761,8 +2909,76 @@ export default function AdminDashboard({
               </div>
             </div>
 
-            {donations.length ? (
-              donations.map((donation) => (
+            <div className="grid gap-4 lg:grid-cols-4">
+              {[
+                ["Daily", donationSummary.byDay],
+                ["Monthly", donationSummary.byMonth],
+                ["Yearly", donationSummary.byYear],
+                ["Donor wise", donationSummary.byDonor],
+              ].map(([title, rows]) => (
+                <div key={title as string} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                  <h2 className="text-lg font-bold text-slate-950">{title as string}</h2>
+                  <div className="mt-4 grid gap-2">
+                    {(rows as [string, number][]).length ? (
+                      (rows as [string, number][]).map(([label, total]) => (
+                        <div key={label} className="flex items-start justify-between gap-3 rounded-[8px] bg-slate-50 px-3 py-2 text-sm">
+                          <span className="font-bold text-slate-700">{label}</span>
+                          <span className="shrink-0 font-black text-teal-700">INR {total.toLocaleString("en-IN")}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-slate-500">No records yet.</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid gap-4 lg:grid-cols-2">
+              <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 className="text-lg font-bold text-slate-950">Purpose report</h2>
+                <div className="mt-4 grid gap-3">
+                  {Object.entries(donationSummary.byPurpose).map(([purpose, total]) => (
+                    <div key={purpose} className="flex items-center justify-between rounded-[8px] bg-slate-50 px-4 py-3 text-sm">
+                      <span className="font-bold text-slate-700">{purpose}</span>
+                      <span className="font-black text-teal-700">INR {total.toLocaleString("en-IN")}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 className="text-lg font-bold text-slate-950">Method report</h2>
+                <div className="mt-4 grid gap-3">
+                  {Object.entries(donationSummary.byMethod).map(([method, count]) => (
+                    <div key={method} className="flex items-center justify-between rounded-[8px] bg-slate-50 px-4 py-3 text-sm">
+                      <span className="font-bold text-slate-700">{method}</span>
+                      <span className="font-black text-teal-700">{count} records</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-600">Receipt search</p>
+                  <h2 className="mt-2 text-xl font-black text-slate-950">Find donation or receipt</h2>
+                </div>
+                <label className="flex h-11 min-w-0 items-center gap-2 rounded-[8px] border border-slate-200 bg-slate-50 px-4 lg:w-[420px]">
+                  <Search className="h-4 w-4 shrink-0 text-slate-400" />
+                  <input
+                    value={donationSearch}
+                    onChange={(event) => setDonationSearch(event.target.value)}
+                    placeholder="Search name, email, phone, receipt no, reference..."
+                    className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {filteredDonations.length ? (
+              filteredDonations.map((donation) => (
                 <div key={donation.id} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="flex flex-col justify-between gap-2 md:flex-row">
                     <div>
@@ -2787,12 +3003,20 @@ export default function AdminDashboard({
                     <p><span className="font-bold text-slate-800">Status:</span> {donation.status}</p>
                     <p><span className="font-bold text-slate-800">Date:</span> {donation.createdAt}</p>
                   </div>
-                  {donation.message ? <p className="mt-4 leading-7 text-slate-700">{donation.message}</p> : null}
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    <Button asChild type="button" variant="outline" className="h-10 rounded-full">
+                      <a href={`/api/donor/receipt?id=${encodeURIComponent(donation.id)}`}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download Receipt
+                      </a>
+                    </Button>
+                    {donation.message ? <p className="text-sm leading-6 text-slate-700">{donation.message}</p> : null}
+                  </div>
                 </div>
               ))
             ) : (
               <div className="rounded-[8px] border border-slate-200 bg-white p-8 text-center text-slate-600">
-                No donation records yet.
+                No donation records match this search.
               </div>
             )}
           </div>

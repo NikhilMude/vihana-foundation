@@ -77,7 +77,7 @@ function downloadCsv(filename: string, rows: Record<string, string | number | un
 }
 
 export default function DonorPortal({ donor, donations }: DonorPortalProps) {
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register" | "admin">("login");
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [foreignNotice, setForeignNotice] = useState("");
@@ -104,7 +104,7 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
       return;
     }
 
-    window.location.href = "/donor";
+    window.location.href = mode === "admin" ? "/admin/dashboard" : "/donor";
   }
 
   async function logout() {
@@ -242,24 +242,29 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
       <section className="rounded-[8px] bg-slate-950 p-4 text-white shadow-xl shadow-slate-900/15 sm:p-8">
         <HeartHandshake className="h-8 w-8 text-amber-300 sm:h-10 sm:w-10" />
         <h1 className="mt-3 font-[family-name:var(--font-playfair)] text-3xl font-bold leading-tight sm:mt-5 sm:text-5xl">
-          Donor account
+          {mode === "admin" ? "Admin access" : "Donor account"}
         </h1>
         <p className="mt-2 text-sm leading-6 text-slate-300 sm:mt-4 sm:text-base sm:leading-7">
-          Create an account to keep your donation history, download records and prepare receipt information in one place.
+          {mode === "admin"
+            ? "Use the same secure entry point to manage donations, receipts, CMS content and reports."
+            : "Create an account to keep your donation history, download records and prepare receipt information in one place."}
         </p>
       </section>
 
       <section className="rounded-[8px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
-        <div className="grid grid-cols-2 rounded-[8px] bg-slate-100 p-1">
+        <div className="grid grid-cols-3 rounded-[8px] bg-slate-100 p-1">
           <button type="button" onClick={() => setMode("login")} className={`h-10 rounded-[8px] text-sm font-bold ${mode === "login" ? "bg-white text-teal-700 shadow-sm" : "text-slate-600"}`}>
-            Login
+            Donor Login
           </button>
           <button type="button" onClick={() => setMode("register")} className={`h-10 rounded-[8px] text-sm font-bold ${mode === "register" ? "bg-white text-teal-700 shadow-sm" : "text-slate-600"}`}>
-            Create Account
+            Create
+          </button>
+          <button type="button" onClick={() => setMode("admin")} className={`h-10 rounded-[8px] text-sm font-bold ${mode === "admin" ? "bg-white text-teal-700 shadow-sm" : "text-slate-600"}`}>
+            Admin
           </button>
         </div>
 
-        <form onSubmit={(event) => submitAuth(event, mode === "register" ? "/api/donor/register" : "/api/donor/login")} className="mt-4 grid gap-2.5 sm:mt-5 sm:gap-3">
+        <form onSubmit={(event) => submitAuth(event, mode === "register" ? "/api/donor/register" : mode === "admin" ? "/api/admin/login" : "/api/donor/login")} className="mt-4 grid gap-2.5 sm:mt-5 sm:gap-3">
           {mode === "register" ? (
             <>
               <input name="name" required placeholder="Full name" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 sm:h-12 sm:px-4 sm:text-base" />
@@ -285,14 +290,20 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
               <textarea name="address" rows={2} placeholder="Address for receipt records" className="rounded-[8px] border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-teal-600 sm:px-4 sm:py-3 sm:text-base" />
             </>
           ) : null}
-          <input name="email" required type="email" placeholder="Email" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 sm:h-12 sm:px-4 sm:text-base" />
-          <input name="password" required type="password" minLength={8} placeholder="Password" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 sm:h-12 sm:px-4 sm:text-base" />
+          {mode === "admin" ? (
+            <div className="rounded-[8px] border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold leading-5 text-amber-900 sm:px-4 sm:py-3 sm:text-sm">
+              Admin login opens the full CMS, donation reports, cash receipt entry and accounting dashboard.
+            </div>
+          ) : (
+            <input name="email" required type="email" placeholder="Email" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 sm:h-12 sm:px-4 sm:text-base" />
+          )}
+          <input name="password" required type="password" minLength={mode === "admin" ? 1 : 8} placeholder={mode === "admin" ? "Admin password" : "Password"} className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600 sm:h-12 sm:px-4 sm:text-base" />
 
           {status ? <p className="rounded-[8px] bg-rose-50 px-4 py-3 text-sm font-bold text-rose-800">{status}</p> : null}
 
           <Button disabled={loading} className="h-11 rounded-full bg-teal-700 text-sm hover:bg-teal-800 sm:h-12 sm:text-base">
             {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : mode === "register" ? <UserPlus className="mr-2 h-5 w-5" /> : <LogIn className="mr-2 h-5 w-5" />}
-            {mode === "register" ? "Create Donor Account" : "Login"}
+            {mode === "register" ? "Create Donor Account" : mode === "admin" ? "Open Admin Dashboard" : "Login"}
           </Button>
         </form>
       </section>
