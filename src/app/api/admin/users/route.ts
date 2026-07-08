@@ -1,20 +1,34 @@
 import { NextResponse } from "next/server";
 
 import { getAllAdminPermissions, hashAdminPassword, parsePermissions, requireAdminPermission } from "@/lib/adminAuth";
-import { addDocument, deleteDocument } from "@/lib/firestoreAdmin";
+import { addDocument, deleteDocument, getDocument, setDocument } from "@/lib/firestoreAdmin";
 
 export const runtime = "nodejs";
 
 type AdminUserPayload = {
+  id?: string;
   name?: string;
   email?: string;
   password?: string;
   role?: string;
   permissions?: string[];
+  status?: string;
 };
 
 function clean(value: unknown, limit = 300) {
   return typeof value === "string" ? value.trim().slice(0, limit) : "";
+}
+
+function userPublicRecord(data: Record<string, string>) {
+  return {
+    id: data.id,
+    name: data.name,
+    email: data.email,
+    role: data.role,
+    permissions: data.permissions,
+    status: data.status,
+    createdAt: data.createdAt,
+  };
 }
 
 function isEmail(value: string) {
@@ -53,15 +67,76 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ok: true,
-    user: {
+    user: userPublicRecord({
       id: item.id,
       name,
       email,
       role,
       permissions: permissions.join(","),
       status: "Active",
-      createdAt: item.createdAt,
-    },
+      createdAt: String(item.createdAt || ""),
+    }),
+  });
+}
+
+export async function PATCH(request: Request) {
+  if (!(await requireAdminPermission("users:edit"))) {
+    return NextResponse.json({ ok: false, message: "You do not have access to update dashboard users." }, { status: 403 });
+  }
+
+  const payload = (await request.json()) as AdminUserPayload;
+  const id = clean(payload.id, 220);
+
+  if (!id) {
+    return NextResponse.json({ ok: false, message: "Missing user." }, { status: 400 });
+  }
+
+  const existing = await getDocument(`adminUsers/${id}`);
+
+  if (!existing) {
+    return NextResponse.json({ ok: false, message: "Dashboard user not found." }, { status: 404 });
+  }
+
+  const name = clean(payload.name, 160) || String(existing.name || "");
+  const email = clean(payload.email, 180).toLowerCase();
+  const role = clean(payload.role, 80) || "Admin";
+  const password = clean(payload.password, 160);
+  const permissions = parsePermissions((payload.permissions || String(existing.permissions || "").split(",")).join(","));
+
+  if (!name || !isEmail(email)) {
+    return NextResponse.json({ ok: false, message: "Name and valid email are required." }, { status: 400 });
+  }
+
+  if (!permissions.length) {
+    return NextResponse.json({ ok: false, message: "Select at least one permission." }, { status: 400 });
+  }
+
+  const update: Record<string, string> = {
+    name,
+    email,
+    role,
+    permissions: permissions.join(","),
+    status: clean(payload.status, 40) || String(existing.status || "Active"),
+    updatedAt: new Date().toISOString(),
+  };
+
+  if (password) {
+    if (password.length < 8) {
+      return NextResponse.json({ ok: false, message: "Password must be at least 8 characters." }, { status: 400 });
+    }
+
+    update.passwordHash = hashAdminPassword(password);
+  }
+
+  await setDocument(`adminUsers/${id}`, update);
+
+  return NextResponse.json({
+    ok: true,
+    user: userPublicRecord({
+      id,
+      ...update,
+      createdAt: String(existing.createdAt || ""),
+    }),
   });
 }
 

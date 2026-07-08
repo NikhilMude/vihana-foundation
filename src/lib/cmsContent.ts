@@ -113,6 +113,11 @@ export type SiteContent = {
   annualReportHref: string;
   receiptTitle: string;
   receiptSubtitle: string;
+  receiptNumberPrefix: string;
+  receiptNumberSeparator: string;
+  receiptNumberYearFormat: string;
+  receiptNumberPadding: string;
+  receiptNumberStart: string;
   receiptLegalNote: string;
   receiptFooterNote: string;
   receiptSignatureName: string;
@@ -282,6 +287,11 @@ export const defaultSiteContent: SiteContent = {
   annualReportHref: "",
   receiptTitle: "Donation Receipt",
   receiptSubtitle: "Acknowledgement for your contribution",
+  receiptNumberPrefix: "VF",
+  receiptNumberSeparator: "/",
+  receiptNumberYearFormat: "financial",
+  receiptNumberPadding: "4",
+  receiptNumberStart: "1",
   receiptLegalNote:
     "This acknowledgement is generated from website records. Official tax receipt eligibility depends on verified payment, final registration details and applicable compliance requirements.",
   receiptFooterNote: "Thank you for supporting Vihana Foundation.",

@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedDonor } from "@/lib/donorAuth";
 import { addDocument } from "@/lib/firestoreAdmin";
 import { renderEmailTemplate, sendEmail, textToEmailHtml } from "@/lib/email";
-import { getSiteContent } from "@/lib/siteData";
+import { generateReceiptNumber } from "@/lib/receiptNumber";
+import { getDonationIntents, getSiteContent } from "@/lib/siteData";
 
 export const runtime = "nodejs";
 
@@ -29,14 +30,6 @@ function clean(value: unknown) {
 
 function isEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-function receiptNumber() {
-  const date = new Date();
-  const stamp = date.toISOString().slice(0, 10).replace(/-/g, "");
-  const random = Math.random().toString(36).slice(2, 7).toUpperCase();
-
-  return `VF-${stamp}-${random}`;
 }
 
 export async function POST(request: Request) {
@@ -74,7 +67,11 @@ export async function POST(request: Request) {
 
     const createdAt = new Date().toISOString();
     const content = await getSiteContent();
-    const generatedReceiptNumber = receiptNumber();
+    const existingDonations = await getDonationIntents();
+    const generatedReceiptNumber = generateReceiptNumber(
+      content,
+      existingDonations.map((donation) => donation.receiptNumber).filter(Boolean)
+    );
     const receiptIssuedAt = createdAt;
     const receiptStatus = receiptRequired === "Yes" ? "Provisional receipt generated" : "Receipt not requested";
 

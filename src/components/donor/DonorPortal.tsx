@@ -81,8 +81,12 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
   const [foreignNotice, setForeignNotice] = useState("");
+  const [donationPage, setDonationPage] = useState(1);
   const total = useMemo(() => donations.reduce((sum, item) => sum + toNumber(item.amount), 0), [donations]);
   const receiptsRequested = useMemo(() => donations.filter((item) => item.receiptRequired === "Yes").length, [donations]);
+  const donationPageSize = 4;
+  const donationPageCount = Math.max(1, Math.ceil(donations.length / donationPageSize));
+  const pagedDonations = donations.slice((donationPage - 1) * donationPageSize, donationPage * donationPageSize);
 
   async function submitAuth(event: FormEvent<HTMLFormElement>, endpoint: string) {
     event.preventDefault();
@@ -110,6 +114,31 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
   async function logout() {
     await fetch("/api/donor/logout", { method: "POST" });
     window.location.href = "/donor";
+  }
+
+  async function updateProfile(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+    setStatus("");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const response = await fetch("/api/donor/profile", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(Object.fromEntries(formData.entries())),
+    });
+    const result = (await response.json()) as { ok: boolean; message?: string };
+    setLoading(false);
+
+    if (!response.ok || !result.ok) {
+      setStatus(result.message || "Could not update profile.");
+      return;
+    }
+
+    setStatus("Profile updated.");
+    form.reset();
+    window.setTimeout(() => window.location.reload(), 700);
   }
 
   if (donor) {
@@ -166,6 +195,26 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
               <p className="mt-1 text-[9px] font-bold uppercase tracking-[0.12em] text-slate-500 sm:text-xs sm:tracking-[0.18em]">Receipts</p>
             </div>
           </div>
+
+          <form onSubmit={updateProfile} className="mt-3 grid gap-2 rounded-[8px] border border-slate-200 bg-slate-50 p-3 sm:mt-5 sm:gap-3 sm:p-4">
+            <div>
+              <p className="text-sm font-black text-slate-950">Update profile</p>
+              <p className="mt-1 text-xs leading-5 text-slate-500">Change receipt details or set a new password.</p>
+            </div>
+            <input name="name" defaultValue={donor.name} required placeholder="Full name" className="h-10 rounded-[8px] border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-600" />
+            <input name="phone" defaultValue={donor.phone} placeholder="Phone" className="h-10 rounded-[8px] border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-600" />
+            <input name="pan" defaultValue={donor.pan} placeholder="PAN optional" className="h-10 rounded-[8px] border border-slate-200 bg-white px-3 text-sm uppercase outline-none focus:border-teal-600" />
+            <textarea name="address" defaultValue={donor.address} rows={2} placeholder="Address for receipt records" className="rounded-[8px] border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-teal-600" />
+            <div className="grid gap-2 sm:grid-cols-2">
+              <input name="currentPassword" type="password" placeholder="Current password" className="h-10 rounded-[8px] border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-600" />
+              <input name="newPassword" type="password" minLength={8} placeholder="New password optional" className="h-10 rounded-[8px] border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-600" />
+            </div>
+            {status ? <p className="rounded-[8px] bg-white px-3 py-2 text-xs font-bold text-teal-800">{status}</p> : null}
+            <Button disabled={loading} className="h-10 rounded-full bg-teal-700 text-sm hover:bg-teal-800">
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Save Profile
+            </Button>
+          </form>
         </section>
 
         <section className="rounded-[8px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
@@ -187,10 +236,10 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
           </div>
 
           <div className="mt-3 grid gap-2 sm:mt-5 sm:gap-3">
-            {donations.length ? (
-              donations.map((donation) => (
-                <div key={donation.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-3 transition hover:border-teal-200 hover:bg-white hover:shadow-sm sm:p-4">
-                  <div className="flex flex-col justify-between gap-2 sm:flex-row">
+            {pagedDonations.length ? (
+              pagedDonations.map((donation) => (
+                <div key={donation.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-3 transition hover:border-teal-200 hover:bg-white hover:shadow-sm">
+                  <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
                     <div>
                       <h3 className="flex items-center gap-2 font-bold text-slate-950">
                         <ReceiptText className="h-4 w-4 text-teal-700" />
@@ -198,31 +247,18 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
                       </h3>
                       <p className="mt-0.5 text-xs text-slate-500 sm:mt-1 sm:text-sm">{donation.purpose || "General Fund"} | {donation.frequency || "One Time"}</p>
                     </div>
-                    <p className="h-fit rounded-full bg-teal-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-teal-700">{donation.status || "Recorded"}</p>
+                    <Button asChild type="button" className="h-9 rounded-full bg-amber-400 px-4 text-xs font-black text-slate-950 hover:bg-amber-300">
+                      <a href={`/api/donor/receipt?id=${encodeURIComponent(donation.id)}`}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Receipt PDF
+                      </a>
+                    </Button>
                   </div>
-                  <div className="mt-2 grid grid-cols-2 gap-1.5 text-xs text-slate-600 sm:mt-3 sm:gap-2 sm:text-sm">
-                    <p><span className="font-bold text-slate-800">Method:</span> {donation.method}</p>
-                    <p><span className="font-bold text-slate-800">Reference:</span> {donation.transactionId}</p>
-                    <p><span className="font-bold text-slate-800">Receipt:</span> {donation.receiptRequired || "No"}</p>
+                  <div className="mt-3 grid gap-2 rounded-[8px] bg-white p-3 text-xs text-slate-600 sm:grid-cols-2">
+                    <p><span className="font-bold text-slate-800">Receipt:</span> {donation.receiptNumber || "Pending"}</p>
+                    <p><span className="font-bold text-slate-800">Status:</span> {donation.status || donation.receiptStatus || "Recorded"}</p>
+                    <p><span className="font-bold text-slate-800">Method:</span> {donation.method || "Not recorded"}</p>
                     <p><span className="font-bold text-slate-800">Date:</span> {formatDate(donation.createdAt)}</p>
-                  </div>
-                  <div className="mt-3 rounded-[8px] border border-teal-100 bg-white p-3 sm:mt-4 sm:p-4">
-                    <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-                      <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.16em] text-teal-700">Receipt</p>
-                        <h4 className="mt-1 font-bold text-slate-950">{donation.receiptNumber || "Receipt pending"}</h4>
-                        <p className="mt-1 text-sm text-slate-500">{donation.receiptStatus || "Provisional receipt generated"}</p>
-                      </div>
-                      <Button asChild type="button" variant="outline" className="h-9 rounded-full px-4 text-xs sm:h-10 sm:text-sm">
-                        <a href={`/api/donor/receipt?id=${encodeURIComponent(donation.id)}`}>
-                          <Download className="mr-2 h-4 w-4" />
-                          PDF Receipt
-                        </a>
-                      </Button>
-                    </div>
-                    <p className="mt-2 text-xs leading-5 text-slate-500 sm:mt-3">
-                      Provisional acknowledgement for your records. Official tax receipt depends on verified payment and compliance setup.
-                    </p>
                   </div>
                 </div>
               ))
@@ -232,6 +268,17 @@ export default function DonorPortal({ donor, donations }: DonorPortalProps) {
               </div>
             )}
           </div>
+          {donationPageCount > 1 ? (
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={donationPage === 1} onClick={() => setDonationPage((page) => Math.max(1, page - 1))}>
+                Previous
+              </Button>
+              <p className="text-xs font-bold text-slate-500">Page {donationPage} of {donationPageCount}</p>
+              <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={donationPage === donationPageCount} onClick={() => setDonationPage((page) => Math.min(donationPageCount, page + 1))}>
+                Next
+              </Button>
+            </div>
+          ) : null}
         </section>
       </div>
     );

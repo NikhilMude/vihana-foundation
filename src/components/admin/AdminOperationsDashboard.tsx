@@ -138,6 +138,21 @@ function dateKey(value?: string, mode: "day" | "month" = "month") {
   return date.toLocaleString("en-IN", { month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
 }
 
+function financialYearKey(value?: string) {
+  const date = getDate(value);
+  if (!date) return "No financial year";
+  const month = Number(date.toLocaleString("en-IN", { month: "numeric", timeZone: "Asia/Kolkata" }));
+  const year = Number(date.toLocaleString("en-IN", { year: "numeric", timeZone: "Asia/Kolkata" }));
+  const start = month >= 4 ? year : year - 1;
+  const end = String(start + 1).slice(-2);
+
+  return `FY ${start}-${end}`;
+}
+
+function donationDonorKey(donation: DonationRecord) {
+  return (donation.email || donation.name || donation.phone || "unknown").trim().toLowerCase();
+}
+
 function downloadCsv(filename: string, rows: Record<string, string | number | undefined>[]) {
   const headers = Object.keys(rows[0] || { empty: "" });
   const csv = [
@@ -193,10 +208,13 @@ export default function AdminOperationsDashboard({
   const [saving, setSaving] = useState(false);
   const [query, setQuery] = useState("");
   const [methodFilter, setMethodFilter] = useState("All");
+  const [donorFilter, setDonorFilter] = useState("All");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [donationPage, setDonationPage] = useState(1);
   const [accountingPage, setAccountingPage] = useState(1);
+  const [donorPage, setDonorPage] = useState(1);
+  const [adminUserPage, setAdminUserPage] = useState(1);
   const pageSize = 6;
 
   const can = (permission: AdminPermission) => currentAdmin.owner || currentAdmin.permissions.includes(permission);
@@ -210,6 +228,7 @@ export default function AdminOperationsDashboard({
       const afterFrom = !fromDate || (donationDate && donationDate >= new Date(`${fromDate}T00:00:00`));
       const beforeTo = !toDate || (donationDate && donationDate <= new Date(`${toDate}T23:59:59`));
       const methodMatches = methodFilter === "All" || donation.method === methodFilter;
+      const donorMatches = donorFilter === "All" || donationDonorKey(donation) === donorFilter;
       const textMatches =
         !search ||
         [donation.name, donation.email, donation.phone, donation.amount, donation.method, donation.purpose, donation.receiptNumber, donation.status]
@@ -218,14 +237,18 @@ export default function AdminOperationsDashboard({
           .toLowerCase()
           .includes(search);
 
-      return afterFrom && beforeTo && methodMatches && textMatches;
+      return afterFrom && beforeTo && methodMatches && donorMatches && textMatches;
     });
-  }, [donations, fromDate, methodFilter, query, toDate]);
+  }, [donations, donorFilter, fromDate, methodFilter, query, toDate]);
 
   const donationPageCount = Math.max(1, Math.ceil(filteredDonations.length / pageSize));
   const pagedDonations = filteredDonations.slice((donationPage - 1) * pageSize, donationPage * pageSize);
   const accountingPageCount = Math.max(1, Math.ceil(accountingRecords.length / pageSize));
   const pagedAccounting = accountingRecords.slice((accountingPage - 1) * pageSize, accountingPage * pageSize);
+  const donorPageCount = Math.max(1, Math.ceil(donors.length / pageSize));
+  const pagedDonors = donors.slice((donorPage - 1) * pageSize, donorPage * pageSize);
+  const adminUserPageCount = Math.max(1, Math.ceil(adminUsers.length / pageSize));
+  const pagedAdminUsers = adminUsers.slice((adminUserPage - 1) * pageSize, adminUserPage * pageSize);
 
   const metrics = useMemo(() => {
     const totalReceived = donations.reduce((sum, donation) => sum + currencyAmount(donation.amount), 0);
@@ -258,6 +281,41 @@ export default function AdminOperationsDashboard({
   }, [accountingRecords, donations]);
 
   const methods = useMemo(() => ["All", ...Array.from(new Set(donations.map((donation) => donation.method || "Unknown")))], [donations]);
+  const donorOptions = useMemo(() => {
+    const options = new Map<string, string>();
+
+    donations.forEach((donation) => {
+      const key = donationDonorKey(donation);
+      const label = donation.name || donation.email || donation.phone || "Unknown donor";
+      if (!options.has(key)) {
+        options.set(key, label);
+      }
+    });
+
+    return Array.from(options.entries()).sort(([, a], [, b]) => a.localeCompare(b));
+  }, [donations]);
+  const donorInsights = useMemo(() => {
+    const source = donorFilter === "All" ? filteredDonations : donations.filter((donation) => donationDonorKey(donation) === donorFilter);
+    const total = source.reduce((sum, donation) => sum + currencyAmount(donation.amount), 0);
+    const byMonth = source.reduce<Record<string, number>>((acc, donation) => {
+      const key = dateKey(donation.createdAt);
+      acc[key] = (acc[key] || 0) + currencyAmount(donation.amount);
+      return acc;
+    }, {});
+    const byFinancialYear = source.reduce<Record<string, number>>((acc, donation) => {
+      const key = financialYearKey(donation.createdAt);
+      acc[key] = (acc[key] || 0) + currencyAmount(donation.amount);
+      return acc;
+    }, {});
+
+    return {
+      label: donorFilter === "All" ? "All donors" : donorOptions.find(([key]) => key === donorFilter)?.[1] || "Selected donor",
+      total,
+      count: source.length,
+      byMonth: Object.entries(byMonth).slice(-8).reverse(),
+      byFinancialYear: Object.entries(byFinancialYear).sort(([a], [b]) => b.localeCompare(a)),
+    };
+  }, [donations, donorFilter, donorOptions, filteredDonations]);
 
   async function addCashDonation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -336,8 +394,35 @@ export default function AdminOperationsDashboard({
     }
 
     setDonors((records) => [result.donor as DonorRecord, ...records]);
+    setDonorPage(1);
     form.reset();
     setStatus("Donor account created.");
+  }
+
+  async function updateDonorUser(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!can("donors:edit")) return;
+    setSaving(true);
+    setStatus("Updating donor account...");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const response = await fetch("/api/admin/donors", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(Object.fromEntries(formData.entries())),
+    });
+    const result = (await response.json()) as { ok: boolean; donor?: DonorRecord; message?: string };
+    setSaving(false);
+
+    if (!response.ok || !result.donor) {
+      setStatus(result.message || "Could not update donor account.");
+      return;
+    }
+
+    setDonors((records) => records.map((record) => (record.id === result.donor?.id ? result.donor as DonorRecord : record)));
+    form.reset();
+    setStatus("Donor account updated.");
   }
 
   async function addAdminUser(event: FormEvent<HTMLFormElement>) {
@@ -368,8 +453,42 @@ export default function AdminOperationsDashboard({
     }
 
     setAdminUsers((users) => [result.user as AdminUserRecord, ...users]);
+    setAdminUserPage(1);
     form.reset();
     setStatus("Dashboard user created.");
+  }
+
+  async function updateAdminUser(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!can("users:edit")) return;
+    setSaving(true);
+    setStatus("Updating dashboard user...");
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const response = await fetch("/api/admin/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: String(formData.get("id") || ""),
+        name: String(formData.get("name") || ""),
+        email: String(formData.get("email") || ""),
+        role: String(formData.get("role") || ""),
+        password: String(formData.get("password") || ""),
+        permissions: formData.getAll("permissions").map(String),
+      }),
+    });
+    const result = (await response.json()) as { ok: boolean; user?: AdminUserRecord; message?: string };
+    setSaving(false);
+
+    if (!response.ok || !result.user) {
+      setStatus(result.message || "Could not update dashboard user.");
+      return;
+    }
+
+    setAdminUsers((users) => users.map((user) => (user.id === result.user?.id ? result.user as AdminUserRecord : user)));
+    form.reset();
+    setStatus("Dashboard user updated.");
   }
 
   async function deleteAdminUser(id: string) {
@@ -377,6 +496,7 @@ export default function AdminOperationsDashboard({
     const response = await fetch(`/api/admin/users?id=${encodeURIComponent(id)}`, { method: "DELETE" });
     if (response.ok) {
       setAdminUsers((users) => users.filter((user) => user.id !== id));
+      setAdminUserPage(1);
       setStatus("Dashboard user removed.");
     }
   }
@@ -405,7 +525,7 @@ export default function AdminOperationsDashboard({
             <div className="flex flex-wrap gap-3">
               {canOpenCms ? (
                 <Button asChild type="button" className="h-11 rounded-full bg-white px-5 text-slate-950 hover:bg-amber-100">
-                  <Link href="/admin/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Open CMS</Link>
+                  <Link href="/admin/dashboard" target="_blank" rel="noreferrer"><LayoutDashboard className="mr-2 h-4 w-4" />Open CMS</Link>
                 </Button>
               ) : null}
               <form action="/api/admin/logout" method="post">
@@ -525,20 +645,55 @@ export default function AdminOperationsDashboard({
                     <h2 className="text-xl font-black text-slate-950">Donations & receipts</h2>
                     <p className="mt-1 text-sm text-slate-600">{filteredDonations.length} matching records</p>
                   </div>
-                  <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-donation-report.csv", filteredDonations)} className="h-10 rounded-full" disabled={!canExport || !filteredDonations.length}>
+                  <Button type="button" onClick={() => downloadCsv("vihana-donation-report.csv", filteredDonations)} className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300" disabled={!canExport || !filteredDonations.length}>
                     <Download className="mr-2 h-4 w-4" />Export
                   </Button>
                 </div>
-                <div className="grid gap-2 md:grid-cols-[1fr_140px_120px_120px]">
+                <div className="grid gap-2 md:grid-cols-[1fr_150px_140px_120px_120px]">
                   <label className="flex h-10 items-center gap-2 rounded-[8px] border border-slate-200 bg-slate-50 px-3">
                     <Search className="h-4 w-4 text-slate-400" />
                     <input value={query} onChange={(event) => { setQuery(event.target.value); setDonationPage(1); }} placeholder="Search donor, receipt, purpose..." className="min-w-0 flex-1 bg-transparent text-sm outline-none" />
                   </label>
+                  <select value={donorFilter} onChange={(event) => { setDonorFilter(event.target.value); setDonationPage(1); }} className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none">
+                    <option value="All">All donors</option>
+                    {donorOptions.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
+                  </select>
                   <select value={methodFilter} onChange={(event) => { setMethodFilter(event.target.value); setDonationPage(1); }} className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none">
                     {methods.map((method) => <option key={method}>{method}</option>)}
                   </select>
                   <input type="date" value={fromDate} onChange={(event) => { setFromDate(event.target.value); setDonationPage(1); }} className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none" />
                   <input type="date" value={toDate} onChange={(event) => { setToDate(event.target.value); setDonationPage(1); }} className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none" />
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-3 rounded-[8px] border border-teal-100 bg-teal-50 p-4 lg:grid-cols-[220px_1fr_1fr]">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-teal-700">Donor summary</p>
+                  <h3 className="mt-1 text-lg font-black text-slate-950">{donorInsights.label}</h3>
+                  <p className="mt-2 text-2xl font-black text-teal-700">{formatCurrency(donorInsights.total)}</p>
+                  <p className="mt-1 text-xs font-semibold text-slate-500">{donorInsights.count} donation records</p>
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Month-wise</p>
+                  <div className="mt-2 grid gap-1.5">
+                    {donorInsights.byMonth.length ? donorInsights.byMonth.slice(0, 5).map(([label, value]) => (
+                      <div key={label} className="flex justify-between gap-3 rounded-[8px] bg-white px-3 py-2 text-xs font-bold">
+                        <span className="text-slate-600">{label}</span>
+                        <span className="text-teal-700">{formatCurrency(value)}</span>
+                      </div>
+                    )) : <p className="text-sm text-slate-500">No month-wise data.</p>}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Financial year</p>
+                  <div className="mt-2 grid gap-1.5">
+                    {donorInsights.byFinancialYear.length ? donorInsights.byFinancialYear.map(([label, value]) => (
+                      <div key={label} className="flex justify-between gap-3 rounded-[8px] bg-white px-3 py-2 text-xs font-bold">
+                        <span className="text-slate-600">{label}</span>
+                        <span className="text-teal-700">{formatCurrency(value)}</span>
+                      </div>
+                    )) : <p className="text-sm text-slate-500">No financial-year data.</p>}
+                  </div>
                 </div>
               </div>
 
@@ -548,8 +703,11 @@ export default function AdminOperationsDashboard({
                     <div><p className="font-black text-slate-950">{donation.name || "Donor"}</p><p className="text-xs text-slate-500">{donation.email || donation.createdAt || "No email"}</p></div>
                     <p className="font-black text-teal-700">{formatCurrency(currencyAmount(donation.amount))}</p>
                     <p className="text-slate-600">{donation.receiptNumber || donation.method || "Recorded"}</p>
-                    <Button asChild type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={!can("receipts:view")}>
-                      <a href={`/api/donor/receipt?id=${encodeURIComponent(donation.id)}`}>PDF</a>
+                    <Button asChild type="button" className="h-10 rounded-full bg-amber-400 px-4 text-xs font-black text-slate-950 shadow-sm hover:bg-amber-300" disabled={!can("receipts:view")}>
+                      <a href={`/api/donor/receipt?id=${encodeURIComponent(donation.id)}`}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Receipt PDF
+                      </a>
                     </Button>
                   </div>
                 ))}
@@ -582,7 +740,7 @@ export default function AdminOperationsDashboard({
               ) : <p className="mt-4 rounded-[8px] bg-amber-50 p-3 text-sm font-semibold text-amber-900">No create access.</p>}
             </div>
             <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex justify-between gap-3"><h2 className="text-xl font-black text-slate-950">Accounting records</h2><Button type="button" variant="outline" onClick={() => downloadCsv("vihana-accounting-register.csv", accountingRecords)} disabled={!canExport || !accountingRecords.length} className="h-10 rounded-full"><Download className="mr-2 h-4 w-4" />Export</Button></div>
+              <div className="flex justify-between gap-3"><h2 className="text-xl font-black text-slate-950">Accounting records</h2><Button type="button" onClick={() => downloadCsv("vihana-accounting-register.csv", accountingRecords)} disabled={!canExport || !accountingRecords.length} className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300"><Download className="mr-2 h-4 w-4" />Export</Button></div>
               <div className="mt-4 grid gap-3">
                 {pagedAccounting.map((record) => (
                   <div key={record.id} className="flex flex-col justify-between gap-3 rounded-[8px] bg-slate-50 p-4 sm:flex-row sm:items-center">
@@ -621,12 +779,34 @@ export default function AdminOperationsDashboard({
             <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
               <h2 className="text-xl font-black text-slate-950">Donor profiles</h2>
               <div className="mt-4 grid gap-3">
-                {donors.map((donor) => (
+                {pagedDonors.map((donor) => (
                   <div key={donor.id} className="rounded-[8px] bg-slate-50 p-4">
                     <p className="font-black text-slate-950">{donor.name || donor.email}</p>
                     <p className="mt-1 text-sm text-slate-600">{donor.email} {donor.phone ? `| ${donor.phone}` : ""}</p>
+                    {can("donors:edit") ? (
+                      <details className="mt-3 rounded-[8px] bg-white p-3">
+                        <summary className="cursor-pointer text-sm font-black text-teal-700">Update profile / reset password</summary>
+                        <form onSubmit={updateDonorUser} className="mt-3 grid gap-2">
+                          <input type="hidden" name="id" value={donor.id} />
+                          <input name="name" defaultValue={donor.name} required placeholder="Full name" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600" />
+                          <input name="email" defaultValue={donor.email} required type="email" placeholder="Email" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600" />
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <input name="phone" defaultValue={donor.phone} placeholder="Phone" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600" />
+                            <input name="pan" defaultValue={donor.pan} placeholder="PAN" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm uppercase outline-none focus:border-teal-600" />
+                          </div>
+                          <textarea name="address" defaultValue={donor.address} rows={2} placeholder="Address" className="rounded-[8px] border border-slate-200 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-teal-600" />
+                          <input name="password" type="password" minLength={8} placeholder="New temporary password optional" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600" />
+                          <Button disabled={saving} className="h-10 rounded-full bg-teal-700 text-sm hover:bg-teal-800">Save Donor</Button>
+                        </form>
+                      </details>
+                    ) : null}
                   </div>
                 ))}
+              </div>
+              <div className="mt-4 flex items-center justify-between">
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4" disabled={donorPage === 1} onClick={() => setDonorPage((page) => Math.max(1, page - 1))}>Previous</Button>
+                <p className="text-sm font-bold text-slate-600">Page {donorPage} of {donorPageCount}</p>
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4" disabled={donorPage === donorPageCount} onClick={() => setDonorPage((page) => Math.min(donorPageCount, page + 1))}>Next</Button>
               </div>
             </div>
           </section>
@@ -669,17 +849,58 @@ export default function AdminOperationsDashboard({
               ) : <p className="mt-4 rounded-[8px] bg-amber-50 p-3 text-sm font-semibold text-amber-900">No dashboard user creation access.</p>}
             </div>
             <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex justify-between gap-3"><h2 className="text-xl font-black text-slate-950">Dashboard users</h2>{canExport ? <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-admin-users.csv", adminUsers)} className="h-10 rounded-full"><Download className="mr-2 h-4 w-4" />Export</Button> : null}</div>
+              <div className="flex justify-between gap-3"><h2 className="text-xl font-black text-slate-950">Dashboard users</h2>{canExport ? <Button type="button" onClick={() => downloadCsv("vihana-admin-users.csv", adminUsers)} className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300"><Download className="mr-2 h-4 w-4" />Export</Button> : null}</div>
               <div className="mt-4 grid gap-3">
                 <div className="rounded-[8px] border border-teal-100 bg-teal-50 p-4"><p className="font-black text-teal-950">Owner Admin</p><p className="text-sm text-teal-800">Master account with all access.</p></div>
-                {adminUsers.map((user) => (
+                {pagedAdminUsers.map((user) => (
                   <div key={user.id} className="rounded-[8px] bg-slate-50 p-4">
                     <div className="flex flex-col justify-between gap-3 sm:flex-row">
                       <div><p className="font-black text-slate-950">{user.name}</p><p className="text-sm text-slate-600">{user.email} | {user.role || "Dashboard user"}</p><p className="mt-2 text-xs font-semibold uppercase tracking-[0.1em] text-teal-700">{String(user.permissions || "").split(",").map((permission) => permissionLabels[permission as AdminPermission] || permission).join(" / ")}</p></div>
                       {can("users:delete") ? <button type="button" onClick={() => deleteAdminUser(user.id)} className="inline-flex h-9 items-center rounded-full px-3 text-sm font-bold text-rose-700 hover:bg-rose-50"><Trash2 className="mr-2 h-4 w-4" />Remove</button> : null}
                     </div>
+                    {can("users:edit") ? (
+                      <details className="mt-3 rounded-[8px] bg-white p-3">
+                        <summary className="cursor-pointer text-sm font-black text-teal-700">Update user / reset password / permissions</summary>
+                        <form onSubmit={updateAdminUser} className="mt-3 grid gap-3">
+                          <input type="hidden" name="id" value={user.id} />
+                          <div className="grid gap-2 sm:grid-cols-2">
+                            <input name="name" defaultValue={user.name} required placeholder="Name" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600" />
+                            <input name="role" defaultValue={user.role} placeholder="Role" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600" />
+                            <input name="email" defaultValue={user.email} required type="email" placeholder="Email" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600" />
+                            <input name="password" type="password" minLength={8} placeholder="New password optional" className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600" />
+                          </div>
+                          <div className="max-h-64 overflow-auto rounded-[8px] bg-slate-50 p-3">
+                            {permissionGroups.map((group) => (
+                              <div key={group.title} className="mb-3 last:mb-0">
+                                <p className="text-xs font-black uppercase tracking-[0.14em] text-slate-500">{group.title}</p>
+                                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                                  {group.permissions.map((permission) => (
+                                    <label key={permission} className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                      <input
+                                        type="checkbox"
+                                        name="permissions"
+                                        value={permission}
+                                        defaultChecked={String(user.permissions || "").split(",").includes(permission)}
+                                        className="h-4 w-4 accent-teal-700"
+                                      />
+                                      {permissionLabels[permission]}
+                                    </label>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <Button disabled={saving} className="h-10 rounded-full bg-teal-700 text-sm hover:bg-teal-800">Save Dashboard User</Button>
+                        </form>
+                      </details>
+                    ) : null}
                   </div>
                 ))}
+              </div>
+              <div className="mt-4 flex items-center justify-between">
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4" disabled={adminUserPage === 1} onClick={() => setAdminUserPage((page) => Math.max(1, page - 1))}>Previous</Button>
+                <p className="text-sm font-bold text-slate-600">Page {adminUserPage} of {adminUserPageCount}</p>
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4" disabled={adminUserPage === adminUserPageCount} onClick={() => setAdminUserPage((page) => Math.min(adminUserPageCount, page + 1))}>Next</Button>
               </div>
             </div>
           </section>

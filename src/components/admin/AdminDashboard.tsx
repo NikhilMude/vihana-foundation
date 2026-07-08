@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import {
   FileText,
@@ -270,6 +271,11 @@ const contentFields: { key: keyof SiteContent; label: string; multiline?: boolea
   { key: "annualReportHref", label: "Annual report link" },
   { key: "receiptTitle", label: "Receipt PDF title" },
   { key: "receiptSubtitle", label: "Receipt PDF subtitle" },
+  { key: "receiptNumberPrefix", label: "Receipt number prefix" },
+  { key: "receiptNumberSeparator", label: "Receipt number separator" },
+  { key: "receiptNumberYearFormat", label: "Receipt year format" },
+  { key: "receiptNumberPadding", label: "Receipt sequence padding" },
+  { key: "receiptNumberStart", label: "Receipt starting number" },
   { key: "receiptLegalNote", label: "Receipt legal note", multiline: true },
   { key: "receiptFooterNote", label: "Receipt footer note", multiline: true },
   { key: "receiptSignatureName", label: "Receipt signature name" },
@@ -390,6 +396,11 @@ const fieldGuides: Partial<Record<keyof SiteContent, string>> = {
   contactPhone: "Use country code format, for example +91 98765 43210.",
   metaTitle: "Recommended: 50-60 characters for Google results.",
   metaDescription: "Recommended: 140-160 characters for Google results.",
+  receiptNumberPrefix: "Example: VF or VIHANA. This appears at the start of every receipt number.",
+  receiptNumberSeparator: "Example: / or -. This joins prefix, year and sequence.",
+  receiptNumberYearFormat: "Use financial, calendar, calendar-short or none. Example output: VF/FY25-26/0001.",
+  receiptNumberPadding: "Number of digits in the running sequence. Example: 4 gives 0001.",
+  receiptNumberStart: "First sequence number to use. Example: 1 starts from 0001.",
 };
 
 function getFieldGuide(field: { key: keyof SiteContent; label: string; multiline?: boolean }) {
@@ -427,6 +438,26 @@ function getFieldPlaceholder(field: { key: keyof SiteContent; label: string; mul
 
   if (field.key === "brandTagline") {
     return "Small Steps. Lifelong Impact.";
+  }
+
+  if (field.key === "receiptNumberPrefix") {
+    return "VF";
+  }
+
+  if (field.key === "receiptNumberSeparator") {
+    return "/";
+  }
+
+  if (field.key === "receiptNumberYearFormat") {
+    return "financial";
+  }
+
+  if (field.key === "receiptNumberPadding") {
+    return "4";
+  }
+
+  if (field.key === "receiptNumberStart") {
+    return "1";
   }
 
   if (field.label.toLowerCase().includes("button")) {
@@ -541,6 +572,11 @@ const contentGroups: {
       "annualReportHref",
       "receiptTitle",
       "receiptSubtitle",
+      "receiptNumberPrefix",
+      "receiptNumberSeparator",
+      "receiptNumberYearFormat",
+      "receiptNumberPadding",
+      "receiptNumberStart",
       "receiptLegalNote",
       "receiptFooterNote",
       "receiptSignatureName",
@@ -920,6 +956,13 @@ export default function AdminDashboard({
   const [sendingNewsletter, setSendingNewsletter] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [donationSearch, setDonationSearch] = useState("");
+  const [messagePage, setMessagePage] = useState(1);
+  const [visitorPage, setVisitorPage] = useState(1);
+  const [galleryPage, setGalleryPage] = useState(1);
+  const [cmsDonationPage, setCmsDonationPage] = useState(1);
+  const [cmsAccountingPage, setCmsAccountingPage] = useState(1);
+  const [cmsDonorPage, setCmsDonorPage] = useState(1);
+  const [subscriberPage, setSubscriberPage] = useState(1);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [contentGroup, setContentGroup] = useState(contentGroups[0].id);
   const [activePageId, setActivePageId] = useState(initialContent.pages[0]?.id || "");
@@ -949,6 +992,15 @@ export default function AdminDashboard({
   const safeActivePageIndex = activePageIndex >= 0 ? activePageIndex : 0;
   const activePage = content.pages[safeActivePageIndex];
   const visibleListKeys = activeListKey === "all" || activeListKey === "featured" ? (Object.keys(listLabels) as ListKey[]) : [activeListKey];
+  const compactPageSize = 6;
+  const messagePageCount = Math.max(1, Math.ceil(messages.length / compactPageSize));
+  const visitorPageCount = Math.max(1, Math.ceil(visitors.length / compactPageSize));
+  const galleryPageCount = Math.max(1, Math.ceil(galleryItems.length / compactPageSize));
+  const subscriberPageCount = Math.max(1, Math.ceil(subscribers.length / compactPageSize));
+  const pagedMessages = messages.slice((messagePage - 1) * compactPageSize, messagePage * compactPageSize);
+  const pagedVisitors = visitors.slice((visitorPage - 1) * compactPageSize, visitorPage * compactPageSize);
+  const pagedGalleryItems = galleryItems.slice((galleryPage - 1) * compactPageSize, galleryPage * compactPageSize);
+  const pagedSubscribers = subscribers.slice((subscriberPage - 1) * compactPageSize, subscriberPage * compactPageSize);
   const cmsSearchResults = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
 
@@ -1203,6 +1255,12 @@ export default function AdminDashboard({
         .includes(query)
     );
   }, [donationSearch, donations]);
+  const cmsDonationPageCount = Math.max(1, Math.ceil(filteredDonations.length / compactPageSize));
+  const pagedCmsDonations = filteredDonations.slice((cmsDonationPage - 1) * compactPageSize, cmsDonationPage * compactPageSize);
+  const cmsAccountingPageCount = Math.max(1, Math.ceil(accountingRecords.length / compactPageSize));
+  const pagedCmsAccountingRecords = accountingRecords.slice((cmsAccountingPage - 1) * compactPageSize, cmsAccountingPage * compactPageSize);
+  const cmsDonorPageCount = Math.max(1, Math.ceil(donors.length / compactPageSize));
+  const pagedCmsDonors = donors.slice((cmsDonorPage - 1) * compactPageSize, cmsDonorPage * compactPageSize);
   const accountingSummary = useMemo(() => {
     const byType = accountingRecords.reduce<Record<string, number>>((accumulator, record) => {
       const type = record.type || "Record";
@@ -1731,25 +1789,33 @@ export default function AdminDashboard({
 
   return (
     <div className="min-h-screen bg-stone-50">
-      <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-5 py-4 shadow-sm backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div className="min-w-0">
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-teal-700">Vihana Foundation Admin</p>
-            <h1 className="mt-1 truncate font-[family-name:var(--font-playfair)] text-3xl font-bold text-slate-950">Website CMS</h1>
+      <div className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 px-3 py-2 shadow-sm backdrop-blur sm:px-5">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] bg-teal-700 text-white shadow-sm">
+              <Settings className="h-5 w-5" />
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-black uppercase tracking-[0.18em] text-teal-700">Vihana Foundation</p>
+              <h1 className="truncate text-xl font-black text-slate-950 sm:text-2xl">Website CMS</h1>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {status ? <p className="rounded-full bg-amber-50 px-4 py-2 text-sm font-bold text-amber-800">{status}</p> : null}
-            {hasUnsavedChanges ? <p className="rounded-full bg-rose-50 px-4 py-2 text-sm font-bold text-rose-700">Unsaved changes</p> : null}
-            <a href="/" target="_blank" className="inline-flex h-11 items-center rounded-full border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 shadow-sm hover:bg-slate-50">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            {status ? <p className="max-w-full truncate rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-800 sm:max-w-sm">{status}</p> : null}
+            {hasUnsavedChanges ? <p className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700">Unsaved</p> : null}
+            <a href="/" target="_blank" className="inline-flex h-10 items-center rounded-full bg-slate-950 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800">
               View Site
             </a>
-            <Button type="button" onClick={() => saveContent()} disabled={saving} className="h-11 rounded-full bg-teal-700 px-6 hover:bg-teal-800">
+            <Link href="/admin/operations" className="inline-flex h-10 items-center rounded-full bg-amber-400 px-4 text-sm font-black text-slate-950 shadow-sm transition hover:bg-amber-300">
+              Operations
+            </Link>
+            <Button type="button" onClick={() => saveContent()} disabled={saving} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
               {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
-              Save Changes
+              Save
             </Button>
             <form action="/api/admin/logout" method="post">
-              <Button type="submit" variant="outline" className="h-11 rounded-full px-6">Logout</Button>
+              <Button type="submit" variant="outline" className="h-10 rounded-full px-4">Logout</Button>
             </form>
           </div>
         </div>
@@ -2702,8 +2768,9 @@ export default function AdminDashboard({
               </Button>
             </form>
 
+            <div>
             <div className="grid gap-4 md:grid-cols-2">
-              {galleryItems.map((item) => (
+              {pagedGalleryItems.map((item) => (
                 <div key={item.id} className="overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-sm">
                   {item.imageUrl ? <Image src={item.imageUrl} alt={item.title} width={600} height={320} unoptimized className="h-44 w-full object-cover" /> : null}
                   <div className="p-5">
@@ -2718,32 +2785,68 @@ export default function AdminDashboard({
                 </div>
               ))}
             </div>
+            {galleryPageCount > 1 ? (
+              <div className="mt-4 flex items-center justify-between rounded-[8px] border border-slate-200 bg-white p-3">
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={galleryPage === 1} onClick={() => setGalleryPage((page) => Math.max(1, page - 1))}>Previous</Button>
+                <p className="text-xs font-bold text-slate-500">Page {galleryPage} of {galleryPageCount}</p>
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={galleryPage === galleryPageCount} onClick={() => setGalleryPage((page) => Math.min(galleryPageCount, page + 1))}>Next</Button>
+              </div>
+            ) : null}
+            </div>
           </div>
         ) : null}
 
         {tab === "messages" ? (
           <div className="mt-6 grid gap-4">
-            {messages.length ? (
-              messages.map((message) => (
-                <div key={message.id} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex flex-col justify-between gap-2 md:flex-row">
+            <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-600">Inbox</p>
+                  <h2 className="mt-1 text-2xl font-black text-slate-950">{messages.length} messages</h2>
+                </div>
+                <Button type="button" onClick={() => downloadCsv("vihana-messages-report.csv", messages)} className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300" disabled={!messages.length}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </div>
+            </div>
+
+            {pagedMessages.length ? (
+              pagedMessages.map((message) => (
+                <details key={message.id} className="rounded-[8px] border border-slate-200 bg-white p-4 shadow-sm">
+                  <summary className="cursor-pointer list-none">
+                    <div className="flex flex-col justify-between gap-2 md:flex-row md:items-start">
                     <div>
-                      <h3 className="text-lg font-bold text-slate-950">{message.name}</h3>
-                      <p className="text-sm text-slate-500">
+                      <h3 className="font-bold text-slate-950">{message.name || "Website visitor"}</h3>
+                      <p className="mt-1 text-sm text-slate-500">
                         {message.email} {message.phone ? `| ${message.phone}` : ""}
                       </p>
                     </div>
-                    <p className="text-sm font-bold text-teal-700">{message.interest}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="rounded-full bg-teal-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-teal-700">{message.interest || "Message"}</p>
+                      <p className="text-xs font-semibold text-slate-400">{message.createdAt}</p>
+                    </div>
                   </div>
-                  <p className="mt-4 leading-7 text-slate-700">{message.message}</p>
-                  <p className="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">{message.createdAt}</p>
-                </div>
+                  </summary>
+                  <p className="mt-3 rounded-[8px] bg-slate-50 p-3 text-sm leading-6 text-slate-700">{message.message || "No message text."}</p>
+                </details>
               ))
             ) : (
               <div className="rounded-[8px] border border-slate-200 bg-white p-8 text-center text-slate-600">
                 No messages received yet.
               </div>
             )}
+            {messagePageCount > 1 ? (
+              <div className="flex items-center justify-between rounded-[8px] border border-slate-200 bg-white p-3">
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={messagePage === 1} onClick={() => setMessagePage((page) => Math.max(1, page - 1))}>
+                  Previous
+                </Button>
+                <p className="text-xs font-bold text-slate-500">Page {messagePage} of {messagePageCount}</p>
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={messagePage === messagePageCount} onClick={() => setMessagePage((page) => Math.min(messagePageCount, page + 1))}>
+                  Next
+                </Button>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -2817,7 +2920,7 @@ export default function AdminDashboard({
                     <p className="text-xs font-bold uppercase tracking-[0.22em] text-amber-600">Reports</p>
                     <h2 className="mt-2 text-xl font-black text-slate-950">Donation dashboard</h2>
                   </div>
-                  <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-donation-report.csv", donations)} className="h-10 rounded-full" disabled={!donations.length}>
+                  <Button type="button" onClick={() => downloadCsv("vihana-donation-report.csv", donations)} className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300" disabled={!donations.length}>
                     <Download className="mr-2 h-4 w-4" />
                     Donation CSV
                   </Button>
@@ -2836,16 +2939,16 @@ export default function AdminDashboard({
                   ))}
                 </div>
                 <div className="mt-4 flex flex-wrap gap-3">
-                  <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-messages-report.csv", messages)} className="h-10 rounded-full">
+                  <Button type="button" onClick={() => downloadCsv("vihana-messages-report.csv", messages)} className="h-10 rounded-full bg-teal-700 px-5 font-black text-white shadow-sm hover:bg-teal-800">
                     Messages CSV
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-subscribers-report.csv", subscribers)} className="h-10 rounded-full">
+                  <Button type="button" onClick={() => downloadCsv("vihana-subscribers-report.csv", subscribers)} className="h-10 rounded-full bg-teal-700 px-5 font-black text-white shadow-sm hover:bg-teal-800">
                     Subscribers CSV
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-visitors-report.csv", visitors)} className="h-10 rounded-full">
+                  <Button type="button" onClick={() => downloadCsv("vihana-visitors-report.csv", visitors)} className="h-10 rounded-full bg-teal-700 px-5 font-black text-white shadow-sm hover:bg-teal-800">
                     Visitors CSV
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-donor-accounts.csv", donors)} className="h-10 rounded-full">
+                  <Button type="button" onClick={() => downloadCsv("vihana-donor-accounts.csv", donors)} className="h-10 rounded-full bg-teal-700 px-5 font-black text-white shadow-sm hover:bg-teal-800">
                     Donors CSV
                   </Button>
                 </div>
@@ -2912,7 +3015,10 @@ export default function AdminDashboard({
                   <Search className="h-4 w-4 shrink-0 text-slate-400" />
                   <input
                     value={donationSearch}
-                    onChange={(event) => setDonationSearch(event.target.value)}
+                    onChange={(event) => {
+                      setDonationSearch(event.target.value);
+                      setCmsDonationPage(1);
+                    }}
                     placeholder="Search name, email, phone, receipt no, reference..."
                     className="h-full min-w-0 flex-1 bg-transparent text-sm outline-none"
                   />
@@ -2921,7 +3027,7 @@ export default function AdminDashboard({
             </div>
 
             {filteredDonations.length ? (
-              filteredDonations.map((donation) => (
+              pagedCmsDonations.map((donation) => (
                 <div key={donation.id} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="flex flex-col justify-between gap-2 md:flex-row">
                     <div>
@@ -2947,7 +3053,7 @@ export default function AdminDashboard({
                     <p><span className="font-bold text-slate-800">Date:</span> {donation.createdAt}</p>
                   </div>
                   <div className="mt-4 flex flex-wrap items-center gap-3">
-                    <Button asChild type="button" variant="outline" className="h-10 rounded-full">
+                    <Button asChild type="button" className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300">
                       <a href={`/api/donor/receipt?id=${encodeURIComponent(donation.id)}`}>
                         <Download className="mr-2 h-4 w-4" />
                         Download Receipt
@@ -2962,6 +3068,13 @@ export default function AdminDashboard({
                 No donation records match this search.
               </div>
             )}
+            {cmsDonationPageCount > 1 ? (
+              <div className="flex items-center justify-between rounded-[8px] border border-slate-200 bg-white p-3">
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={cmsDonationPage === 1} onClick={() => setCmsDonationPage((page) => Math.max(1, page - 1))}>Previous</Button>
+                <p className="text-xs font-bold text-slate-500">Page {cmsDonationPage} of {cmsDonationPageCount}</p>
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={cmsDonationPage === cmsDonationPageCount} onClick={() => setCmsDonationPage((page) => Math.min(cmsDonationPageCount, page + 1))}>Next</Button>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -3045,9 +3158,8 @@ export default function AdminDashboard({
                   </div>
                   <Button
                     type="button"
-                    variant="outline"
                     onClick={() => downloadCsv("vihana-accounting-register.csv", accountingRecords)}
-                    className="h-10 rounded-full"
+                    className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300"
                     disabled={!accountingRecords.length}
                   >
                     <Download className="mr-2 h-4 w-4" />
@@ -3068,7 +3180,7 @@ export default function AdminDashboard({
                   ) : null}
 
                   {accountingRecords.length ? (
-                    accountingRecords.map((record) => (
+                    pagedCmsAccountingRecords.map((record) => (
                       <article key={record.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-4">
                         <div className="flex flex-col justify-between gap-2 sm:flex-row">
                           <div>
@@ -3087,7 +3199,7 @@ export default function AdminDashboard({
                         {record.notes ? <p className="mt-3 text-sm leading-6 text-slate-600">{record.notes}</p> : null}
                         <div className="mt-4 flex flex-wrap gap-3">
                           {record.documentUrl ? (
-                            <a href={record.documentUrl} target="_blank" rel="noreferrer" className="inline-flex h-10 items-center rounded-full border border-slate-200 bg-white px-4 text-sm font-bold text-teal-700">
+                            <a href={record.documentUrl} target="_blank" rel="noreferrer" className="inline-flex h-10 items-center rounded-full bg-teal-700 px-5 text-sm font-black text-white shadow-sm transition hover:bg-teal-800">
                               View document
                             </a>
                           ) : null}
@@ -3103,6 +3215,13 @@ export default function AdminDashboard({
                       No accounting records yet.
                     </div>
                   )}
+                  {cmsAccountingPageCount > 1 ? (
+                    <div className="flex items-center justify-between rounded-[8px] border border-slate-200 bg-white p-3">
+                      <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={cmsAccountingPage === 1} onClick={() => setCmsAccountingPage((page) => Math.max(1, page - 1))}>Previous</Button>
+                      <p className="text-xs font-bold text-slate-500">Page {cmsAccountingPage} of {cmsAccountingPageCount}</p>
+                      <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={cmsAccountingPage === cmsAccountingPageCount} onClick={() => setCmsAccountingPage((page) => Math.min(cmsAccountingPageCount, page + 1))}>Next</Button>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </section>
@@ -3116,14 +3235,14 @@ export default function AdminDashboard({
                 <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-600">Registered Donors</p>
                 <h2 className="mt-2 text-3xl font-black text-slate-950">{donors.length}</h2>
               </div>
-              <Button type="button" variant="outline" onClick={() => downloadCsv("vihana-donor-accounts.csv", donors)} className="h-10 rounded-full" disabled={!donors.length}>
+              <Button type="button" onClick={() => downloadCsv("vihana-donor-accounts.csv", donors)} className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300" disabled={!donors.length}>
                 <Download className="mr-2 h-4 w-4" />
                 Donor CSV
               </Button>
             </div>
 
             {donors.length ? (
-              donors.map((donor) => (
+              pagedCmsDonors.map((donor) => (
                 <div key={donor.id} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
                   <div className="flex flex-col justify-between gap-2 md:flex-row">
                     <div>
@@ -3146,6 +3265,13 @@ export default function AdminDashboard({
                 No donor accounts yet.
               </div>
             )}
+            {cmsDonorPageCount > 1 ? (
+              <div className="flex items-center justify-between rounded-[8px] border border-slate-200 bg-white p-3">
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={cmsDonorPage === 1} onClick={() => setCmsDonorPage((page) => Math.max(1, page - 1))}>Previous</Button>
+                <p className="text-xs font-bold text-slate-500">Page {cmsDonorPage} of {cmsDonorPageCount}</p>
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={cmsDonorPage === cmsDonorPageCount} onClick={() => setCmsDonorPage((page) => Math.min(cmsDonorPageCount, page + 1))}>Next</Button>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -3169,7 +3295,7 @@ export default function AdminDashboard({
             </div>
 
             {subscribers.length ? (
-              subscribers.map((subscriber) => (
+              pagedSubscribers.map((subscriber) => (
                 <div key={subscriber.id} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
                   <h3 className="font-bold text-slate-950">{subscriber.email}</h3>
                   <p className="mt-2 text-sm text-slate-500">
@@ -3182,42 +3308,73 @@ export default function AdminDashboard({
                 No newsletter subscribers yet.
               </div>
             )}
+            {subscriberPageCount > 1 ? (
+              <div className="flex items-center justify-between rounded-[8px] border border-slate-200 bg-white p-3">
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={subscriberPage === 1} onClick={() => setSubscriberPage((page) => Math.max(1, page - 1))}>Previous</Button>
+                <p className="text-xs font-bold text-slate-500">Page {subscriberPage} of {subscriberPageCount}</p>
+                <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={subscriberPage === subscriberPageCount} onClick={() => setSubscriberPage((page) => Math.min(subscriberPageCount, page + 1))}>Next</Button>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
         {tab === "visitors" ? (
           <div className="mt-6">
             <div className="rounded-[8px] border border-slate-200 bg-white p-6 shadow-sm">
-              <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-600">Website Traffic</p>
-              <h2 className="mt-2 text-4xl font-bold text-slate-950">{visitorCount}</h2>
-              <p className="mt-2 text-slate-600">Total tracked visits</p>
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-[0.22em] text-amber-600">Website Traffic</p>
+                  <h2 className="mt-2 text-4xl font-bold text-slate-950">{visitorCount}</h2>
+                  <p className="mt-2 text-slate-600">Total tracked visits</p>
+                </div>
+                <Button type="button" onClick={() => downloadCsv("vihana-visitors-report.csv", visitors)} className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300" disabled={!visitors.length}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </div>
             </div>
 
             <div className="mt-5 grid gap-4">
-              {visitors.length ? (
-                visitors.map((visitor) => (
-                  <div key={visitor.id} className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-                    <div className="flex flex-col justify-between gap-2 md:flex-row">
+              {pagedVisitors.length ? (
+                pagedVisitors.map((visitor) => (
+                  <details key={visitor.id} className="rounded-[8px] border border-slate-200 bg-white p-4 shadow-sm">
+                    <summary className="cursor-pointer list-none">
+                      <div className="flex flex-col justify-between gap-2 md:flex-row md:items-start">
                       <div>
                         <h3 className="font-bold text-slate-950">{visitor.path || "/"}</h3>
                         <p className="mt-1 text-sm text-slate-500">{visitor.createdAt}</p>
                       </div>
-                      <p className="text-sm font-bold text-teal-700">{visitor.ipAddress || "Unknown IP"}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="rounded-full bg-teal-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-teal-700">{visitor.ipAddress || "Unknown IP"}</p>
+                        <p className="text-xs font-semibold text-slate-400">{visitor.screen || "Unknown screen"}</p>
+                      </div>
                     </div>
-                    <div className="mt-4 grid gap-2 text-sm text-slate-600 md:grid-cols-2">
+                    </summary>
+                    <div className="mt-3 grid gap-2 rounded-[8px] bg-slate-50 p-3 text-sm text-slate-600 md:grid-cols-2">
                       <p><span className="font-bold text-slate-800">Referrer:</span> {visitor.referrer || "Direct"}</p>
                       <p><span className="font-bold text-slate-800">Language:</span> {visitor.language || "Unknown"}</p>
                       <p><span className="font-bold text-slate-800">Timezone:</span> {visitor.timezone || "Unknown"}</p>
                       <p><span className="font-bold text-slate-800">Screen:</span> {visitor.screen || "Unknown"}</p>
                     </div>
                     <p className="mt-3 break-words text-xs text-slate-400">{visitor.userAgent}</p>
-                  </div>
+                  </details>
                 ))
               ) : (
                 <div className="rounded-[8px] border border-slate-200 bg-white p-8 text-center text-slate-600">
                   No visitor details captured yet.
                 </div>
               )}
+              {visitorPageCount > 1 ? (
+                <div className="flex items-center justify-between rounded-[8px] border border-slate-200 bg-white p-3">
+                  <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={visitorPage === 1} onClick={() => setVisitorPage((page) => Math.max(1, page - 1))}>
+                    Previous
+                  </Button>
+                  <p className="text-xs font-bold text-slate-500">Page {visitorPage} of {visitorPageCount}</p>
+                  <Button type="button" variant="outline" className="h-9 rounded-full px-4 text-xs" disabled={visitorPage === visitorPageCount} onClick={() => setVisitorPage((page) => Math.min(visitorPageCount, page + 1))}>
+                    Next
+                  </Button>
+                </div>
+              ) : null}
             </div>
           </div>
         ) : null}

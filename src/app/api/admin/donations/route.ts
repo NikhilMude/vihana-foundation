@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 
 import { requireAdminPermission } from "@/lib/adminAuth";
 import { addDocument } from "@/lib/firestoreAdmin";
+import { generateReceiptNumber } from "@/lib/receiptNumber";
+import { getDonationIntents, getSiteContent } from "@/lib/siteData";
 
 export const runtime = "nodejs";
 
@@ -23,13 +25,6 @@ function clean(value: unknown, limit = 500) {
   return typeof value === "string" ? value.trim().slice(0, limit) : "";
 }
 
-function receiptNumber() {
-  const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const random = Math.random().toString(36).slice(2, 7).toUpperCase();
-
-  return `VF-${stamp}-${random}`;
-}
-
 export async function POST(request: Request) {
   if (!(await requireAdminPermission("donations:create"))) {
     return NextResponse.json({ ok: false }, { status: 401 });
@@ -44,7 +39,12 @@ export async function POST(request: Request) {
   const method = clean(payload.method, 80) || "Cash";
   const transactionId = clean(payload.transactionId, 140) || `CASH-${Date.now()}`;
   const createdAt = new Date().toISOString();
-  const generatedReceiptNumber = receiptNumber();
+  const content = await getSiteContent();
+  const existingDonations = await getDonationIntents();
+  const generatedReceiptNumber = generateReceiptNumber(
+    content,
+    existingDonations.map((donation) => donation.receiptNumber).filter(Boolean)
+  );
 
   if (!name || !amount) {
     return NextResponse.json({ ok: false, message: "Donor name and amount are required." }, { status: 400 });
