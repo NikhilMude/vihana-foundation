@@ -634,7 +634,7 @@ Notes:
 - Generates receipt and accounting record per valid row.
 - When `createMissingDonors` is true, rows with valid email create donor accounts if no donor exists.
 - Auto-created donor accounts use temporary password `Vihana@123`.
-- The dashboard download sample is a blank Excel template with headers only.
+- The dashboard download sample is a blank CSV template with headers only. It opens in Excel and should be uploaded as CSV.
 
 ### Seed Test Donation Data
 

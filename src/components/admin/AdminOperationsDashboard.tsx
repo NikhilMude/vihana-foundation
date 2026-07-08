@@ -239,26 +239,52 @@ function downloadTextFile(filename: string, text: string, type = "text/csv;chars
   URL.revokeObjectURL(url);
 }
 
-function escapeHtml(value: unknown) {
-  return String(value ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+function pdfText(value: unknown) {
+  return String(value ?? "").replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)");
 }
 
-function reportTable(title: string, rows: [string, number][]) {
-  return `
-    <section>
-      <h2>${escapeHtml(title)}</h2>
-      <table>
-        <thead><tr><th>Particulars</th><th>Amount</th></tr></thead>
-        <tbody>
-          ${rows.length ? rows.map(([label, amount]) => `<tr><td>${escapeHtml(label)}</td><td>INR ${amount.toLocaleString("en-IN")}</td></tr>`).join("") : `<tr><td colspan="2">No records available.</td></tr>`}
-        </tbody>
-      </table>
-    </section>
-  `;
+function wrapPdfText(value: string, max = 82) {
+  const words = value.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let line = "";
+
+  words.forEach((word) => {
+    const next = line ? `${line} ${word}` : word;
+    if (next.length > max) {
+      if (line) lines.push(line);
+      line = word;
+    } else {
+      line = next;
+    }
+  });
+
+  if (line) lines.push(line);
+  return lines;
+}
+
+function createSimplePdf(pages: string[]) {
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    `<< /Type /Pages /Kids [${pages.map((_, index) => `${index + 3} 0 R`).join(" ")}] /Count ${pages.length} >>`,
+    ...pages.map((_, index) => `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${pages.length + 3} 0 R /F2 ${pages.length + 4} 0 R >> >> /Contents ${index + pages.length + 5} 0 R >>`),
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>",
+    ...pages.map((content) => `<< /Length ${content.length} >>\nstream\n${content}\nendstream`),
+  ];
+  const chunks = ["%PDF-1.4\n"];
+  const offsets: number[] = [];
+
+  objects.forEach((object, index) => {
+    offsets.push(chunks.join("").length);
+    chunks.push(`${index + 1} 0 obj\n${object}\nendobj\n`);
+  });
+
+  const xrefOffset = chunks.join("").length;
+  chunks.push(`xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`);
+  offsets.forEach((offset) => chunks.push(`${String(offset).padStart(10, "0")} 00000 n \n`));
+  chunks.push(`trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
+
+  return new Blob([chunks.join("")], { type: "application/pdf" });
 }
 
 function parseCsv(text: string) {
@@ -493,11 +519,14 @@ export default function AdminOperationsDashboard({
   });
   const [bulkRows, setBulkRows] = useState<BulkDonationRow[]>([]);
   const [bulkUploading, setBulkUploading] = useState(false);
+  const [bulkParsing, setBulkParsing] = useState(false);
   const [testRows, setTestRows] = useState<BulkDonationRow[]>([]);
   const [testUploading, setTestUploading] = useState(false);
+  const [testParsing, setTestParsing] = useState(false);
   const [accountingType, setAccountingType] = useState("Expense");
   const [accountingRows, setAccountingRows] = useState<AccountingImportRow[]>([]);
   const [accountingUploading, setAccountingUploading] = useState(false);
+  const [accountingParsing, setAccountingParsing] = useState(false);
   const [annualReportYear, setAnnualReportYear] = useState("All");
   const pageSize = 6;
 
@@ -641,69 +670,66 @@ export default function AdminOperationsDashboard({
   function downloadBulkSample() {
     const headers = ["Donor full name", "email", "phone", "Amount", "Date", "Payment Method", "Purpose", "PAN", "Address"];
     const rows: string[][] = [];
-    const tableRows = [headers, ...rows]
-      .map((row, rowIndex) => `<tr>${row.map((cell) => `<${rowIndex ? "td" : "th"}>${cell}</${rowIndex ? "td" : "th"}>`).join("")}</tr>`)
-      .join("");
 
     downloadTextFile(
-      "vihana-bulk-donation-sample.xls",
-      `<!doctype html><html><head><meta charset="utf-8" /></head><body><table>${tableRows}</table></body></html>`,
-      "application/vnd.ms-excel;charset=utf-8"
+      "vihana-bulk-donation-sample.csv",
+      [headers, ...rows].map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")).join("\n"),
+      "text/csv;charset=utf-8"
     );
   }
 
   function downloadTestDonationSample() {
     const headers = ["Donor full name", "email", "phone", "Amount", "Date", "Payment Method", "Purpose", "PAN", "Address"];
     const rows: string[][] = [];
-    const tableRows = [headers, ...rows]
-      .map((row, rowIndex) => `<tr>${row.map((cell) => `<${rowIndex ? "td" : "th"}>${cell}</${rowIndex ? "td" : "th"}>`).join("")}</tr>`)
-      .join("");
 
     downloadTextFile(
-      "vihana-dashboard-test-donation-data.xls",
-      `<!doctype html><html><head><meta charset="utf-8" /></head><body><table>${tableRows}</table></body></html>`,
-      "application/vnd.ms-excel;charset=utf-8"
+      "vihana-dashboard-test-donation-data.csv",
+      [headers, ...rows].map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")).join("\n"),
+      "text/csv;charset=utf-8"
     );
   }
 
   function downloadAccountingSample() {
     const headers = ["Type", "Name", "Amount", "Date", "Category", "Paid To / Received From", "Bill / Receipt No", "Status", "Notes"];
     const rows: string[][] = [];
-    const tableRows = [headers, ...rows]
-      .map((row, rowIndex) => `<tr>${row.map((cell) => `<${rowIndex ? "td" : "th"}>${cell}</${rowIndex ? "td" : "th"}>`).join("")}</tr>`)
-      .join("");
 
     downloadTextFile(
-      "vihana-accounting-import-template.xls",
-      `<!doctype html><html><head><meta charset="utf-8" /></head><body><table>${tableRows}</table></body></html>`,
-      "application/vnd.ms-excel;charset=utf-8"
+      "vihana-accounting-import-template.csv",
+      [headers, ...rows].map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(",")).join("\n"),
+      "text/csv;charset=utf-8"
     );
   }
 
   async function handleBulkFile(file?: File) {
     if (!file) return;
+    setBulkParsing(true);
     const text = await file.text();
     const rows = bulkRowsFromSheet(text);
     setBulkRows(rows);
-    setStatus(`${rows.length} donation rows ready. Review and click Import Donations.`);
+    setBulkParsing(false);
+    setStatus(rows.length ? `${rows.length} donation rows ready. Click Import Donations.` : "No rows found. Please use the downloaded CSV template and fill data below the header row.");
   }
 
   async function handleTestDonationFile(file?: File) {
     if (!file) return;
+    setTestParsing(true);
     const text = await file.text();
     const rows = bulkRowsFromSheet(text);
 
     setTestRows(rows);
-    setStatus(`${rows.length} dashboard test rows ready. Review and click Upload Test Data.`);
+    setTestParsing(false);
+    setStatus(rows.length ? `${rows.length} dashboard test rows ready. Click Upload Test Data.` : "No test rows found. Please use the downloaded CSV template and fill data below the header row.");
   }
 
   async function handleAccountingFile(file?: File) {
     if (!file) return;
+    setAccountingParsing(true);
     const text = await file.text();
     const rows = accountingRowsFromSheet(text);
 
     setAccountingRows(rows);
-    setStatus(`${rows.length} accounting rows ready. Review and click Import Accounting Records.`);
+    setAccountingParsing(false);
+    setStatus(rows.length ? `${rows.length} accounting rows ready. Click Import Accounting Records.` : "No accounting rows found. Please use the downloaded CSV template and fill data below the header row.");
   }
 
   async function importBulkDonations() {
@@ -979,7 +1005,7 @@ export default function AdminOperationsDashboard({
     }
   }
 
-  function downloadAnnualReport() {
+  function annualReportData() {
     const donationSource = annualReportYear === "All" ? donations : donations.filter((donation) => financialYearKey(donation.createdAt) === annualReportYear);
     const accountingSource = annualReportYear === "All" ? accountingRecords : accountingRecords.filter((record) => financialYearKey(record.date || record.createdAt) === annualReportYear);
     const receivedRecords = accountingSource.filter((record) => ["receipt", "received", "received amount", "income", "donation"].some((word) => String(record.type || "").toLowerCase().includes(word)));
@@ -1007,90 +1033,127 @@ export default function AdminOperationsDashboard({
       return acc;
     }, {})), "asc");
     const generatedAt = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
-    const html = `<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>${escapeHtml(content.brandName)} Annual Report ${escapeHtml(annualReportYear)}</title>
-  <style>
-    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f8fafc;color:#0f172a;line-height:1.65}
-    main{max-width:980px;margin:0 auto;background:white;padding:48px}
-    header{border-bottom:6px solid ${escapeHtml(content.brandPrimaryColor)};padding-bottom:28px;margin-bottom:32px}
-    h1{font-size:42px;line-height:1.1;margin:0;color:#020617}
-    h2{font-size:24px;margin:34px 0 12px;color:${escapeHtml(content.brandPrimaryColor)}}
-    h3{font-size:18px;margin:24px 0 8px}
-    .tag{letter-spacing:.18em;text-transform:uppercase;color:#b45309;font-weight:800;font-size:12px}
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}
-    .card{background:#f1f5f9;border:1px solid #e2e8f0;padding:16px;border-radius:8px}
-    .num{font-size:22px;font-weight:900;color:${escapeHtml(content.brandPrimaryColor)}}
-    table{width:100%;border-collapse:collapse;margin:12px 0 24px}
-    th,td{border:1px solid #e2e8f0;padding:10px;text-align:left;vertical-align:top}
-    th{background:#f8fafc}
-    .note{background:#fffbeb;border-left:4px solid #f59e0b;padding:14px;margin:18px 0}
-    footer{margin-top:42px;border-top:1px solid #e2e8f0;padding-top:18px;color:#475569;font-size:13px}
-    @media print{body{background:white}main{padding:24px;max-width:none}.grid{grid-template-columns:repeat(2,1fr)}}
-  </style>
-</head>
-<body>
-<main>
-  <header>
-    <p class="tag">Annual Report ${escapeHtml(annualReportYear === "All" ? "All Available Records" : annualReportYear)}</p>
-    <h1>${escapeHtml(content.brandName)}</h1>
-    <p><strong>${escapeHtml(content.brandTagline)}</strong></p>
-    <p>${escapeHtml(content.metaDescription)}</p>
-  </header>
-  <section>
-    <h2>Executive Summary</h2>
-    <p>${escapeHtml(content.brandName)} works to turn personal celebration into practical care for children and families. This report summarises recorded donations, received amounts, expenses, program priorities and operating notes from the dashboard records available as of ${escapeHtml(generatedAt)}.</p>
-    <p>The foundation's current work is organised around education support, nutrition, health and wellness, community outreach, volunteer participation and transparent donor stewardship. This report is designed for internal review, donor communication, media reference and public transparency once records are verified.</p>
-    <div class="grid">
-      <div class="card"><div class="num">INR ${totalReceived.toLocaleString("en-IN")}</div><div>Total received</div></div>
-      <div class="card"><div class="num">INR ${expenseTotal.toLocaleString("en-IN")}</div><div>Total expenses</div></div>
-      <div class="card"><div class="num">INR ${netBalance.toLocaleString("en-IN")}</div><div>Net balance</div></div>
-      <div class="card"><div class="num">${donationSource.length}</div><div>Donation records</div></div>
-    </div>
-  </section>
-  <section>
-    <h2>About The Foundation</h2>
-    <p>${escapeHtml(content.founderStory)}</p>
-    <p>${escapeHtml(content.missionDescription)}</p>
-  </section>
-  ${reportTable("Received Amount By Category", incomeByCategory.length ? incomeByCategory : donationByPurpose)}
-  ${reportTable("Donation Purpose Summary", donationByPurpose)}
-  ${reportTable("Expense Summary By Category", expenseByCategory)}
-  ${reportTable("Month-wise Donation Trend", monthRows)}
-  <section>
-    <h2>Program Narrative</h2>
-    <h3>Education Support</h3>
-    <p>Education-related support includes learning materials, school kits, mentoring, digital access and activities that reduce barriers to classroom participation.</p>
-    <h3>Nutrition And Meal Support</h3>
-    <p>Nutrition work includes cooked meals, ration support and community-led food distribution where records show meal or nutrition-related activity.</p>
-    <h3>Health And Wellness</h3>
-    <p>Health-related work includes awareness, hygiene, basic wellness support and planned health camps in partnership with local volunteers and professionals.</p>
-    <h3>Community Outreach</h3>
-    <p>Community outreach includes field coordination, volunteer mobilisation, awareness communication and local partnerships that help programs reach families respectfully.</p>
-  </section>
-  <section>
-    <h2>Governance, Stewardship And Transparency</h2>
-    <p>Records in this report are generated from the Vihana Foundation website and admin dashboard. Every donation and accounting entry should be checked against bank, UPI, cash, bill, receipt and field records before statutory filing or public release.</p>
-    <p>Legal status note: ${escapeHtml(content.legalStatusNote)}</p>
-    <p>Registration number: ${escapeHtml(content.registrationNumber || "To be updated after verification")}<br/>PAN: ${escapeHtml(content.panNumber || "To be updated after verification")}<br/>Tax exemption note: ${escapeHtml(content.taxExemptionNote)}</p>
-  </section>
-  <section>
-    <h2>Media Reference Summary</h2>
-    <p>${escapeHtml(content.brandName)} is a child-focused charitable initiative built around the idea that small acts of kindness can create lifelong impact. The foundation channels birthday-inspired giving and community participation into education, nutrition, wellness and practical support for children and families.</p>
-    <p>For verified figures, interviews, partnership enquiries or media use, contact ${escapeHtml(content.contactEmail)}.</p>
-  </section>
-  <div class="note"><strong>Important:</strong> This report is generated from dashboard records and should be reviewed by the foundation team, accountant and legal/compliance advisor before external publication, statutory use, tax claims or media circulation.</div>
-  <footer>
-    Generated on ${escapeHtml(generatedAt)} from Vihana Foundation dashboard records. Website: vihanafoundation.org
-  </footer>
-</main>
-</body>
-</html>`;
+    return { donationSource, totalReceived, expenseTotal, netBalance, donationByPurpose, incomeByCategory, expenseByCategory, monthRows, generatedAt };
+  }
 
-    downloadTextFile(`vihana-annual-report-${annualReportYear.replace(/\s+/g, "-").toLowerCase()}.html`, html, "text/html;charset=utf-8");
-    setStatus("Annual report generated. Open the downloaded file to review, print or save as PDF.");
+  function createAnnualReportPdf() {
+    const report = annualReportData();
+    const pages: string[] = [];
+    let commands = "";
+    let y = 790;
+    const line = (text: string, x = 48, size = 10, bold = false) => {
+      commands += `BT /${bold ? "F2" : "F1"} ${size} Tf ${x} ${y} Td (${pdfText(text)}) Tj ET\n`;
+      y -= size + 6;
+    };
+    const rect = (x: number, ry: number, w: number, h: number, color = "0.94 0.98 0.97") => {
+      commands += `${color} rg ${x} ${ry} ${w} ${h} re f\n0 0 0 rg\n`;
+    };
+    const newPage = () => {
+      pages.push(commands);
+      commands = "";
+      y = 790;
+    };
+    const section = (title: string) => {
+      if (y < 120) newPage();
+      y -= 8;
+      line(title, 48, 16, true);
+    };
+    const para = (text: string) => {
+      wrapPdfText(text, 92).forEach((wrapped) => {
+        if (y < 70) newPage();
+        line(wrapped, 48, 10);
+      });
+      y -= 4;
+    };
+    const bars = (title: string, rows: [string, number][]) => {
+      section(title);
+      const max = Math.max(...rows.map(([, value]) => value), 1);
+      rows.slice(0, 6).forEach(([label, amount]) => {
+        if (y < 90) newPage();
+        line(label.slice(0, 42), 48, 9, true);
+        rect(220, y + 5, Math.max(4, (amount / max) * 230), 10, "0.05 0.53 0.49");
+        line(`INR ${amount.toLocaleString("en-IN")}`, 465, 9, false);
+      });
+    };
+
+    rect(0, 760, 595, 82, "0.05 0.53 0.49");
+    commands += "1 1 1 rg\n";
+    line(content.brandName, 48, 24, true);
+    line(`${annualReportYear === "All" ? "All Available Records" : annualReportYear} Annual Report`, 48, 14, true);
+    line(content.brandTagline, 48, 10);
+    commands += "0 0 0 rg\n";
+    y = 710;
+    section("Executive Summary");
+    para(`${content.brandName} turns personal celebration into practical support for children and families. This annual report summarises dashboard records generated on ${report.generatedAt}.`);
+    para("Figures should be verified against bank, UPI, cash, bill, receipt and field records before statutory filing, public release or media circulation.");
+    const cards = [
+      ["Total Received", report.totalReceived],
+      ["Total Expenses", report.expenseTotal],
+      ["Net Balance", report.netBalance],
+      ["Donation Records", report.donationSource.length],
+    ];
+    cards.forEach(([label, value], index) => {
+      const x = 48 + (index % 2) * 245;
+      const cardY = y - Math.floor(index / 2) * 74;
+      rect(x, cardY - 44, 220, 56, index % 2 ? "1 0.97 0.85" : "0.9 0.98 0.97");
+      commands += `BT /F2 11 Tf ${x + 14} ${cardY - 2} Td (${pdfText(String(label))}) Tj ET\n`;
+      commands += `BT /F2 16 Tf ${x + 14} ${cardY - 25} Td (${pdfText(typeof value === "number" && label !== "Donation Records" ? `INR ${value.toLocaleString("en-IN")}` : String(value))}) Tj ET\n`;
+    });
+    y -= 160;
+    bars("Donation Purpose Visual Summary", report.donationByPurpose);
+    bars("Received Amount Visual Summary", report.incomeByCategory.length ? report.incomeByCategory : report.donationByPurpose);
+    newPage();
+    bars("Expense Visual Summary", report.expenseByCategory);
+    bars("Month-wise Donation Trend", report.monthRows);
+    section("Program Narrative");
+    para("Education Support: learning materials, school kits, mentoring, digital access and classroom participation support.");
+    para("Nutrition And Meal Support: cooked meals, ration support and community-led food distribution where records show meal or nutrition activity.");
+    para("Health And Wellness: awareness, hygiene, basic wellness support and planned health camps with local partners.");
+    para("Community Outreach: field coordination, volunteer mobilisation, awareness communication and local partnerships.");
+    section("Governance And Transparency");
+    para(content.legalStatusNote);
+    para(`Registration: ${content.registrationNumber || "To be updated after verification"}. PAN: ${content.panNumber || "To be updated after verification"}. ${content.taxExemptionNote}`);
+    section("Media Reference Summary");
+    para(`${content.brandName} is a child-focused charitable initiative built around small acts of kindness that create lifelong impact. For verified figures, interviews and partnership enquiries, contact ${content.contactEmail}.`);
+    pages.push(commands);
+    return createSimplePdf(pages);
+  }
+
+  function downloadAnnualReport() {
+    const blob = createAnnualReportPdf();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = `vihana-annual-report-${annualReportYear.replace(/\s+/g, "-").toLowerCase()}.pdf`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setStatus("Annual report PDF downloaded.");
+  }
+
+  async function shareAnnualReportFile() {
+    const blob = createAnnualReportPdf();
+    const file = new File([blob], `vihana-annual-report-${annualReportYear.replace(/\s+/g, "-").toLowerCase()}.pdf`, { type: "application/pdf" });
+    const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
+
+    if (navigator.share && (!nav.canShare || nav.canShare({ files: [file] }))) {
+      await navigator.share({ title: `${content.brandName} Annual Report`, text: `${content.brandName} annual report`, files: [file] });
+      setStatus("Annual report shared.");
+      return;
+    }
+
+    setStatus("File sharing is not supported in this browser. Please download the PDF and attach it manually.");
+  }
+
+  function shareAnnualReportWhatsApp() {
+    const text = `${content.brandName} annual report ${annualReportYear}. Please download the PDF from the admin dashboard or website annual reports section.`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+  }
+
+  function shareAnnualReportEmail() {
+    const subject = `${content.brandName} Annual Report ${annualReportYear}`;
+    const body = `Hello,%0D%0A%0D%0APlease find the ${content.brandName} annual report for ${annualReportYear}. If the PDF is not attached automatically, please download it from the dashboard and attach it to this email.%0D%0A%0D%0ARegards,%0D%0A${content.brandName}`;
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${body}`;
   }
 
   return (
@@ -1366,23 +1429,23 @@ export default function AdminOperationsDashboard({
                 <div className="mt-3 grid gap-2">
                   <Button type="button" variant="outline" onClick={downloadBulkSample} className="h-10 rounded-full px-4">
                     <Download className="mr-2 h-4 w-4" />
-                    Download Sample Excel
+                    Download Blank CSV Template
                   </Button>
                   <label className="grid gap-2 rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-3 text-sm font-semibold text-slate-700">
-                    Upload completed Excel or CSV
+                    Upload completed CSV
                     <input
                       type="file"
-                      accept=".xls,.csv,application/vnd.ms-excel,text/csv"
+                      accept=".csv,text/csv"
                       onChange={(event) => void handleBulkFile(event.target.files?.[0])}
                       className="text-sm"
                     />
                   </label>
                   <div className="rounded-[8px] bg-teal-50 p-3 text-sm text-teal-950">
-                    <p className="font-black">{bulkRows.length} rows ready for import</p>
+                    <p className="font-black">{bulkParsing ? "Reading file..." : `${bulkRows.length} rows ready for import`}</p>
                     <p className="mt-1 text-xs font-semibold">Required columns: Donor full name, email, phone, Amount, Date, Payment Method, Purpose, PAN, Address.</p>
                     <p className="mt-1 text-xs font-semibold">Rows with valid email will create donor accounts if they do not already exist. Temporary password: Vihana@123.</p>
-                    <Button type="button" onClick={importBulkDonations} disabled={bulkUploading || !bulkRows.length} className="mt-3 h-10 rounded-full bg-teal-700 px-5 font-black text-white hover:bg-teal-800 disabled:opacity-50">
-                      {bulkUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                    <Button type="button" onClick={importBulkDonations} disabled={bulkParsing || bulkUploading || !bulkRows.length} className="mt-3 h-10 rounded-full bg-teal-700 px-5 font-black text-white hover:bg-teal-800 disabled:opacity-50">
+                      {bulkParsing || bulkUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                       Import Donations & Generate Receipts
                     </Button>
                   </div>
@@ -1398,22 +1461,22 @@ export default function AdminOperationsDashboard({
                   <div className="mt-3 grid gap-2">
                     <Button type="button" variant="outline" onClick={downloadTestDonationSample} className="h-10 rounded-full px-4">
                       <Download className="mr-2 h-4 w-4" />
-                      Download Test Sample Excel
+                      Download Blank Test CSV
                     </Button>
                     <label className="grid gap-2 rounded-[8px] border border-dashed border-amber-300 bg-white/75 p-3 text-sm font-semibold text-slate-700">
-                      Upload completed test Excel or CSV
+                      Upload completed test CSV
                       <input
                         type="file"
-                        accept=".xls,.csv,application/vnd.ms-excel,text/csv"
+                        accept=".csv,text/csv"
                         onChange={(event) => void handleTestDonationFile(event.target.files?.[0])}
                         className="text-sm"
                       />
                     </label>
                     <div className="rounded-[8px] bg-white p-3 text-sm text-slate-900">
-                      <p className="font-black">{testRows.length} test rows ready</p>
+                      <p className="font-black">{testParsing ? "Reading file..." : `${testRows.length} test rows ready`}</p>
                       <p className="mt-1 text-xs font-semibold text-slate-600">Temporary password for created test donors: Vihana@123.</p>
-                      <Button type="button" onClick={seedTestDonations} disabled={testUploading || !testRows.length} className="mt-3 h-10 rounded-full bg-slate-950 px-5 font-black text-white hover:bg-slate-800 disabled:opacity-50">
-                        {testUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                      <Button type="button" onClick={seedTestDonations} disabled={testParsing || testUploading || !testRows.length} className="mt-3 h-10 rounded-full bg-slate-950 px-5 font-black text-white hover:bg-slate-800 disabled:opacity-50">
+                        {testParsing || testUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                         Upload Test Data
                       </Button>
                     </div>
@@ -1537,22 +1600,22 @@ export default function AdminOperationsDashboard({
                 <div className="mt-3 grid gap-2">
                   <Button type="button" variant="outline" onClick={downloadAccountingSample} className="h-10 rounded-full px-4">
                     <Download className="mr-2 h-4 w-4" />
-                    Download Accounting Sample Excel
+                    Download Blank Accounting CSV
                   </Button>
                   <label className="grid gap-2 rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-3 text-sm font-semibold text-slate-700">
-                    Upload completed accounting Excel or CSV
+                    Upload completed accounting CSV
                     <input
                       type="file"
-                      accept=".xls,.csv,application/vnd.ms-excel,text/csv"
+                      accept=".csv,text/csv"
                       onChange={(event) => void handleAccountingFile(event.target.files?.[0])}
                       className="text-sm"
                     />
                   </label>
                   <div className="rounded-[8px] bg-teal-50 p-3 text-sm text-teal-950">
-                    <p className="font-black">{accountingRows.length} accounting rows ready</p>
+                    <p className="font-black">{accountingParsing ? "Reading file..." : `${accountingRows.length} accounting rows ready`}</p>
                     <p className="mt-1 text-xs font-semibold">Required columns: Type, Name, Amount, Date, Category, Paid To / Received From, Bill / Receipt No, Status, Notes.</p>
-                    <Button type="button" onClick={importAccountingRecords} disabled={accountingUploading || !accountingRows.length} className="mt-3 h-10 rounded-full bg-teal-700 px-5 font-black text-white hover:bg-teal-800 disabled:opacity-50">
-                      {accountingUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                    <Button type="button" onClick={importAccountingRecords} disabled={accountingParsing || accountingUploading || !accountingRows.length} className="mt-3 h-10 rounded-full bg-teal-700 px-5 font-black text-white hover:bg-teal-800 disabled:opacity-50">
+                      {accountingParsing || accountingUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                       Import Accounting Records
                     </Button>
                   </div>
@@ -1569,13 +1632,22 @@ export default function AdminOperationsDashboard({
               </div>
               <div className="mt-4 rounded-[8px] border border-teal-100 bg-teal-50 p-4">
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-teal-700">Annual report</p>
-                <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+                <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto_auto_auto]">
                   <select value={annualReportYear} onChange={(event) => setAnnualReportYear(event.target.value)} className="h-10 rounded-[8px] border border-teal-100 bg-white px-3 text-sm font-bold outline-none focus:border-teal-600">
                     {financialYearOptions.map((year) => <option key={year} value={year}>{year === "All" ? "All available records" : year}</option>)}
                   </select>
                   <Button type="button" onClick={downloadAnnualReport} className="h-10 rounded-full bg-teal-700 px-5 font-black text-white hover:bg-teal-800">
                     <Download className="mr-2 h-4 w-4" />
-                    Generate Annual Report
+                    Download PDF
+                  </Button>
+                  <Button type="button" onClick={() => void shareAnnualReportFile()} variant="outline" className="h-10 rounded-full px-4">
+                    Share
+                  </Button>
+                  <Button type="button" onClick={shareAnnualReportWhatsApp} variant="outline" className="h-10 rounded-full px-4">
+                    WhatsApp
+                  </Button>
+                  <Button type="button" onClick={shareAnnualReportEmail} variant="outline" className="h-10 rounded-full px-4">
+                    Email
                   </Button>
                 </div>
               </div>

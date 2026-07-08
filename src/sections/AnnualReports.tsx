@@ -1,13 +1,36 @@
-import { ArrowUpRight, FileText } from "lucide-react";
+"use client";
+
+import { ArrowUpRight, FileImage, FileSpreadsheet, FileText, Globe2, Mail, MessageCircle, Share2 } from "lucide-react";
 
 import SmartNavLink from "@/components/layout/SmartNavLink";
 import { Container } from "@/components/ui/Container";
 import Reveal from "@/components/ui/Reveal";
-import { SiteContent } from "@/lib/cmsContent";
+import { EditableItem, SiteContent } from "@/lib/cmsContent";
+
+function reportIcon(type?: string) {
+  const normalized = String(type || "").toLowerCase();
+
+  if (normalized.includes("excel") || normalized.includes("sheet")) return FileSpreadsheet;
+  if (normalized.includes("image")) return FileImage;
+  if (normalized.includes("external") || normalized.includes("link")) return Globe2;
+  return FileText;
+}
+
+function shareText(item: EditableItem, content: SiteContent) {
+  return `${item.title} - ${content.brandName}. ${item.description || ""} ${item.linkHref || ""}`.trim();
+}
+
+async function shareReport(item: EditableItem, content: SiteContent) {
+  const text = shareText(item, content);
+
+  if (navigator.share) {
+    await navigator.share({ title: item.title, text, url: item.linkHref || window.location.href });
+  }
+}
 
 export default function AnnualReports({ content }: { content: SiteContent }) {
   return (
-    <section className="bg-stone-50 py-6 md:py-12">
+    <section className="overflow-hidden bg-stone-50 py-6 md:py-12">
       <Container>
         <Reveal>
           <div className="mx-auto max-w-3xl text-center">
@@ -20,27 +43,59 @@ export default function AnnualReports({ content }: { content: SiteContent }) {
           </div>
         </Reveal>
 
-        <div className="mx-auto mt-4 grid max-w-4xl gap-3 sm:mt-7 sm:gap-4">
-          {content.annualReports.map((item, index) => (
-            <Reveal key={item.id} delay={index * 0.05}>
-              <article className="grid gap-3 rounded-[8px] border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-[auto_1fr_auto] sm:items-center sm:p-6">
-                <div className="flex h-9 w-9 items-center justify-center rounded-[8px] bg-teal-50 text-teal-700 sm:h-12 sm:w-12">
-                  <FileText className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600 sm:text-sm sm:tracking-[0.18em]">{item.value}</p>
-                  <h3 className="mt-1 text-base font-bold text-slate-950 sm:mt-2 sm:text-xl">{item.title}</h3>
-                  <p className="mt-1 text-sm leading-5 text-slate-600 sm:mt-2 sm:text-base sm:leading-6">{item.description}</p>
-                </div>
-                {item.linkHref ? (
-                  <SmartNavLink href={item.linkHref} className="inline-flex h-10 items-center justify-center rounded-full bg-teal-700 px-4 text-sm font-bold text-white hover:bg-teal-800 sm:h-11 sm:px-5">
-                    {item.linkLabel || "View"}
-                    <ArrowUpRight className="ml-2 h-4 w-4" />
-                  </SmartNavLink>
-                ) : null}
-              </article>
-            </Reveal>
-          ))}
+        <div className="mt-5 overflow-x-auto pb-3 [scrollbar-width:none] sm:mt-8">
+          <div className="vihana-report-track flex w-max gap-4">
+          {[...content.annualReports, ...content.annualReports].map((item, index) => {
+            const Icon = reportIcon(item.tag);
+            const whatsappHref = `https://wa.me/?text=${encodeURIComponent(shareText(item, content))}`;
+            const emailHref = `mailto:?subject=${encodeURIComponent(item.title)}&body=${encodeURIComponent(shareText(item, content))}`;
+
+            return (
+              <Reveal key={`${item.id}-${index}`} delay={(index % content.annualReports.length) * 0.04}>
+                <article className="min-w-[280px] max-w-[280px] overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-sm sm:min-w-[340px] sm:max-w-[340px]">
+                  <div className="relative h-36 bg-teal-50 sm:h-40">
+                    {item.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-teal-700">
+                        <Icon className="h-12 w-12" />
+                      </div>
+                    )}
+                    <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-black uppercase tracking-[0.14em] text-teal-700">
+                      {item.tag || "PDF"}
+                    </span>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-amber-600">{item.value}</p>
+                    <h3 className="mt-2 text-lg font-black leading-tight text-slate-950">{item.title}</h3>
+                    <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-600">{item.description}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {item.linkHref ? (
+                        <SmartNavLink href={item.linkHref} className="inline-flex h-9 items-center rounded-full bg-teal-700 px-3 text-xs font-black text-white hover:bg-teal-800">
+                          {item.linkLabel || "View"}
+                          <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
+                        </SmartNavLink>
+                      ) : null}
+                      <button type="button" onClick={() => void shareReport(item, content)} className="inline-flex h-9 items-center rounded-full border border-slate-200 px-3 text-xs font-black text-slate-700 hover:bg-slate-50">
+                        <Share2 className="mr-1.5 h-3.5 w-3.5" />
+                        Share
+                      </button>
+                      <a href={whatsappHref} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center rounded-full border border-slate-200 px-3 text-xs font-black text-slate-700 hover:bg-slate-50">
+                        <MessageCircle className="mr-1.5 h-3.5 w-3.5" />
+                        WhatsApp
+                      </a>
+                      <a href={emailHref} className="inline-flex h-9 items-center rounded-full border border-slate-200 px-3 text-xs font-black text-slate-700 hover:bg-slate-50">
+                        <Mail className="mr-1.5 h-3.5 w-3.5" />
+                        Email
+                      </a>
+                    </div>
+                  </div>
+                </article>
+              </Reveal>
+            );
+          })}
+          </div>
         </div>
       </Container>
     </section>

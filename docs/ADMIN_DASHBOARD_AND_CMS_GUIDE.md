@@ -154,6 +154,8 @@ Admins can:
 - Download sample donation Excel sheet.
 - Create test donation data for dashboard testing.
 
+Bulk donation upload uses a blank CSV template that opens in Excel. Fill the file, keep it as CSV, upload it, then click the import button.
+
 Bulk donation fields:
 
 ```txt
@@ -191,8 +193,8 @@ To use it:
 3. Set `Dashboard testing enabled (true/false)` to `Enabled`.
 4. In Admin Operations Dashboard, give the user `Dashboard testing` permission.
 5. Open Donations & Receipts.
-6. Download the blank test sample Excel file.
-7. Fill the file in Excel.
+6. Download the blank test CSV template.
+7. Fill the file in Excel and keep it as CSV.
 8. Upload the completed file.
 9. Click Upload Test Data.
 
@@ -211,7 +213,7 @@ Vihana@123
 
 Set `Dashboard testing enabled (true/false)` to `false` in CMS before final public launch if you do not want this module visible or usable.
 
-The normal office donation upload sample is also a blank Excel template. Fill the columns, upload the file, and the system will create donor accounts when a valid email is present.
+The normal office donation upload sample is also a blank CSV template that opens in Excel. Fill the columns, upload the file, and the system will create donor accounts when a valid email is present.
 
 ### Donor Management
 
@@ -246,7 +248,9 @@ Accounting categories are managed from CMS:
 4. Add, edit, delete or reorder categories.
 5. Save.
 
-Accounting records can be added one by one or imported from Excel. The accounting import template is blank and supports:
+Accounting records can be added one by one or imported from a CSV template that opens in Excel. Fill the file, keep it as CSV, upload it, then click the import button.
+
+The accounting import template is blank and supports:
 
 ```txt
 Type, Name, Amount, Date, Category, Paid To / Received From, Bill / Receipt No, Status, Notes
@@ -272,7 +276,7 @@ The report includes:
 - Governance and transparency notes
 - Media reference summary
 
-The generated report is an HTML file. Open it in a browser to review, print or save as PDF. Review it with an accountant/legal advisor before publishing externally.
+The generated report downloads as a PDF. It can also be shared through mobile sharing, WhatsApp or email from the dashboard. Review it with an accountant/legal advisor before publishing externally.
 
 ### Reports
 

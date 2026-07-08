@@ -617,8 +617,8 @@ const contentGroups: {
   },
   {
     id: "news",
-    label: "News / Email",
-    description: "News, events, reports, testimonials, FAQ and newsletter text.",
+    label: "News / Reports / Email",
+    description: "News, events, transparency reports, testimonials, FAQ and newsletter text.",
     fields: [
       "storyEyebrow",
       "testimonialsEyebrow",
@@ -2617,12 +2617,12 @@ export default function AdminDashboard({
                         className="h-11 rounded-[8px] border border-slate-200 px-4"
                         placeholder={listHelp[listKey].second}
                       />
-                      {listKey === "teamMembers" ? (
+                      {listKey === "teamMembers" || listKey === "annualReports" ? (
                         <input
                           value={item.tag || ""}
                           onChange={(event) => updateListItem(listKey, index, "tag", event.target.value)}
                           className="h-11 rounded-[8px] border border-slate-200 px-4 lg:col-span-2"
-                          placeholder="Superpowers: empathy, leadership, partnerships"
+                          placeholder={listKey === "annualReports" ? "Type: PDF, Image, External Link, Word, Excel" : "Superpowers: empathy, leadership, partnerships"}
                         />
                       ) : null}
                       <textarea
@@ -2664,16 +2664,28 @@ export default function AdminDashboard({
                         onChange={(event) => handleImageUpload(event, (value) => updateListItem(listKey, index, "imageUrl", value))}
                         className="rounded-[8px] border border-dashed border-slate-300 bg-white p-3 text-sm lg:col-span-2"
                       />
+                      {item.imageUrl ? (
+                        <button type="button" onClick={() => updateListItem(listKey, index, "imageUrl", "")} className="rounded-[8px] bg-rose-50 px-3 py-2 text-sm font-bold text-rose-700 lg:col-span-2">
+                          Delete Uploaded Image
+                        </button>
+                      ) : null}
                       <p className="text-xs leading-5 text-slate-500 lg:col-span-2">
                         Image guide: use 1200 x 900 px for cards/events/gallery, 800 x 800 px for team photos, under 700 KB.
                       </p>
                       {listKey === "annualReports" ? (
-                        <input
-                          type="file"
-                          accept="application/pdf"
-                          onChange={(event) => handleDocumentUpload(event, (value) => updateListItem(listKey, index, "linkHref", value))}
-                          className="rounded-[8px] border border-dashed border-slate-300 bg-white p-3 text-sm lg:col-span-2"
-                        />
+                        <>
+                          <input
+                            type="file"
+                            accept="application/pdf,.pdf,.doc,.docx,.xls,.xlsx,image/*"
+                            onChange={(event) => handleDocumentUpload(event, (value) => updateListItem(listKey, index, "linkHref", value))}
+                            className="rounded-[8px] border border-dashed border-slate-300 bg-white p-3 text-sm lg:col-span-2"
+                          />
+                          {item.linkHref ? (
+                            <button type="button" onClick={() => updateListItem(listKey, index, "linkHref", "")} className="rounded-[8px] bg-rose-50 px-3 py-2 text-sm font-bold text-rose-700 lg:col-span-2">
+                              Delete Uploaded File / Link
+                            </button>
+                          ) : null}
+                        </>
                       ) : null}
                     </div>
                   ))}
