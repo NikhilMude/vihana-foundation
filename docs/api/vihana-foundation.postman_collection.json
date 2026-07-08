@@ -511,6 +511,27 @@
           }
         },
         {
+          "name": "Bulk Import Accounting Records",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rows\": [\n    {\n      \"type\": \"Expense\",\n      \"title\": \"School kit purchase\",\n      \"amount\": \"12000\",\n      \"date\": \"2026-07-09\",\n      \"category\": \"Education Materials\",\n      \"party\": \"Stationery vendor\",\n      \"reference\": \"BILL-001\",\n      \"status\": \"Paid\",\n      \"notes\": \"Notebooks and pencils\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/accounting/bulk",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "accounting", "bulk"]
+            }
+          }
+        },
+        {
           "name": "Delete Accounting Record",
           "request": {
             "method": "DELETE",

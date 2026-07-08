@@ -145,7 +145,9 @@ type ListKey =
   | "teamMembers"
   | "testimonials"
   | "faqs"
-  | "newsItems";
+  | "newsItems"
+  | "accountingExpenseCategories"
+  | "accountingIncomeCategories";
 
 type SearchResult = {
   id: string;
@@ -309,6 +311,8 @@ const listLabels: Record<ListKey, string> = {
   testimonials: "Testimonials",
   faqs: "FAQ",
   newsItems: "News / Activities",
+  accountingExpenseCategories: "Expense Categories",
+  accountingIncomeCategories: "Received Amount Categories",
 };
 
 const listHelp: Record<ListKey, { first: string; second: string; body: keyof EditableItem; bodyLabel: string }> = {
@@ -324,6 +328,8 @@ const listHelp: Record<ListKey, { first: string; second: string; body: keyof Edi
   testimonials: { first: "Person name", second: "Role", body: "quote", bodyLabel: "Quote" },
   faqs: { first: "Question", second: "Optional label", body: "answer", bodyLabel: "Answer" },
   newsItems: { first: "News title", second: "Date", body: "summary", bodyLabel: "Summary" },
+  accountingExpenseCategories: { first: "Expense category name", second: "Optional short code", body: "description", bodyLabel: "What this expense category includes" },
+  accountingIncomeCategories: { first: "Received amount category name", second: "Optional short code", body: "description", bodyLabel: "What this received amount category includes" },
 };
 
 const quickActions: { tab: Tab; title: string; description: string; icon: typeof Pencil }[] = [

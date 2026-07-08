@@ -202,6 +202,8 @@ export type SiteContent = {
   eventItems: EditableItem[];
   annualReports: EditableItem[];
   teamMembers: EditableItem[];
+  accountingExpenseCategories: EditableItem[];
+  accountingIncomeCategories: EditableItem[];
   pages: CmsPage[];
 };
 
@@ -675,6 +677,22 @@ export const defaultSiteContent: SiteContent = {
       imageUrl: "",
     },
   ],
+  accountingExpenseCategories: [
+    { id: "education-materials", title: "Education Materials", description: "Books, notebooks, school kits, bags, stationery, digital learning support and classroom resources." },
+    { id: "nutrition-meals", title: "Nutrition & Meal Support", description: "Cooked meals, ration kits, fruits, milk, kitchen support and food distribution logistics." },
+    { id: "health-wellness", title: "Health & Wellness", description: "Medical camps, basic checkups, hygiene kits, medicines, awareness material and wellness sessions." },
+    { id: "event-outreach", title: "Event & Community Outreach", description: "Venue, transport, volunteer coordination, field visits, banners, permissions and campaign logistics." },
+    { id: "operations-admin", title: "Operations & Administration", description: "Compliance, printing, software, professional fees, bank charges and essential office administration." },
+    { id: "communications-media", title: "Communications & Media", description: "Photography, design, awareness content, website, newsletters and donor communication material." },
+  ],
+  accountingIncomeCategories: [
+    { id: "individual-donations", title: "Individual Donations", description: "One-time or recurring donations received from individual supporters." },
+    { id: "birthday-campaigns", title: "Birthday Campaign Contributions", description: "Funds received through birthday kindness campaigns and family-led giving drives." },
+    { id: "corporate-csr", title: "Corporate / CSR Support", description: "Company donations, CSR support, employee giving, payroll giving and matched contributions." },
+    { id: "grants-institutional", title: "Grants & Institutional Support", description: "Foundation grants, institutional grants, program support and restricted project funding." },
+    { id: "in-kind-converted", title: "In-kind Support Recorded", description: "Estimated value or internal record of goods, materials or services received for programs." },
+    { id: "bank-interest-refunds", title: "Bank Interest / Refunds", description: "Bank interest, vendor refunds, reimbursement received or correction entries." },
+  ],
   pages: [
     {
       id: "about-vihana",
@@ -944,6 +962,8 @@ export function mergeSiteContent(content: Partial<SiteContent> | null | undefine
     eventItems: eventItemsOrDefault(merged.eventItems),
     annualReports: arrayOrDefault(merged.annualReports, defaultSiteContent.annualReports),
     teamMembers: arrayOrDefault(merged.teamMembers, defaultSiteContent.teamMembers),
+    accountingExpenseCategories: arrayOrDefault(merged.accountingExpenseCategories, defaultSiteContent.accountingExpenseCategories),
+    accountingIncomeCategories: arrayOrDefault(merged.accountingIncomeCategories, defaultSiteContent.accountingIncomeCategories),
     pages: pagesWithDefaults,
   };
 }

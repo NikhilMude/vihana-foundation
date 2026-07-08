@@ -45,6 +45,8 @@ Use the CMS for website content only.
 - Events and activities
 - FAQ content
 - Testimonials
+- Expense categories
+- Received amount categories
 - Newsletter text and templates
 - Legal page content
 - Donation display text
@@ -228,12 +230,49 @@ Admins can record:
 
 - Donations
 - Expenses
+- Received amounts
 - Receipts
 - Bills
 - Annual statement entries
 - References and notes
 
 Use accounting records for transparency and internal review. Final statutory reports should be reviewed by an accountant.
+
+Accounting categories are managed from CMS:
+
+1. Open CMS.
+2. Go to `Section Cards`.
+3. Select `Expense Categories` or `Received Amount Categories`.
+4. Add, edit, delete or reorder categories.
+5. Save.
+
+Accounting records can be added one by one or imported from Excel. The accounting import template is blank and supports:
+
+```txt
+Type, Name, Amount, Date, Category, Paid To / Received From, Bill / Receipt No, Status, Notes
+```
+
+Use `Expense` for outgoing money and `Received Amount` for incoming money.
+
+### Annual Report
+
+The Admin Operations Dashboard can generate a detailed annual report from donations and accounting records.
+
+The report includes:
+
+- Executive summary
+- Total received
+- Total expenses
+- Net balance
+- Donation purpose summary
+- Received amount category summary
+- Expense category summary
+- Month-wise donation trend
+- Program narrative
+- Governance and transparency notes
+- Media reference summary
+
+The generated report is an HTML file. Open it in a browser to review, print or save as PDF. Review it with an accountant/legal advisor before publishing externally.
 
 ### Reports
 

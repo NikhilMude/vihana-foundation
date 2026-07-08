@@ -61,6 +61,7 @@ type AccountingRecord = {
   reference?: string;
   status?: string;
   notes?: string;
+  createdAt?: string;
 };
 
 type AdminUserRecord = {
@@ -106,6 +107,17 @@ type BulkDonationRow = {
   pan: string;
   address: string;
   message: string;
+};
+type AccountingImportRow = {
+  type: string;
+  title: string;
+  amount: string;
+  category: string;
+  date: string;
+  party: string;
+  reference: string;
+  status: string;
+  notes: string;
 };
 
 const permissionGroups: { title: string; description: string; permissions: AdminPermission[] }[] = [
@@ -227,6 +239,28 @@ function downloadTextFile(filename: string, text: string, type = "text/csv;chars
   URL.revokeObjectURL(url);
 }
 
+function escapeHtml(value: unknown) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function reportTable(title: string, rows: [string, number][]) {
+  return `
+    <section>
+      <h2>${escapeHtml(title)}</h2>
+      <table>
+        <thead><tr><th>Particulars</th><th>Amount</th></tr></thead>
+        <tbody>
+          ${rows.length ? rows.map(([label, amount]) => `<tr><td>${escapeHtml(label)}</td><td>INR ${amount.toLocaleString("en-IN")}</td></tr>`).join("") : `<tr><td colspan="2">No records available.</td></tr>`}
+        </tbody>
+      </table>
+    </section>
+  `;
+}
+
 function parseCsv(text: string) {
   const rows: string[][] = [];
   let row: string[] = [];
@@ -304,6 +338,31 @@ function bulkRowsFromSheet(text: string): BulkDonationRow[] {
       message: get(row, ["Message", "Note"]),
     }))
     .filter((row) => row.name || row.email || row.amount);
+}
+
+function accountingRowsFromSheet(text: string): AccountingImportRow[] {
+  const parsed = parseExcelHtmlTable(text);
+  const rowsToRead = parsed.length ? parsed : parseCsv(text);
+  const [headers = [], ...rows] = rowsToRead;
+  const headerMap = new Map(headers.map((header, index) => [normalizeHeader(header), index]));
+  const get = (row: string[], keys: string[]) => {
+    const index = keys.map(normalizeHeader).map((key) => headerMap.get(key)).find((item) => item !== undefined);
+    return index === undefined ? "" : row[index] || "";
+  };
+
+  return rows
+    .map((row) => ({
+      type: get(row, ["Type", "Record Type"]),
+      title: get(row, ["Name", "Title", "Expense Name", "Received Amount Name"]),
+      amount: get(row, ["Amount"]),
+      category: get(row, ["Category"]),
+      date: get(row, ["Date"]),
+      party: get(row, ["Paid To / Received From", "Party", "Vendor", "Donor", "Source"]),
+      reference: get(row, ["Bill / Receipt No", "Reference", "Reference ID"]),
+      status: get(row, ["Status"]),
+      notes: get(row, ["Notes", "Message"]),
+    }))
+    .filter((row) => row.title || row.amount);
 }
 
 function BarList({ rows }: { rows: [string, number][] }) {
@@ -436,6 +495,10 @@ export default function AdminOperationsDashboard({
   const [bulkUploading, setBulkUploading] = useState(false);
   const [testRows, setTestRows] = useState<BulkDonationRow[]>([]);
   const [testUploading, setTestUploading] = useState(false);
+  const [accountingType, setAccountingType] = useState("Expense");
+  const [accountingRows, setAccountingRows] = useState<AccountingImportRow[]>([]);
+  const [accountingUploading, setAccountingUploading] = useState(false);
+  const [annualReportYear, setAnnualReportYear] = useState("All");
   const pageSize = 6;
 
   const can = (permission: AdminPermission) => currentAdmin.owner || currentAdmin.permissions.includes(permission);
@@ -505,7 +568,13 @@ export default function AdminOperationsDashboard({
 
   const methods = useMemo(() => ["All", ...Array.from(new Set(donations.map((donation) => donation.method || "Unknown")))], [donations]);
   const monthOptions = useMemo(() => ["All", ...Array.from(new Set(donations.map((donation) => monthInputValue(donation.createdAt)).filter(Boolean))).sort().reverse()], [donations]);
-  const financialYearOptions = useMemo(() => ["All", ...Array.from(new Set(donations.map((donation) => financialYearKey(donation.createdAt)).filter((value) => value !== "No financial year"))).sort().reverse()], [donations]);
+  const financialYearOptions = useMemo(() => ["All", ...Array.from(new Set([
+    ...donations.map((donation) => financialYearKey(donation.createdAt)),
+    ...accountingRecords.map((record) => financialYearKey(record.date || record.createdAt)),
+  ].filter((value) => value !== "No financial year"))).sort().reverse()], [accountingRecords, donations]);
+  const expenseCategories = useMemo(() => content.accountingExpenseCategories.map((item) => item.title).filter(Boolean), [content.accountingExpenseCategories]);
+  const incomeCategories = useMemo(() => content.accountingIncomeCategories.map((item) => item.title).filter(Boolean), [content.accountingIncomeCategories]);
+  const activeAccountingCategories = accountingType === "Received Amount" ? incomeCategories : expenseCategories;
   const donorOptions = useMemo(() => {
     const options = new Map<string, string>();
 
@@ -597,6 +666,20 @@ export default function AdminOperationsDashboard({
     );
   }
 
+  function downloadAccountingSample() {
+    const headers = ["Type", "Name", "Amount", "Date", "Category", "Paid To / Received From", "Bill / Receipt No", "Status", "Notes"];
+    const rows: string[][] = [];
+    const tableRows = [headers, ...rows]
+      .map((row, rowIndex) => `<tr>${row.map((cell) => `<${rowIndex ? "td" : "th"}>${cell}</${rowIndex ? "td" : "th"}>`).join("")}</tr>`)
+      .join("");
+
+    downloadTextFile(
+      "vihana-accounting-import-template.xls",
+      `<!doctype html><html><head><meta charset="utf-8" /></head><body><table>${tableRows}</table></body></html>`,
+      "application/vnd.ms-excel;charset=utf-8"
+    );
+  }
+
   async function handleBulkFile(file?: File) {
     if (!file) return;
     const text = await file.text();
@@ -612,6 +695,15 @@ export default function AdminOperationsDashboard({
 
     setTestRows(rows);
     setStatus(`${rows.length} dashboard test rows ready. Review and click Upload Test Data.`);
+  }
+
+  async function handleAccountingFile(file?: File) {
+    if (!file) return;
+    const text = await file.text();
+    const rows = accountingRowsFromSheet(text);
+
+    setAccountingRows(rows);
+    setStatus(`${rows.length} accounting rows ready. Review and click Import Accounting Records.`);
   }
 
   async function importBulkDonations() {
@@ -644,6 +736,31 @@ export default function AdminOperationsDashboard({
     setBulkRows([]);
     setDonationPage(1);
     setStatus(`${result.summary || "Bulk donation import complete."}${result.createdDonorCount ? ` Created ${result.createdDonorCount} donor accounts.` : ""}`);
+  }
+
+  async function importAccountingRecords() {
+    if (!accountingRows.length || !can("accounting:create")) return;
+    setAccountingUploading(true);
+    setStatus("Importing accounting records...");
+
+    const response = await fetch("/api/admin/accounting/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rows: accountingRows }),
+    });
+    const result = (await response.json()) as { ok: boolean; records?: AccountingRecord[]; message?: string; summary?: string };
+
+    setAccountingUploading(false);
+
+    if (!response.ok || !result.ok) {
+      setStatus(result.message || "Could not import accounting records.");
+      return;
+    }
+
+    if (result.records?.length) setAccountingRecords((records) => [...result.records as AccountingRecord[], ...records]);
+    setAccountingRows([]);
+    setAccountingPage(1);
+    setStatus(result.summary || "Accounting import complete.");
   }
 
   async function seedTestDonations() {
@@ -860,6 +977,120 @@ export default function AdminOperationsDashboard({
       setAccountingRecords((records) => records.filter((record) => record.id !== id));
       setStatus("Accounting record deleted.");
     }
+  }
+
+  function downloadAnnualReport() {
+    const donationSource = annualReportYear === "All" ? donations : donations.filter((donation) => financialYearKey(donation.createdAt) === annualReportYear);
+    const accountingSource = annualReportYear === "All" ? accountingRecords : accountingRecords.filter((record) => financialYearKey(record.date || record.createdAt) === annualReportYear);
+    const receivedRecords = accountingSource.filter((record) => ["receipt", "received", "received amount", "income", "donation"].some((word) => String(record.type || "").toLowerCase().includes(word)));
+    const expenseRecords = accountingSource.filter((record) => ["expense", "bill", "payment"].some((word) => String(record.type || "").toLowerCase().includes(word)));
+    const donationTotal = donationSource.reduce((sum, donation) => sum + currencyAmount(donation.amount), 0);
+    const accountingReceivedTotal = receivedRecords.reduce((sum, record) => sum + currencyAmount(record.amount), 0);
+    const expenseTotal = expenseRecords.reduce((sum, record) => sum + currencyAmount(record.amount), 0);
+    const totalReceived = Math.max(donationTotal, accountingReceivedTotal);
+    const netBalance = totalReceived - expenseTotal;
+    const group = <T extends { category?: string; purpose?: string; method?: string; name?: string; amount?: string }>(items: T[], key: keyof T) => {
+      const grouped = items.reduce<Record<string, number>>((acc, item) => {
+        const label = String(item[key] || "General / Uncategorised");
+        acc[label] = (acc[label] || 0) + currencyAmount(item.amount);
+        return acc;
+      }, {});
+
+      return Object.entries(grouped).sort(([, a], [, b]) => b - a);
+    };
+    const donationByPurpose = group(donationSource, "purpose");
+    const incomeByCategory = group(receivedRecords, "category");
+    const expenseByCategory = group(expenseRecords, "category");
+    const monthRows = sortMonthRows(Object.entries(donationSource.reduce<Record<string, number>>((acc, donation) => {
+      const key = dateKey(donation.createdAt);
+      acc[key] = (acc[key] || 0) + currencyAmount(donation.amount);
+      return acc;
+    }, {})), "asc");
+    const generatedAt = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+    const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>${escapeHtml(content.brandName)} Annual Report ${escapeHtml(annualReportYear)}</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:0;background:#f8fafc;color:#0f172a;line-height:1.65}
+    main{max-width:980px;margin:0 auto;background:white;padding:48px}
+    header{border-bottom:6px solid ${escapeHtml(content.brandPrimaryColor)};padding-bottom:28px;margin-bottom:32px}
+    h1{font-size:42px;line-height:1.1;margin:0;color:#020617}
+    h2{font-size:24px;margin:34px 0 12px;color:${escapeHtml(content.brandPrimaryColor)}}
+    h3{font-size:18px;margin:24px 0 8px}
+    .tag{letter-spacing:.18em;text-transform:uppercase;color:#b45309;font-weight:800;font-size:12px}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}
+    .card{background:#f1f5f9;border:1px solid #e2e8f0;padding:16px;border-radius:8px}
+    .num{font-size:22px;font-weight:900;color:${escapeHtml(content.brandPrimaryColor)}}
+    table{width:100%;border-collapse:collapse;margin:12px 0 24px}
+    th,td{border:1px solid #e2e8f0;padding:10px;text-align:left;vertical-align:top}
+    th{background:#f8fafc}
+    .note{background:#fffbeb;border-left:4px solid #f59e0b;padding:14px;margin:18px 0}
+    footer{margin-top:42px;border-top:1px solid #e2e8f0;padding-top:18px;color:#475569;font-size:13px}
+    @media print{body{background:white}main{padding:24px;max-width:none}.grid{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="tag">Annual Report ${escapeHtml(annualReportYear === "All" ? "All Available Records" : annualReportYear)}</p>
+    <h1>${escapeHtml(content.brandName)}</h1>
+    <p><strong>${escapeHtml(content.brandTagline)}</strong></p>
+    <p>${escapeHtml(content.metaDescription)}</p>
+  </header>
+  <section>
+    <h2>Executive Summary</h2>
+    <p>${escapeHtml(content.brandName)} works to turn personal celebration into practical care for children and families. This report summarises recorded donations, received amounts, expenses, program priorities and operating notes from the dashboard records available as of ${escapeHtml(generatedAt)}.</p>
+    <p>The foundation's current work is organised around education support, nutrition, health and wellness, community outreach, volunteer participation and transparent donor stewardship. This report is designed for internal review, donor communication, media reference and public transparency once records are verified.</p>
+    <div class="grid">
+      <div class="card"><div class="num">INR ${totalReceived.toLocaleString("en-IN")}</div><div>Total received</div></div>
+      <div class="card"><div class="num">INR ${expenseTotal.toLocaleString("en-IN")}</div><div>Total expenses</div></div>
+      <div class="card"><div class="num">INR ${netBalance.toLocaleString("en-IN")}</div><div>Net balance</div></div>
+      <div class="card"><div class="num">${donationSource.length}</div><div>Donation records</div></div>
+    </div>
+  </section>
+  <section>
+    <h2>About The Foundation</h2>
+    <p>${escapeHtml(content.founderStory)}</p>
+    <p>${escapeHtml(content.missionDescription)}</p>
+  </section>
+  ${reportTable("Received Amount By Category", incomeByCategory.length ? incomeByCategory : donationByPurpose)}
+  ${reportTable("Donation Purpose Summary", donationByPurpose)}
+  ${reportTable("Expense Summary By Category", expenseByCategory)}
+  ${reportTable("Month-wise Donation Trend", monthRows)}
+  <section>
+    <h2>Program Narrative</h2>
+    <h3>Education Support</h3>
+    <p>Education-related support includes learning materials, school kits, mentoring, digital access and activities that reduce barriers to classroom participation.</p>
+    <h3>Nutrition And Meal Support</h3>
+    <p>Nutrition work includes cooked meals, ration support and community-led food distribution where records show meal or nutrition-related activity.</p>
+    <h3>Health And Wellness</h3>
+    <p>Health-related work includes awareness, hygiene, basic wellness support and planned health camps in partnership with local volunteers and professionals.</p>
+    <h3>Community Outreach</h3>
+    <p>Community outreach includes field coordination, volunteer mobilisation, awareness communication and local partnerships that help programs reach families respectfully.</p>
+  </section>
+  <section>
+    <h2>Governance, Stewardship And Transparency</h2>
+    <p>Records in this report are generated from the Vihana Foundation website and admin dashboard. Every donation and accounting entry should be checked against bank, UPI, cash, bill, receipt and field records before statutory filing or public release.</p>
+    <p>Legal status note: ${escapeHtml(content.legalStatusNote)}</p>
+    <p>Registration number: ${escapeHtml(content.registrationNumber || "To be updated after verification")}<br/>PAN: ${escapeHtml(content.panNumber || "To be updated after verification")}<br/>Tax exemption note: ${escapeHtml(content.taxExemptionNote)}</p>
+  </section>
+  <section>
+    <h2>Media Reference Summary</h2>
+    <p>${escapeHtml(content.brandName)} is a child-focused charitable initiative built around the idea that small acts of kindness can create lifelong impact. The foundation channels birthday-inspired giving and community participation into education, nutrition, wellness and practical support for children and families.</p>
+    <p>For verified figures, interviews, partnership enquiries or media use, contact ${escapeHtml(content.contactEmail)}.</p>
+  </section>
+  <div class="note"><strong>Important:</strong> This report is generated from dashboard records and should be reviewed by the foundation team, accountant and legal/compliance advisor before external publication, statutory use, tax claims or media circulation.</div>
+  <footer>
+    Generated on ${escapeHtml(generatedAt)} from Vihana Foundation dashboard records. Website: vihanafoundation.org
+  </footer>
+</main>
+</body>
+</html>`;
+
+    downloadTextFile(`vihana-annual-report-${annualReportYear.replace(/\s+/g, "-").toLowerCase()}.html`, html, "text/html;charset=utf-8");
+    setStatus("Annual report generated. Open the downloaded file to review, print or save as PDF.");
   }
 
   return (
@@ -1146,17 +1377,15 @@ export default function AdminOperationsDashboard({
                       className="text-sm"
                     />
                   </label>
-                  {bulkRows.length ? (
-                    <div className="rounded-[8px] bg-teal-50 p-3 text-sm text-teal-950">
-                      <p className="font-black">{bulkRows.length} rows ready for import</p>
-                      <p className="mt-1 text-xs font-semibold">Required columns: Donor full name, email, phone, Amount, Date, Payment Method, Purpose, PAN, Address.</p>
-                      <p className="mt-1 text-xs font-semibold">Rows with valid email will create donor accounts if they do not already exist. Temporary password: Vihana@123.</p>
-                      <Button type="button" onClick={importBulkDonations} disabled={bulkUploading} className="mt-3 h-10 rounded-full bg-teal-700 px-5 font-black text-white hover:bg-teal-800">
-                        {bulkUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                        Import Donations & Generate Receipts
-                      </Button>
-                    </div>
-                  ) : null}
+                  <div className="rounded-[8px] bg-teal-50 p-3 text-sm text-teal-950">
+                    <p className="font-black">{bulkRows.length} rows ready for import</p>
+                    <p className="mt-1 text-xs font-semibold">Required columns: Donor full name, email, phone, Amount, Date, Payment Method, Purpose, PAN, Address.</p>
+                    <p className="mt-1 text-xs font-semibold">Rows with valid email will create donor accounts if they do not already exist. Temporary password: Vihana@123.</p>
+                    <Button type="button" onClick={importBulkDonations} disabled={bulkUploading || !bulkRows.length} className="mt-3 h-10 rounded-full bg-teal-700 px-5 font-black text-white hover:bg-teal-800 disabled:opacity-50">
+                      {bulkUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                      Import Donations & Generate Receipts
+                    </Button>
+                  </div>
                 </div>
               </div>
               {canUseDashboardTesting ? (
@@ -1180,16 +1409,14 @@ export default function AdminOperationsDashboard({
                         className="text-sm"
                       />
                     </label>
-                    {testRows.length ? (
-                      <div className="rounded-[8px] bg-white p-3 text-sm text-slate-900">
-                        <p className="font-black">{testRows.length} test rows ready</p>
-                        <p className="mt-1 text-xs font-semibold text-slate-600">Temporary password for created test donors: Vihana@123.</p>
-                        <Button type="button" onClick={seedTestDonations} disabled={testUploading} className="mt-3 h-10 rounded-full bg-slate-950 px-5 font-black text-white hover:bg-slate-800">
-                          {testUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                          Upload Test Data
-                        </Button>
-                      </div>
-                    ) : null}
+                    <div className="rounded-[8px] bg-white p-3 text-sm text-slate-900">
+                      <p className="font-black">{testRows.length} test rows ready</p>
+                      <p className="mt-1 text-xs font-semibold text-slate-600">Temporary password for created test donors: Vihana@123.</p>
+                      <Button type="button" onClick={seedTestDonations} disabled={testUploading || !testRows.length} className="mt-3 h-10 rounded-full bg-slate-950 px-5 font-black text-white hover:bg-slate-800 disabled:opacity-50">
+                        {testUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                        Upload Test Data
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ) : null}
@@ -1286,18 +1513,72 @@ export default function AdminOperationsDashboard({
               <h2 className="text-xl font-black text-slate-950">Add accounting record</h2>
               {can("accounting:create") ? (
                 <form onSubmit={addAccountingRecord} className="mt-4 grid gap-3">
-                  <select name="type" defaultValue="Expense" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600"><option>Expense</option><option>Bill</option><option>Receipt</option><option>Annual Statement</option></select>
-                  <input name="title" required placeholder="Title" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                  <select name="type" value={accountingType} onChange={(event) => setAccountingType(event.target.value)} className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600">
+                    <option>Expense</option>
+                    <option>Received Amount</option>
+                  </select>
+                  <input name="title" required placeholder={accountingType === "Received Amount" ? "Received amount name, e.g. CSR support from ABC Ltd" : "Expense name, e.g. School kit purchase"} className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
                   <input name="amount" required inputMode="numeric" placeholder="Amount" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
                   <input name="date" type="date" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
-                  <input name="category" placeholder="Category" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
-                  <input name="reference" placeholder="Bill / receipt no." className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                  <select name="category" className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600">
+                    <option value="">Select category</option>
+                    {activeAccountingCategories.map((category) => <option key={category}>{category}</option>)}
+                  </select>
+                  <input name="party" placeholder={accountingType === "Received Amount" ? "Received from / source" : "Paid to / vendor"} className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                  <input name="reference" placeholder="Bill / receipt / reference no." className="h-11 rounded-[8px] border border-slate-200 bg-slate-50 px-4 outline-none focus:border-teal-600" />
+                  <textarea name="notes" rows={2} placeholder="Notes for audit trail" className="rounded-[8px] border border-slate-200 bg-slate-50 px-4 py-3 outline-none focus:border-teal-600" />
                   <Button disabled={saving} className="h-11 rounded-full bg-teal-700 hover:bg-teal-800">Save Accounting Record</Button>
                 </form>
               ) : <p className="mt-4 rounded-[8px] bg-amber-50 p-3 text-sm font-semibold text-amber-900">No create access.</p>}
+              <div className="mt-5 border-t border-slate-200 pt-5">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-600">Accounting upload</p>
+                <h3 className="mt-2 text-lg font-black text-slate-950">Import accounting records from Excel</h3>
+                <p className="mt-1 text-sm leading-6 text-slate-600">Download the blank template, fill expenses and received amounts, upload it, then click Import.</p>
+                <div className="mt-3 grid gap-2">
+                  <Button type="button" variant="outline" onClick={downloadAccountingSample} className="h-10 rounded-full px-4">
+                    <Download className="mr-2 h-4 w-4" />
+                    Download Accounting Sample Excel
+                  </Button>
+                  <label className="grid gap-2 rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-3 text-sm font-semibold text-slate-700">
+                    Upload completed accounting Excel or CSV
+                    <input
+                      type="file"
+                      accept=".xls,.csv,application/vnd.ms-excel,text/csv"
+                      onChange={(event) => void handleAccountingFile(event.target.files?.[0])}
+                      className="text-sm"
+                    />
+                  </label>
+                  <div className="rounded-[8px] bg-teal-50 p-3 text-sm text-teal-950">
+                    <p className="font-black">{accountingRows.length} accounting rows ready</p>
+                    <p className="mt-1 text-xs font-semibold">Required columns: Type, Name, Amount, Date, Category, Paid To / Received From, Bill / Receipt No, Status, Notes.</p>
+                    <Button type="button" onClick={importAccountingRecords} disabled={accountingUploading || !accountingRows.length} className="mt-3 h-10 rounded-full bg-teal-700 px-5 font-black text-white hover:bg-teal-800 disabled:opacity-50">
+                      {accountingUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                      Import Accounting Records
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex justify-between gap-3"><h2 className="text-xl font-black text-slate-950">Accounting records</h2><Button type="button" onClick={() => downloadCsv("vihana-accounting-register.csv", accountingRecords)} disabled={!canExport || !accountingRecords.length} className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300"><Download className="mr-2 h-4 w-4" />Export</Button></div>
+              <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                <div>
+                  <h2 className="text-xl font-black text-slate-950">Accounting records</h2>
+                  <p className="mt-1 text-sm text-slate-600">Generate detailed annual reports from donation and accounting transactions.</p>
+                </div>
+                <Button type="button" onClick={() => downloadCsv("vihana-accounting-register.csv", accountingRecords)} disabled={!canExport || !accountingRecords.length} className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300"><Download className="mr-2 h-4 w-4" />Export</Button>
+              </div>
+              <div className="mt-4 rounded-[8px] border border-teal-100 bg-teal-50 p-4">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-teal-700">Annual report</p>
+                <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+                  <select value={annualReportYear} onChange={(event) => setAnnualReportYear(event.target.value)} className="h-10 rounded-[8px] border border-teal-100 bg-white px-3 text-sm font-bold outline-none focus:border-teal-600">
+                    {financialYearOptions.map((year) => <option key={year} value={year}>{year === "All" ? "All available records" : year}</option>)}
+                  </select>
+                  <Button type="button" onClick={downloadAnnualReport} className="h-10 rounded-full bg-teal-700 px-5 font-black text-white hover:bg-teal-800">
+                    <Download className="mr-2 h-4 w-4" />
+                    Generate Annual Report
+                  </Button>
+                </div>
+              </div>
               <div className="mt-4 grid gap-3">
                 {pagedAccounting.map((record) => (
                   <div key={record.id} className="flex flex-col justify-between gap-3 rounded-[8px] bg-slate-50 p-4 sm:flex-row sm:items-center">

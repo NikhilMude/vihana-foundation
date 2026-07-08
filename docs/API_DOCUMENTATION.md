@@ -712,6 +712,47 @@ Body:
 }
 ```
 
+Use `type: "Received Amount"` for incoming money records.
+
+### Bulk Import Accounting Records
+
+```txt
+POST /api/admin/accounting/bulk
+```
+
+Permission:
+
+```txt
+accounting:create
+```
+
+Body:
+
+```json
+{
+  "rows": [
+    {
+      "type": "Expense",
+      "title": "School kit purchase",
+      "amount": "12000",
+      "date": "2026-07-09",
+      "category": "Education Materials",
+      "party": "Stationery vendor",
+      "reference": "BILL-001",
+      "status": "Paid",
+      "notes": "Notebooks and pencils"
+    }
+  ]
+}
+```
+
+Notes:
+
+- Maximum 250 rows per request.
+- Use `Expense` for outgoing money.
+- Use `Received Amount` for incoming money.
+- Categories are managed from CMS.
+
 ### Delete Accounting Record
 
 ```txt
