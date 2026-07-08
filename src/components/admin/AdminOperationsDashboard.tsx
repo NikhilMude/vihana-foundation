@@ -12,9 +12,11 @@ import {
   Loader2,
   Plus,
   ReceiptText,
+  Save,
   Search,
   ShieldCheck,
   Trash2,
+  Upload,
   UserPlus,
   Users,
 } from "lucide-react";
@@ -32,6 +34,7 @@ type DonationRecord = {
   amount?: string;
   method?: string;
   purpose?: string;
+  donorCategory?: string;
   receiptNumber?: string;
   status?: string;
   createdAt?: string;
@@ -83,6 +86,27 @@ type AdminOperationsDashboardProps = {
 type OpsTab = "overview" | "donations" | "accounting" | "donors" | "users";
 type ReportGroupBy = "month" | "financialYear" | "purpose" | "method" | "donor";
 type ReportChartType = "bar" | "pie" | "table";
+type SavedReport = {
+  id: string;
+  title: string;
+  month: string;
+  financialYear: string;
+  groupBy: ReportGroupBy;
+  chartType: ReportChartType;
+};
+type BulkDonationRow = {
+  name: string;
+  email: string;
+  phone: string;
+  amount: string;
+  date: string;
+  method: string;
+  purpose: string;
+  transactionId: string;
+  pan: string;
+  address: string;
+  message: string;
+};
 
 const permissionGroups: { title: string; description: string; permissions: AdminPermission[] }[] = [
   { title: "CMS", description: "Website content only", permissions: ["cms:view", "cms:edit"] },
@@ -164,6 +188,12 @@ function donationDonorKey(donation: DonationRecord) {
   return (donation.email || donation.name || donation.phone || "unknown").trim().toLowerCase();
 }
 
+function cleanCsvValue(value: string) {
+  const escaped = value.includes(",") || value.includes("\"") || value.includes("\n");
+  const safe = value.replace(/"/g, "\"\"");
+  return escaped ? `"${safe}"` : safe;
+}
+
 function downloadCsv(filename: string, rows: Record<string, string | number | undefined>[]) {
   const headers = Object.keys(rows[0] || { empty: "" });
   const csv = [
@@ -177,6 +207,81 @@ function downloadCsv(filename: string, rows: Record<string, string | number | un
   link.download = filename;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function downloadTextFile(filename: string, text: string) {
+  const blob = new Blob([text], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function parseCsv(text: string) {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let value = "";
+  let quoted = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const next = text[index + 1];
+
+    if (char === "\"" && quoted && next === "\"") {
+      value += "\"";
+      index += 1;
+    } else if (char === "\"") {
+      quoted = !quoted;
+    } else if (char === "," && !quoted) {
+      row.push(value.trim());
+      value = "";
+    } else if ((char === "\n" || char === "\r") && !quoted) {
+      if (char === "\r" && next === "\n") index += 1;
+      row.push(value.trim());
+      if (row.some(Boolean)) rows.push(row);
+      row = [];
+      value = "";
+    } else {
+      value += char;
+    }
+  }
+
+  row.push(value.trim());
+  if (row.some(Boolean)) rows.push(row);
+
+  return rows;
+}
+
+function normalizeHeader(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function bulkRowsFromCsv(text: string): BulkDonationRow[] {
+  const parsed = parseCsv(text);
+  const [headers = [], ...rows] = parsed;
+  const headerMap = new Map(headers.map((header, index) => [normalizeHeader(header), index]));
+  const get = (row: string[], keys: string[]) => {
+    const index = keys.map(normalizeHeader).map((key) => headerMap.get(key)).find((item) => item !== undefined);
+    return index === undefined ? "" : row[index] || "";
+  };
+
+  return rows
+    .map((row) => ({
+      name: get(row, ["Donor Name", "Donor full name", "Name"]),
+      email: get(row, ["Email"]),
+      phone: get(row, ["Phone"]),
+      amount: get(row, ["Amount"]),
+      date: get(row, ["Date"]),
+      method: get(row, ["Payment Method", "Method"]),
+      purpose: get(row, ["Purpose"]),
+      transactionId: get(row, ["Transaction ID", "Reference", "Reference ID"]),
+      pan: get(row, ["PAN"]),
+      address: get(row, ["Address"]),
+      message: get(row, ["Message", "Note"]),
+    }))
+    .filter((row) => row.name || row.email || row.amount);
 }
 
 function BarList({ rows }: { rows: [string, number][] }) {
@@ -205,23 +310,65 @@ function BarList({ rows }: { rows: [string, number][] }) {
 
 function PieList({ rows }: { rows: [string, number][] }) {
   const total = rows.reduce((sum, [, value]) => sum + value, 0) || 1;
+  const colors = ["#0f766e", "#fbbf24", "#0ea5e9", "#fb7185", "#334155", "#14b8a6"];
+  let start = 0;
+  const gradient = rows.length
+    ? rows.map(([, value], index) => {
+        const end = start + (value / total) * 100;
+        const segment = `${colors[index % colors.length]} ${start}% ${end}%`;
+        start = end;
+        return segment;
+      }).join(", ")
+    : "#e2e8f0 0% 100%";
 
   return (
-    <div className="grid gap-2">
+    <div className="grid gap-4 lg:grid-cols-[180px_1fr] lg:items-center">
+      <div className="relative mx-auto flex h-40 w-40 items-center justify-center rounded-full shadow-inner" style={{ background: `conic-gradient(${gradient})` }}>
+        <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-white text-center shadow-sm">
+          <span className="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Total</span>
+          <span className="mt-1 text-lg font-black text-teal-700">{formatCurrency(total).replace("INR ", "₹")}</span>
+        </div>
+      </div>
+      <div className="grid gap-2">
       {rows.length ? rows.map(([label, value], index) => {
-        const colors = ["bg-teal-700", "bg-amber-400", "bg-sky-500", "bg-rose-400", "bg-slate-700"];
         return (
           <div key={label} className="flex items-center justify-between gap-3 rounded-[8px] bg-slate-50 px-3 py-2 text-sm">
             <span className="flex min-w-0 items-center gap-2 font-bold text-slate-700">
-              <span className={`h-3 w-3 shrink-0 rounded-full ${colors[index % colors.length]}`} />
+              <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: colors[index % colors.length] }} />
               <span className="truncate">{label}</span>
             </span>
             <span className="shrink-0 font-black text-teal-700">{Math.round((value / total) * 100)}%</span>
           </div>
         );
       }) : <p className="text-sm text-slate-500">No data yet.</p>}
+      </div>
     </div>
   );
+}
+
+function reportRowsFor(
+  donations: DonationRecord[],
+  month: string,
+  financialYear: string,
+  groupBy: ReportGroupBy
+) {
+  const records = donations.filter((donation) => {
+    const monthMatches = month === "All" || monthInputValue(donation.createdAt) === month;
+    const fyMatches = financialYear === "All" || financialYearKey(donation.createdAt) === financialYear;
+    return monthMatches && fyMatches;
+  });
+  const grouped = records.reduce<Record<string, number>>((acc, donation) => {
+    const key =
+      groupBy === "month" ? dateKey(donation.createdAt) :
+      groupBy === "financialYear" ? financialYearKey(donation.createdAt) :
+      groupBy === "purpose" ? donation.purpose || "General Fund" :
+      groupBy === "method" ? donation.method || "Unknown" :
+      donation.name || donation.email || donation.phone || "Unknown donor";
+    acc[key] = (acc[key] || 0) + currencyAmount(donation.amount);
+    return acc;
+  }, {});
+
+  return Object.entries(grouped).sort(([, a], [, b]) => b - a).slice(0, 12);
 }
 
 export default function AdminOperationsDashboard({
@@ -252,6 +399,17 @@ export default function AdminOperationsDashboard({
   const [reportFinancialYear, setReportFinancialYear] = useState("All");
   const [reportGroupBy, setReportGroupBy] = useState<ReportGroupBy>("month");
   const [reportChartType, setReportChartType] = useState<ReportChartType>("bar");
+  const [reportTitle, setReportTitle] = useState("My Donation Report");
+  const [savedReports, setSavedReports] = useState<SavedReport[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      return JSON.parse(window.localStorage.getItem("vihanaSavedReports") || "[]") as SavedReport[];
+    } catch {
+      return [];
+    }
+  });
+  const [bulkRows, setBulkRows] = useState<BulkDonationRow[]>([]);
+  const [bulkUploading, setBulkUploading] = useState(false);
   const pageSize = 6;
 
   const can = (permission: AdminPermission) => currentAdmin.owner || currentAdmin.permissions.includes(permission);
@@ -355,26 +513,78 @@ export default function AdminOperationsDashboard({
       byFinancialYear: Object.entries(byFinancialYear).sort(([a], [b]) => b.localeCompare(a)),
     };
   }, [donations, donorFilter, donorOptions, filteredDonations]);
-  const reportRows = useMemo(() => {
-    const records = donations.filter((donation) => {
-      const monthMatches = reportMonth === "All" || monthInputValue(donation.createdAt) === reportMonth;
-      const fyMatches = reportFinancialYear === "All" || financialYearKey(donation.createdAt) === reportFinancialYear;
-      return monthMatches && fyMatches;
-    });
-    const grouped = records.reduce<Record<string, number>>((acc, donation) => {
-      const key =
-        reportGroupBy === "month" ? dateKey(donation.createdAt) :
-        reportGroupBy === "financialYear" ? financialYearKey(donation.createdAt) :
-        reportGroupBy === "purpose" ? donation.purpose || "General Fund" :
-        reportGroupBy === "method" ? donation.method || "Unknown" :
-        donation.name || donation.email || donation.phone || "Unknown donor";
-      acc[key] = (acc[key] || 0) + currencyAmount(donation.amount);
-      return acc;
-    }, {});
-
-    return Object.entries(grouped).sort(([, a], [, b]) => b - a).slice(0, 12);
-  }, [donations, reportFinancialYear, reportGroupBy, reportMonth]);
+  const reportRows = useMemo(() => reportRowsFor(donations, reportMonth, reportFinancialYear, reportGroupBy), [donations, reportFinancialYear, reportGroupBy, reportMonth]);
   const reportTotal = reportRows.reduce((sum, [, value]) => sum + value, 0);
+
+  function persistSavedReports(nextReports: SavedReport[]) {
+    setSavedReports(nextReports);
+    window.localStorage.setItem("vihanaSavedReports", JSON.stringify(nextReports));
+  }
+
+  function saveReportWidget() {
+    const title = reportTitle.trim() || "Saved Donation Report";
+    persistSavedReports([
+      {
+        id: crypto.randomUUID(),
+        title,
+        month: reportMonth,
+        financialYear: reportFinancialYear,
+        groupBy: reportGroupBy,
+        chartType: reportChartType,
+      },
+      ...savedReports,
+    ]);
+    setStatus(`Report "${title}" saved to this dashboard.`);
+  }
+
+  function removeReportWidget(id: string) {
+    persistSavedReports(savedReports.filter((report) => report.id !== id));
+  }
+
+  function downloadBulkSample() {
+    const headers = ["Donor full name", "email", "phone", "Amount", "Date", "Payment Method", "Purpose", "PAN", "Address"];
+    const rows = [
+      ["Example Donor", "donor@example.com", "9876543210", "1000", "2026-07-09", "Cash", "General Fund", "", "Pune, Maharashtra"],
+      ["Existing Donor", "existing@example.com", "9876500000", "2500", "2026-07-10", "UPI", "Health Support", "ABCDE1234F", "Mumbai, Maharashtra"],
+    ];
+    downloadTextFile(
+      "vihana-bulk-donation-sample.csv",
+      [headers, ...rows].map((row) => row.map(cleanCsvValue).join(",")).join("\n")
+    );
+  }
+
+  async function handleBulkFile(file?: File) {
+    if (!file) return;
+    const text = await file.text();
+    const rows = bulkRowsFromCsv(text);
+    setBulkRows(rows);
+    setStatus(`${rows.length} donation rows ready. Review and click Import Donations.`);
+  }
+
+  async function importBulkDonations() {
+    if (!bulkRows.length || !can("donations:create")) return;
+    setBulkUploading(true);
+    setStatus("Importing donations and generating receipts...");
+
+    const response = await fetch("/api/admin/donations/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rows: bulkRows }),
+    });
+    const result = (await response.json()) as { ok: boolean; donations?: DonationRecord[]; accountingRecords?: AccountingRecord[]; message?: string; summary?: string };
+    setBulkUploading(false);
+
+    if (!response.ok || !result.ok) {
+      setStatus(result.message || "Could not import donations.");
+      return;
+    }
+
+    if (result.donations?.length) setDonations((records) => [...result.donations as DonationRecord[], ...records]);
+    if (result.accountingRecords?.length) setAccountingRecords((records) => [...result.accountingRecords as AccountingRecord[], ...records]);
+    setBulkRows([]);
+    setDonationPage(1);
+    setStatus(result.summary || "Bulk donation import complete.");
+  }
 
   async function addCashDonation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -703,6 +913,18 @@ export default function AdminOperationsDashboard({
                   </select>
                 </label>
               </div>
+              <div className="mt-3 grid gap-2 md:grid-cols-[1fr_auto] md:items-center">
+                <input
+                  value={reportTitle}
+                  onChange={(event) => setReportTitle(event.target.value)}
+                  placeholder="Report name, e.g. FY donation by purpose"
+                  className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm outline-none focus:border-teal-600"
+                />
+                <Button type="button" onClick={saveReportWidget} className="h-10 rounded-full bg-teal-700 px-5 font-black text-white shadow-sm hover:bg-teal-800">
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Report Widget
+                </Button>
+              </div>
 
               <div className="mt-4 grid gap-4 lg:grid-cols-[220px_1fr]">
                 <div className="rounded-[8px] bg-teal-50 p-4">
@@ -726,6 +948,48 @@ export default function AdminOperationsDashboard({
                   ) : null}
                 </div>
               </div>
+              {savedReports.length ? (
+                <div className="mt-5 border-t border-slate-200 pt-5">
+                  <h3 className="text-sm font-black uppercase tracking-[0.18em] text-slate-500">Saved dashboard widgets</h3>
+                  <div className="mt-3 grid gap-3 lg:grid-cols-2">
+                    {savedReports.map((report) => {
+                      const rows = reportRowsFor(donations, report.month, report.financialYear, report.groupBy);
+                      const total = rows.reduce((sum, [, value]) => sum + value, 0);
+
+                      return (
+                        <article key={report.id} className="rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <h4 className="font-black text-slate-950">{report.title}</h4>
+                              <p className="mt-1 text-xs font-semibold text-slate-500">
+                                {report.month === "All" ? "All months" : report.month} | {report.financialYear === "All" ? "All FY" : report.financialYear} | {report.groupBy}
+                              </p>
+                            </div>
+                            <button type="button" onClick={() => removeReportWidget(report.id)} className="rounded-full px-3 py-1 text-xs font-black text-rose-700 hover:bg-rose-50">
+                              Remove
+                            </button>
+                          </div>
+                          <p className="mt-3 text-xl font-black text-teal-700">{formatCurrency(total)}</p>
+                          <div className="mt-3 rounded-[8px] bg-white p-3">
+                            {report.chartType === "bar" ? <BarList rows={rows} /> : null}
+                            {report.chartType === "pie" ? <PieList rows={rows} /> : null}
+                            {report.chartType === "table" ? (
+                              <div className="grid gap-2">
+                                {rows.length ? rows.map(([label, value]) => (
+                                  <div key={label} className="flex justify-between gap-3 rounded-[8px] bg-slate-50 px-3 py-2 text-xs">
+                                    <span className="font-bold text-slate-700">{label}</span>
+                                    <span className="font-black text-teal-700">{formatCurrency(value)}</span>
+                                  </div>
+                                )) : <p className="text-sm text-slate-500">No data.</p>}
+                              </div>
+                            ) : null}
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
             </div>
             <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
               <h2 className="text-xl font-black text-slate-950">Quick actions</h2>
@@ -775,6 +1039,38 @@ export default function AdminOperationsDashboard({
                   </Button>
                 </form>
               ) : <p className="mt-4 rounded-[8px] bg-amber-50 p-3 text-sm font-semibold text-amber-900">No create access.</p>}
+              <div className="mt-5 border-t border-slate-200 pt-5">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-600">Bulk upload</p>
+                <h3 className="mt-2 text-lg font-black text-slate-950">Upload office cash donation sheet</h3>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
+                  Download the sample, fill it in Excel, save as CSV, upload it here and receipts will be generated for every valid row.
+                </p>
+                <div className="mt-3 grid gap-2">
+                  <Button type="button" variant="outline" onClick={downloadBulkSample} className="h-10 rounded-full px-4">
+                    <Download className="mr-2 h-4 w-4" />
+                    Download Sample Excel
+                  </Button>
+                  <label className="grid gap-2 rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-3 text-sm font-semibold text-slate-700">
+                    Upload completed CSV
+                    <input
+                      type="file"
+                      accept=".csv,text/csv"
+                      onChange={(event) => void handleBulkFile(event.target.files?.[0])}
+                      className="text-sm"
+                    />
+                  </label>
+                  {bulkRows.length ? (
+                    <div className="rounded-[8px] bg-teal-50 p-3 text-sm text-teal-950">
+                      <p className="font-black">{bulkRows.length} rows ready for import</p>
+                      <p className="mt-1 text-xs font-semibold">Required columns: Donor full name, email, phone, Amount, Date, Payment Method, Purpose, PAN, Address.</p>
+                      <Button type="button" onClick={importBulkDonations} disabled={bulkUploading} className="mt-3 h-10 rounded-full bg-teal-700 px-5 font-black text-white hover:bg-teal-800">
+                        {bulkUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+                        Import Donations & Generate Receipts
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             </div>
 
             <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm">
@@ -841,7 +1137,7 @@ export default function AdminOperationsDashboard({
                   <div key={donation.id} className="grid gap-2 border-b border-slate-200 bg-white px-4 py-3 text-sm last:border-b-0 md:grid-cols-[1.2fr_120px_1fr_auto] md:items-center">
                     <div><p className="font-black text-slate-950">{donation.name || "Donor"}</p><p className="text-xs text-slate-500">{donation.email || donation.createdAt || "No email"}</p></div>
                     <p className="font-black text-teal-700">{formatCurrency(currencyAmount(donation.amount))}</p>
-                    <p className="text-slate-600">{donation.receiptNumber || donation.method || "Recorded"}</p>
+                    <p className="text-slate-600">{donation.receiptNumber || donation.method || "Recorded"}{donation.donorCategory ? ` | ${donation.donorCategory}` : ""}</p>
                     <Button asChild type="button" className="h-10 rounded-full bg-amber-400 px-4 text-xs font-black text-slate-950 shadow-sm hover:bg-amber-300" disabled={!can("receipts:view")}>
                       <a href={`/api/donor/receipt?id=${encodeURIComponent(donation.id)}`}>
                         <Download className="mr-2 h-4 w-4" />

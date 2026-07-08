@@ -127,6 +127,7 @@ export async function getDonationIntents() {
         method: String(donation.method || ""),
         transactionId: String(donation.transactionId || ""),
         donorType: String(donation.donorType || ""),
+        donorCategory: String(donation.donorCategory || ""),
         frequency: String(donation.frequency || ""),
         purpose: String(donation.purpose || ""),
         pan: String(donation.pan || ""),
