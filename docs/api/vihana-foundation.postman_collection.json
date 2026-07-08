@@ -1,0 +1,523 @@
+{
+  "info": {
+    "name": "Vihana Foundation API",
+    "description": "Public website, donor portal, CMS and admin operations APIs for Vihana Foundation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://vihana-foundation-cgy6.vercel.app"
+    },
+    {
+      "key": "donationId",
+      "value": ""
+    },
+    {
+      "key": "galleryItemId",
+      "value": ""
+    },
+    {
+      "key": "adminUserId",
+      "value": ""
+    },
+    {
+      "key": "donorId",
+      "value": ""
+    },
+    {
+      "key": "accountingRecordId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Public Website",
+      "item": [
+        {
+          "name": "Submit Contact Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nikhil Mude\",\n  \"email\": \"nikhil@example.com\",\n  \"phone\": \"9876543210\",\n  \"interest\": \"Volunteer\",\n  \"message\": \"I would like to help with weekend activities.\",\n  \"company\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/contact",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contact"]
+            }
+          }
+        },
+        {
+          "name": "Newsletter Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"supporter@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/newsletter",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "newsletter"]
+            }
+          }
+        },
+        {
+          "name": "Record Donation Intent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Nikhil Mude\",\n  \"email\": \"nikhil@example.com\",\n  \"phone\": \"9876543210\",\n  \"amount\": \"5000\",\n  \"method\": \"UPI\",\n  \"transactionId\": \"UPI123456\",\n  \"message\": \"For education support\",\n  \"donorType\": \"Indian Citizen\",\n  \"frequency\": \"One Time\",\n  \"purpose\": \"Child Education\",\n  \"pan\": \"ABCDE1234F\",\n  \"address\": \"Pune, Maharashtra\",\n  \"receiptRequired\": \"Yes\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/donation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "donation"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Unified Login",
+      "item": [
+        {
+          "name": "Login As Admin Or Donor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/session/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "session", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Donor Portal",
+      "item": [
+        {
+          "name": "Register Donor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Asha Sharma\",\n  \"email\": \"asha@example.com\",\n  \"phone\": \"9876543210\",\n  \"password\": \"password123\",\n  \"donorType\": \"Indian Citizen\",\n  \"pan\": \"ABCDE1234F\",\n  \"address\": \"Mumbai, Maharashtra\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/donor/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "donor", "register"]
+            }
+          }
+        },
+        {
+          "name": "Donor Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"asha@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/donor/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "donor", "login"]
+            }
+          }
+        },
+        {
+          "name": "Update Donor Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Asha Sharma\",\n  \"phone\": \"9876543210\",\n  \"pan\": \"ABCDE1234F\",\n  \"address\": \"Mumbai, Maharashtra\",\n  \"currentPassword\": \"password123\",\n  \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/donor/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "donor", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Download Receipt PDF",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/donor/receipt?id={{donationId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "donor", "receipt"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{donationId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Donor Logout",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/donor/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "donor", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CMS",
+      "item": [
+        {
+          "name": "CMS Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get CMS Content",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/content",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "content"]
+            }
+          }
+        },
+        {
+          "name": "Update CMS Content",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": {\n    \"brandName\": \"Vihana Foundation\",\n    \"brandTagline\": \"Small Steps. Lifelong Impact.\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/content",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "content"]
+            }
+          }
+        },
+        {
+          "name": "Add Gallery Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Meal Drive\",\n  \"description\": \"Fresh meals served with local volunteers.\",\n  \"tag\": \"Nutrition\",\n  \"imageUrl\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/gallery",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "gallery"]
+            }
+          }
+        },
+        {
+          "name": "Delete Gallery Item",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/gallery?id={{galleryItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "gallery"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{galleryItemId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Website Messages",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/messages",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "messages"]
+            }
+          }
+        },
+        {
+          "name": "CMS Logout",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin Operations",
+      "item": [
+        {
+          "name": "Create Dashboard User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Operations User\",\n  \"email\": \"ops@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"Operations\",\n  \"permissions\": [\"donations:view\", \"donations:create\", \"receipts:view\", \"reports:view\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Update Dashboard User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{adminUserId}}\",\n  \"name\": \"Operations User\",\n  \"email\": \"ops@example.com\",\n  \"password\": \"newpassword123\",\n  \"role\": \"Operations\",\n  \"status\": \"Active\",\n  \"permissions\": [\"donations:view\", \"reports:view\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users"]
+            }
+          }
+        },
+        {
+          "name": "Create Donor As Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Asha Sharma\",\n  \"email\": \"asha@example.com\",\n  \"phone\": \"9876543210\",\n  \"password\": \"password123\",\n  \"pan\": \"ABCDE1234F\",\n  \"address\": \"Mumbai, Maharashtra\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/donors",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "donors"]
+            }
+          }
+        },
+        {
+          "name": "Update Donor As Admin",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{donorId}}\",\n  \"name\": \"Asha Sharma\",\n  \"email\": \"asha@example.com\",\n  \"phone\": \"9876543210\",\n  \"password\": \"newpassword123\",\n  \"pan\": \"ABCDE1234F\",\n  \"address\": \"Mumbai, Maharashtra\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/donors",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "donors"]
+            }
+          }
+        },
+        {
+          "name": "Record Donation As Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cash Donor\",\n  \"email\": \"cash@example.com\",\n  \"phone\": \"9876543210\",\n  \"amount\": \"2500\",\n  \"method\": \"Cash\",\n  \"transactionId\": \"CASH-001\",\n  \"purpose\": \"General Fund\",\n  \"pan\": \"\",\n  \"address\": \"Pune\",\n  \"message\": \"Collected at event\",\n  \"receiptRequired\": \"Yes\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/donations",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "donations"]
+            }
+          }
+        },
+        {
+          "name": "Bulk Import Donations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"createMissingDonors\": true,\n  \"rows\": [\n    {\n      \"name\": \"Asha Sharma\",\n      \"email\": \"asha@example.com\",\n      \"phone\": \"9876543210\",\n      \"amount\": \"5000\",\n      \"date\": \"2026-07-09\",\n      \"method\": \"Cash\",\n      \"purpose\": \"Child Education\",\n      \"pan\": \"ABCDE1234F\",\n      \"address\": \"Mumbai\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/donations/bulk",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "donations", "bulk"]
+            }
+          }
+        },
+        {
+          "name": "Seed Test Donation Data",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/donations/seed-test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "donations", "seed-test"]
+            }
+          }
+        },
+        {
+          "name": "Create Accounting Record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"Expense\",\n  \"title\": \"School kit purchase\",\n  \"amount\": \"12000\",\n  \"category\": \"Education support\",\n  \"date\": \"2026-07-09\",\n  \"party\": \"Stationery vendor\",\n  \"reference\": \"BILL-001\",\n  \"status\": \"Paid\",\n  \"notes\": \"Notebooks and pencils\",\n  \"documentUrl\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/accounting",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "accounting"]
+            }
+          }
+        },
+        {
+          "name": "Delete Accounting Record",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/accounting?id={{accountingRecordId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "accounting"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "{{accountingRecordId}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

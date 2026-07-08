@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { requireAdminPermission } from "@/lib/adminAuth";
+import { donorDocumentId, hashPassword, saveDonorAccount } from "@/lib/donorAuth";
 import { addDocument, listDocuments } from "@/lib/firestoreAdmin";
 import { generateReceiptNumber } from "@/lib/receiptNumber";
 import { getDonationIntents, getSiteContent } from "@/lib/siteData";
@@ -8,6 +9,7 @@ import { getDonationIntents, getSiteContent } from "@/lib/siteData";
 export const runtime = "nodejs";
 
 type BulkDonationPayload = {
+  createMissingDonors?: boolean;
   rows?: {
     name?: string;
     email?: string;
@@ -41,6 +43,10 @@ function donorKey(value?: string) {
   return String(value || "").trim().toLowerCase();
 }
 
+function isEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
 export async function POST(request: Request) {
   if (!(await requireAdminPermission("donations:create"))) {
     return NextResponse.json({ ok: false, message: "You do not have access to import donations." }, { status: 403 });
@@ -48,6 +54,7 @@ export async function POST(request: Request) {
 
   const payload = (await request.json()) as BulkDonationPayload;
   const rows = (payload.rows || []).slice(0, 250);
+  const createMissingDonors = payload.createMissingDonors !== false;
 
   if (!rows.length) {
     return NextResponse.json({ ok: false, message: "No donation rows found." }, { status: 400 });
@@ -63,6 +70,7 @@ export async function POST(request: Request) {
   const usedReceiptNumbers = existingDonations.map((donation) => donation.receiptNumber).filter(Boolean);
   const createdDonations = [];
   const createdAccountingRecords = [];
+  let createdDonorCount = 0;
   let accountHolderCount = 0;
   let nonAccountHolderCount = 0;
 
@@ -75,7 +83,30 @@ export async function POST(request: Request) {
       continue;
     }
 
-    const matchedDonor = (email && donorByEmail.get(email)) || donorByName.get(donorKey(name));
+    let matchedDonor = (email && donorByEmail.get(email)) || donorByName.get(donorKey(name));
+
+    if (!matchedDonor && createMissingDonors && isEmail(email)) {
+      const donorId = donorDocumentId(email);
+      const createdAtForDonor = new Date().toISOString();
+      const newDonor = {
+        id: donorId,
+        name,
+        email,
+        phone: clean(row.phone, 40),
+        donorType: "Indian Citizen",
+        pan: clean(row.pan, 20).toUpperCase(),
+        address: clean(row.address, 500),
+        passwordHash: hashPassword("Vihana@123"),
+        createdAt: createdAtForDonor,
+      };
+
+      await saveDonorAccount(newDonor);
+      matchedDonor = newDonor;
+      donorByEmail.set(donorKey(email), newDonor);
+      donorByName.set(donorKey(name), newDonor);
+      createdDonorCount += 1;
+    }
+
     const donorCategory = matchedDonor ? "Account Holder Donor" : "Non Account Holder Donor";
     const donorEmail = matchedDonor ? String(matchedDonor.email || email) : email;
     const createdAt = createdAtFromDate(clean(row.date, 40));
@@ -131,5 +162,6 @@ export async function POST(request: Request) {
     donations: createdDonations,
     accountingRecords: createdAccountingRecords,
     summary: `Imported ${createdDonations.length} donations: ${accountHolderCount} account-holder and ${nonAccountHolderCount} non-account-holder donors.`,
+    createdDonorCount,
   });
 }

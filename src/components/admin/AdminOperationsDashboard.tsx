@@ -188,12 +188,6 @@ function donationDonorKey(donation: DonationRecord) {
   return (donation.email || donation.name || donation.phone || "unknown").trim().toLowerCase();
 }
 
-function cleanCsvValue(value: string) {
-  const escaped = value.includes(",") || value.includes("\"") || value.includes("\n");
-  const safe = value.replace(/"/g, "\"\"");
-  return escaped ? `"${safe}"` : safe;
-}
-
 function downloadCsv(filename: string, rows: Record<string, string | number | undefined>[]) {
   const headers = Object.keys(rows[0] || { empty: "" });
   const csv = [
@@ -209,8 +203,8 @@ function downloadCsv(filename: string, rows: Record<string, string | number | un
   URL.revokeObjectURL(url);
 }
 
-function downloadTextFile(filename: string, text: string) {
-  const blob = new Blob([text], { type: "text/csv;charset=utf-8" });
+function downloadTextFile(filename: string, text: string, type = "text/csv;charset=utf-8") {
+  const blob = new Blob([text], { type });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -258,9 +252,23 @@ function normalizeHeader(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
-function bulkRowsFromCsv(text: string): BulkDonationRow[] {
-  const parsed = parseCsv(text);
-  const [headers = [], ...rows] = parsed;
+function parseExcelHtmlTable(text: string) {
+  if (!text.trim().toLowerCase().includes("<table")) {
+    return [];
+  }
+
+  const document = new DOMParser().parseFromString(text, "text/html");
+  const rows = Array.from(document.querySelectorAll("tr"));
+
+  return rows
+    .map((row) => Array.from(row.querySelectorAll("th,td")).map((cell) => cell.textContent?.trim() || ""))
+    .filter((row) => row.some(Boolean));
+}
+
+function bulkRowsFromSheet(text: string): BulkDonationRow[] {
+  const parsed = parseExcelHtmlTable(text);
+  const rowsToRead = parsed.length ? parsed : parseCsv(text);
+  const [headers = [], ...rows] = rowsToRead;
   const headerMap = new Map(headers.map((header, index) => [normalizeHeader(header), index]));
   const get = (row: string[], keys: string[]) => {
     const index = keys.map(normalizeHeader).map((key) => headerMap.get(key)).find((item) => item !== undefined);
@@ -547,16 +555,21 @@ export default function AdminOperationsDashboard({
       ["Example Donor", "donor@example.com", "9876543210", "1000", "2026-07-09", "Cash", "General Fund", "", "Pune, Maharashtra"],
       ["Existing Donor", "existing@example.com", "9876500000", "2500", "2026-07-10", "UPI", "Health Support", "ABCDE1234F", "Mumbai, Maharashtra"],
     ];
+    const tableRows = [headers, ...rows]
+      .map((row, rowIndex) => `<tr>${row.map((cell) => `<${rowIndex ? "td" : "th"}>${cell}</${rowIndex ? "td" : "th"}>`).join("")}</tr>`)
+      .join("");
+
     downloadTextFile(
-      "vihana-bulk-donation-sample.csv",
-      [headers, ...rows].map((row) => row.map(cleanCsvValue).join(",")).join("\n")
+      "vihana-bulk-donation-sample.xls",
+      `<!doctype html><html><head><meta charset="utf-8" /></head><body><table>${tableRows}</table></body></html>`,
+      "application/vnd.ms-excel;charset=utf-8"
     );
   }
 
   async function handleBulkFile(file?: File) {
     if (!file) return;
     const text = await file.text();
-    const rows = bulkRowsFromCsv(text);
+    const rows = bulkRowsFromSheet(text);
     setBulkRows(rows);
     setStatus(`${rows.length} donation rows ready. Review and click Import Donations.`);
   }
@@ -569,9 +582,16 @@ export default function AdminOperationsDashboard({
     const response = await fetch("/api/admin/donations/bulk", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ rows: bulkRows }),
+      body: JSON.stringify({ rows: bulkRows, createMissingDonors: true }),
     });
-    const result = (await response.json()) as { ok: boolean; donations?: DonationRecord[]; accountingRecords?: AccountingRecord[]; message?: string; summary?: string };
+    const result = (await response.json()) as {
+      ok: boolean;
+      donations?: DonationRecord[];
+      accountingRecords?: AccountingRecord[];
+      message?: string;
+      summary?: string;
+      createdDonorCount?: number;
+    };
     setBulkUploading(false);
 
     if (!response.ok || !result.ok) {
@@ -583,7 +603,7 @@ export default function AdminOperationsDashboard({
     if (result.accountingRecords?.length) setAccountingRecords((records) => [...result.accountingRecords as AccountingRecord[], ...records]);
     setBulkRows([]);
     setDonationPage(1);
-    setStatus(result.summary || "Bulk donation import complete.");
+    setStatus(`${result.summary || "Bulk donation import complete."}${result.createdDonorCount ? ` Created ${result.createdDonorCount} donor accounts.` : ""}`);
   }
 
   async function seedTestDonations() {
@@ -1063,7 +1083,7 @@ export default function AdminOperationsDashboard({
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-600">Bulk upload</p>
                 <h3 className="mt-2 text-lg font-black text-slate-950">Upload office cash donation sheet</h3>
                 <p className="mt-1 text-sm leading-6 text-slate-600">
-                  Download the sample, fill it in Excel, save as CSV, upload it here and receipts will be generated for every valid row.
+                  Download the sample, fill it in Excel, upload it here and donor accounts, donations and receipts will be created for every valid row.
                 </p>
                 <div className="mt-3 grid gap-2">
                   <Button type="button" variant="outline" onClick={downloadBulkSample} className="h-10 rounded-full px-4">
@@ -1071,10 +1091,10 @@ export default function AdminOperationsDashboard({
                     Download Sample Excel
                   </Button>
                   <label className="grid gap-2 rounded-[8px] border border-dashed border-slate-300 bg-slate-50 p-3 text-sm font-semibold text-slate-700">
-                    Upload completed CSV
+                    Upload completed Excel or CSV
                     <input
                       type="file"
-                      accept=".csv,text/csv"
+                      accept=".xls,.csv,application/vnd.ms-excel,text/csv"
                       onChange={(event) => void handleBulkFile(event.target.files?.[0])}
                       className="text-sm"
                     />
@@ -1083,6 +1103,7 @@ export default function AdminOperationsDashboard({
                     <div className="rounded-[8px] bg-teal-50 p-3 text-sm text-teal-950">
                       <p className="font-black">{bulkRows.length} rows ready for import</p>
                       <p className="mt-1 text-xs font-semibold">Required columns: Donor full name, email, phone, Amount, Date, Payment Method, Purpose, PAN, Address.</p>
+                      <p className="mt-1 text-xs font-semibold">Rows with valid email will create donor accounts if they do not already exist. Temporary password: Vihana@123.</p>
                       <Button type="button" onClick={importBulkDonations} disabled={bulkUploading} className="mt-3 h-10 rounded-full bg-teal-700 px-5 font-black text-white hover:bg-teal-800">
                         {bulkUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
                         Import Donations & Generate Receipts
