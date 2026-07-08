@@ -586,6 +586,24 @@ export default function AdminOperationsDashboard({
     setStatus(result.summary || "Bulk donation import complete.");
   }
 
+  async function seedTestDonations() {
+    if (!can("donations:create") || !window.confirm("Create dashboard test donors, donations, receipts and accounting records? Existing test records will be updated.")) return;
+    setSaving(true);
+    setStatus("Creating test donation data...");
+
+    const response = await fetch("/api/admin/donations/seed-test", { method: "POST" });
+    const result = (await response.json()) as { ok: boolean; message?: string };
+    setSaving(false);
+
+    if (!response.ok || !result.ok) {
+      setStatus(result.message || "Could not create test donation data.");
+      return;
+    }
+
+    setStatus(`${result.message || "Test donation data created."} Refreshing dashboard...`);
+    window.setTimeout(() => window.location.reload(), 900);
+  }
+
   async function addCashDonation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!can("donations:create")) return;
@@ -780,10 +798,10 @@ export default function AdminOperationsDashboard({
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f8f7] px-4 py-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <header className="rounded-[8px] border border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur sm:px-5">
-          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+    <main className="min-h-screen bg-[#f6f8f7]">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 px-3 py-2 shadow-sm backdrop-blur sm:px-5">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
             <div className="flex min-w-0 items-center gap-5">
               <Logo
                 brandName={content.brandName}
@@ -811,8 +829,10 @@ export default function AdminOperationsDashboard({
               </form>
             </div>
           </div>
-        </header>
+        </div>
+      </header>
 
+      <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
         {status ? <div className="mt-4 rounded-[8px] bg-teal-50 px-4 py-3 text-sm font-bold text-teal-900 shadow-sm">{status}</div> : null}
 
         <section className="mt-4 grid gap-3 md:grid-cols-4">
@@ -1070,6 +1090,17 @@ export default function AdminOperationsDashboard({
                     </div>
                   ) : null}
                 </div>
+              </div>
+              <div className="mt-5 rounded-[8px] border border-amber-200 bg-amber-50 p-4">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-700">Dashboard testing</p>
+                <h3 className="mt-2 font-black text-slate-950">Create sample test data</h3>
+                <p className="mt-1 text-sm leading-6 text-slate-700">
+                  Creates 6 donor accounts, 52 donation records, matching receipts and accounting records from your Excel test data.
+                </p>
+                <Button type="button" onClick={seedTestDonations} disabled={saving} className="mt-3 h-10 rounded-full bg-slate-950 px-5 font-black text-white hover:bg-slate-800">
+                  {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+                  Create Test Donation Data
+                </Button>
               </div>
             </div>
 
