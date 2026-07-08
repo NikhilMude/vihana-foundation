@@ -29,10 +29,10 @@ export default function Events({ content }: { content: SiteContent }) {
             {visibleEvents.map((item, index) => (
               <article
                 key={`${item.id}-${index}`}
-                className="w-[76vw] max-w-[20rem] shrink-0 snap-start overflow-hidden rounded-[8px] border border-slate-200 bg-stone-50 shadow-sm animate-in fade-in slide-in-from-bottom-3 duration-700 sm:w-[19rem] lg:w-[21rem]"
+                className="flex h-[25.5rem] w-[76vw] max-w-[20rem] shrink-0 snap-start flex-col overflow-hidden rounded-[8px] border border-slate-200 bg-stone-50 shadow-sm animate-in fade-in slide-in-from-bottom-3 duration-700 sm:h-[27rem] sm:w-[19rem] lg:w-[21rem]"
                 style={{ animationDelay: `${(index % content.eventItems.length) * 0.04}s`, animationFillMode: "both" }}
               >
-                  <div className="relative h-32 bg-teal-50 sm:h-44">
+                  <div className="relative h-32 shrink-0 bg-teal-50 sm:h-44">
                     {item.imageUrl ? (
                       <Image src={item.imageUrl} alt={item.title} fill unoptimized={item.imageUrl.startsWith("data:")} className="object-cover" />
                     ) : (
@@ -41,23 +41,25 @@ export default function Events({ content }: { content: SiteContent }) {
                       </div>
                     )}
                   </div>
-                  <div className="p-4 sm:p-5">
-                    <p className="inline-flex items-center gap-2 text-xs font-bold text-teal-700 sm:text-sm">
-                      <CalendarDays className="h-4 w-4" />
-                      {item.value || "Date to be announced"}
-                    </p>
-                    <h3 className="mt-2 text-base font-bold text-slate-950 sm:mt-3 sm:text-xl">{item.title}</h3>
-                    <p className="mt-1 text-sm leading-5 text-slate-600 sm:mt-2 sm:leading-6">{item.description}</p>
-                    {item.tag ? (
-                      <p className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 sm:mt-4">
-                        <MapPin className="h-4 w-4 text-amber-500" />
-                        {item.tag}
+                  <div className="flex min-h-0 flex-1 flex-col p-4 sm:p-5">
+                    <div className="min-w-0 flex-1">
+                      <p className="flex min-w-0 items-start gap-2 text-xs font-bold leading-5 text-teal-700 sm:text-sm">
+                        <CalendarDays className="mt-0.5 h-4 w-4 shrink-0" />
+                        <span className="min-w-0 break-words">{item.value || "Date to be announced"}</span>
                       </p>
-                    ) : null}
+                      <h3 className="mt-2 line-clamp-2 text-base font-bold leading-snug text-slate-950 sm:mt-3 sm:text-xl">{item.title}</h3>
+                      <p className="mt-1 line-clamp-3 text-sm leading-5 text-slate-600 sm:mt-2 sm:leading-6">{item.description}</p>
+                      {item.tag ? (
+                        <p className="mt-2 flex min-w-0 items-start gap-2 text-sm font-semibold leading-5 text-slate-500 sm:mt-4">
+                          <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+                          <span className="min-w-0 break-words">{item.tag}</span>
+                        </p>
+                      ) : null}
+                    </div>
                     {item.linkHref ? (
-                      <SmartNavLink href={item.linkHref} className="mt-3 inline-flex items-center text-sm font-bold text-teal-700 sm:mt-5">
+                      <SmartNavLink href={item.linkHref} className="mt-3 inline-flex w-fit items-center whitespace-nowrap text-sm font-bold text-teal-700">
                         {item.linkLabel || "Learn More"}
-                        <ArrowUpRight className="ml-2 h-4 w-4" />
+                        <ArrowUpRight className="ml-2 h-4 w-4 shrink-0" />
                       </SmartNavLink>
                     ) : null}
                   </div>
