@@ -5,6 +5,7 @@ import { FormEvent, useMemo, useState } from "react";
 import {
   BadgeIndianRupee,
   BarChart3,
+  CalendarDays,
   Download,
   KeyRound,
   LayoutDashboard,
@@ -19,7 +20,9 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/Logo";
 import { AdminPermission, AdminSession } from "@/lib/adminAuth";
+import { SiteContent } from "@/lib/cmsContent";
 
 type DonationRecord = {
   id: string;
@@ -69,6 +72,7 @@ type AdminUserRecord = {
 
 type AdminOperationsDashboardProps = {
   currentAdmin: AdminSession;
+  content: SiteContent;
   adminUsers: AdminUserRecord[];
   donations: DonationRecord[];
   donors: DonorRecord[];
@@ -77,6 +81,8 @@ type AdminOperationsDashboardProps = {
 };
 
 type OpsTab = "overview" | "donations" | "accounting" | "donors" | "users";
+type ReportGroupBy = "month" | "financialYear" | "purpose" | "method" | "donor";
+type ReportChartType = "bar" | "pie" | "table";
 
 const permissionGroups: { title: string; description: string; permissions: AdminPermission[] }[] = [
   { title: "CMS", description: "Website content only", permissions: ["cms:view", "cms:edit"] },
@@ -149,6 +155,11 @@ function financialYearKey(value?: string) {
   return `FY ${start}-${end}`;
 }
 
+function monthInputValue(value?: string) {
+  const date = getDate(value);
+  return date ? date.toISOString().slice(0, 7) : "";
+}
+
 function donationDonorKey(donation: DonationRecord) {
   return (donation.email || donation.name || donation.phone || "unknown").trim().toLowerCase();
 }
@@ -192,8 +203,30 @@ function BarList({ rows }: { rows: [string, number][] }) {
   );
 }
 
+function PieList({ rows }: { rows: [string, number][] }) {
+  const total = rows.reduce((sum, [, value]) => sum + value, 0) || 1;
+
+  return (
+    <div className="grid gap-2">
+      {rows.length ? rows.map(([label, value], index) => {
+        const colors = ["bg-teal-700", "bg-amber-400", "bg-sky-500", "bg-rose-400", "bg-slate-700"];
+        return (
+          <div key={label} className="flex items-center justify-between gap-3 rounded-[8px] bg-slate-50 px-3 py-2 text-sm">
+            <span className="flex min-w-0 items-center gap-2 font-bold text-slate-700">
+              <span className={`h-3 w-3 shrink-0 rounded-full ${colors[index % colors.length]}`} />
+              <span className="truncate">{label}</span>
+            </span>
+            <span className="shrink-0 font-black text-teal-700">{Math.round((value / total) * 100)}%</span>
+          </div>
+        );
+      }) : <p className="text-sm text-slate-500">No data yet.</p>}
+    </div>
+  );
+}
+
 export default function AdminOperationsDashboard({
   currentAdmin,
+  content,
   adminUsers: initialAdminUsers,
   donations: initialDonations,
   donors: initialDonors,
@@ -215,6 +248,10 @@ export default function AdminOperationsDashboard({
   const [accountingPage, setAccountingPage] = useState(1);
   const [donorPage, setDonorPage] = useState(1);
   const [adminUserPage, setAdminUserPage] = useState(1);
+  const [reportMonth, setReportMonth] = useState("All");
+  const [reportFinancialYear, setReportFinancialYear] = useState("All");
+  const [reportGroupBy, setReportGroupBy] = useState<ReportGroupBy>("month");
+  const [reportChartType, setReportChartType] = useState<ReportChartType>("bar");
   const pageSize = 6;
 
   const can = (permission: AdminPermission) => currentAdmin.owner || currentAdmin.permissions.includes(permission);
@@ -281,6 +318,8 @@ export default function AdminOperationsDashboard({
   }, [accountingRecords, donations]);
 
   const methods = useMemo(() => ["All", ...Array.from(new Set(donations.map((donation) => donation.method || "Unknown")))], [donations]);
+  const monthOptions = useMemo(() => ["All", ...Array.from(new Set(donations.map((donation) => monthInputValue(donation.createdAt)).filter(Boolean))).sort().reverse()], [donations]);
+  const financialYearOptions = useMemo(() => ["All", ...Array.from(new Set(donations.map((donation) => financialYearKey(donation.createdAt)).filter((value) => value !== "No financial year"))).sort().reverse()], [donations]);
   const donorOptions = useMemo(() => {
     const options = new Map<string, string>();
 
@@ -316,6 +355,26 @@ export default function AdminOperationsDashboard({
       byFinancialYear: Object.entries(byFinancialYear).sort(([a], [b]) => b.localeCompare(a)),
     };
   }, [donations, donorFilter, donorOptions, filteredDonations]);
+  const reportRows = useMemo(() => {
+    const records = donations.filter((donation) => {
+      const monthMatches = reportMonth === "All" || monthInputValue(donation.createdAt) === reportMonth;
+      const fyMatches = reportFinancialYear === "All" || financialYearKey(donation.createdAt) === reportFinancialYear;
+      return monthMatches && fyMatches;
+    });
+    const grouped = records.reduce<Record<string, number>>((acc, donation) => {
+      const key =
+        reportGroupBy === "month" ? dateKey(donation.createdAt) :
+        reportGroupBy === "financialYear" ? financialYearKey(donation.createdAt) :
+        reportGroupBy === "purpose" ? donation.purpose || "General Fund" :
+        reportGroupBy === "method" ? donation.method || "Unknown" :
+        donation.name || donation.email || donation.phone || "Unknown donor";
+      acc[key] = (acc[key] || 0) + currencyAmount(donation.amount);
+      return acc;
+    }, {});
+
+    return Object.entries(grouped).sort(([, a], [, b]) => b - a).slice(0, 12);
+  }, [donations, reportFinancialYear, reportGroupBy, reportMonth]);
+  const reportTotal = reportRows.reduce((sum, [, value]) => sum + value, 0);
 
   async function addCashDonation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -513,23 +572,32 @@ export default function AdminOperationsDashboard({
   return (
     <main className="min-h-screen bg-[#f6f8f7] px-4 py-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <header className="rounded-[8px] bg-slate-950 p-5 text-white shadow-xl shadow-slate-900/10 sm:p-6">
-          <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-            <div>
-              <p className="text-xs font-black uppercase tracking-[0.22em] text-amber-300">Admin Operations</p>
-              <h1 className="mt-2 font-[family-name:var(--font-playfair)] text-3xl font-bold sm:text-4xl">Operations dashboard</h1>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
-                Money, receipts, donors, accounting, reports and user access live here. Website editing stays inside CMS.
-              </p>
+        <header className="rounded-[8px] border border-slate-200 bg-white/95 px-4 py-3 shadow-sm backdrop-blur sm:px-5">
+          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+            <div className="flex min-w-0 items-center gap-5">
+              <Logo
+                brandName={content.brandName}
+                brandTagline={content.brandTagline}
+                logoImageUrl={content.logoImageUrl}
+                logoMarkColor={content.logoMarkColor}
+                logoAccentColor={content.logoAccentColor}
+                logoTextColor={content.logoTextColor}
+                logoTaglineColor={content.logoTaglineColor}
+              />
+              <div className="hidden h-10 w-px bg-slate-200 sm:block" />
+              <div className="min-w-0">
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-teal-700">Admin Operations</p>
+                <h1 className="truncate text-xl font-black text-slate-950 sm:text-2xl">Dashboard</h1>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-2">
               {canOpenCms ? (
-                <Button asChild type="button" className="h-11 rounded-full bg-white px-5 text-slate-950 hover:bg-amber-100">
+                <Button asChild type="button" className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300">
                   <Link href="/admin/dashboard" target="_blank" rel="noreferrer"><LayoutDashboard className="mr-2 h-4 w-4" />Open CMS</Link>
                 </Button>
               ) : null}
               <form action="/api/admin/logout" method="post">
-                <Button type="submit" variant="outline" className="h-11 rounded-full border-white/20 bg-transparent px-5 text-white hover:bg-white/10">Logout</Button>
+                <Button type="submit" variant="outline" className="h-10 rounded-full px-5">Logout</Button>
               </form>
             </div>
           </div>
@@ -587,6 +655,77 @@ export default function AdminOperationsDashboard({
               <h2 className="text-xl font-black text-slate-950">Purpose split</h2>
               <p className="mt-1 text-sm text-slate-600">Top giving purposes.</p>
               <div className="mt-5"><BarList rows={metrics.byPurpose} /></div>
+            </div>
+            <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
+              <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-amber-600">Custom Report Builder</p>
+                  <h2 className="mt-2 text-xl font-black text-slate-950">Build your own dashboard view</h2>
+                  <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+                    Choose month, financial year, grouping and chart style. This works like a lightweight dashboard widget builder for donation reporting.
+                  </p>
+                </div>
+                <Button type="button" onClick={() => downloadCsv("vihana-custom-report.csv", reportRows.map(([label, amount]) => ({ label, amount })))} className="h-10 rounded-full bg-amber-400 px-5 font-black text-slate-950 shadow-sm hover:bg-amber-300" disabled={!canExport || !reportRows.length}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Export Report
+                </Button>
+              </div>
+
+              <div className="mt-4 grid gap-2 md:grid-cols-4">
+                <label className="grid gap-1 text-xs font-black uppercase tracking-[0.14em] text-slate-500">
+                  Month
+                  <select value={reportMonth} onChange={(event) => setReportMonth(event.target.value)} className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm normal-case tracking-normal text-slate-900 outline-none focus:border-teal-600">
+                    {monthOptions.map((month) => <option key={month} value={month}>{month === "All" ? "All months" : month}</option>)}
+                  </select>
+                </label>
+                <label className="grid gap-1 text-xs font-black uppercase tracking-[0.14em] text-slate-500">
+                  Financial year
+                  <select value={reportFinancialYear} onChange={(event) => setReportFinancialYear(event.target.value)} className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm normal-case tracking-normal text-slate-900 outline-none focus:border-teal-600">
+                    {financialYearOptions.map((year) => <option key={year} value={year}>{year === "All" ? "All financial years" : year}</option>)}
+                  </select>
+                </label>
+                <label className="grid gap-1 text-xs font-black uppercase tracking-[0.14em] text-slate-500">
+                  Group by
+                  <select value={reportGroupBy} onChange={(event) => setReportGroupBy(event.target.value as ReportGroupBy)} className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm normal-case tracking-normal text-slate-900 outline-none focus:border-teal-600">
+                    <option value="month">Month</option>
+                    <option value="financialYear">Financial year</option>
+                    <option value="purpose">Purpose</option>
+                    <option value="method">Payment method</option>
+                    <option value="donor">Donor</option>
+                  </select>
+                </label>
+                <label className="grid gap-1 text-xs font-black uppercase tracking-[0.14em] text-slate-500">
+                  View
+                  <select value={reportChartType} onChange={(event) => setReportChartType(event.target.value as ReportChartType)} className="h-10 rounded-[8px] border border-slate-200 bg-slate-50 px-3 text-sm normal-case tracking-normal text-slate-900 outline-none focus:border-teal-600">
+                    <option value="bar">Bar chart</option>
+                    <option value="pie">Pie split</option>
+                    <option value="table">Table</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="mt-4 grid gap-4 lg:grid-cols-[220px_1fr]">
+                <div className="rounded-[8px] bg-teal-50 p-4">
+                  <CalendarDays className="h-6 w-6 text-teal-700" />
+                  <p className="mt-4 text-xs font-black uppercase tracking-[0.16em] text-teal-700">Filtered total</p>
+                  <p className="mt-1 text-2xl font-black text-slate-950">{formatCurrency(reportTotal)}</p>
+                  <p className="mt-1 text-xs font-semibold text-slate-500">{reportRows.length} report rows</p>
+                </div>
+                <div className="rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+                  {reportChartType === "bar" ? <BarList rows={reportRows} /> : null}
+                  {reportChartType === "pie" ? <PieList rows={reportRows} /> : null}
+                  {reportChartType === "table" ? (
+                    <div className="grid gap-2">
+                      {reportRows.length ? reportRows.map(([label, value]) => (
+                        <div key={label} className="flex justify-between gap-3 rounded-[8px] bg-white px-3 py-2 text-sm">
+                          <span className="font-bold text-slate-700">{label}</span>
+                          <span className="font-black text-teal-700">{formatCurrency(value)}</span>
+                        </div>
+                      )) : <p className="text-sm text-slate-500">No data for this report.</p>}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
             </div>
             <div className="rounded-[8px] border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2">
               <h2 className="text-xl font-black text-slate-950">Quick actions</h2>

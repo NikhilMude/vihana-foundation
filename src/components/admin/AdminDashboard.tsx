@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import {
   FileText,
@@ -1807,9 +1806,6 @@ export default function AdminDashboard({
             <a href="/" target="_blank" className="inline-flex h-10 items-center rounded-full bg-slate-950 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800">
               View Site
             </a>
-            <Link href="/admin/operations" className="inline-flex h-10 items-center rounded-full bg-amber-400 px-4 text-sm font-black text-slate-950 shadow-sm transition hover:bg-amber-300">
-              Operations
-            </Link>
             <Button type="button" onClick={() => saveContent()} disabled={saving} className="h-10 rounded-full bg-teal-700 px-5 hover:bg-teal-800">
               {saving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
               Save

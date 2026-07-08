@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import AdminOperationsDashboard from "@/components/admin/AdminOperationsDashboard";
 import { getAdminSession, getAllAdminPermissions } from "@/lib/adminAuth";
 import { listDocuments } from "@/lib/firestoreAdmin";
-import { getDonationIntents } from "@/lib/siteData";
+import { getDonationIntents, getSiteContent } from "@/lib/siteData";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +40,8 @@ export default async function AdminOperationsPage() {
     redirect("/donor");
   }
 
-  const [donations, donors, accountingRecords, adminUsers] = await Promise.all([
+  const [content, donations, donors, accountingRecords, adminUsers] = await Promise.all([
+    getSiteContent({ fresh: true }),
     currentAdmin.owner || currentAdmin.permissions.includes("donations:view") || currentAdmin.permissions.includes("reports:view") ? getDonationIntents() : Promise.resolve([]),
     currentAdmin.owner || currentAdmin.permissions.includes("donors:view")
       ? listDocuments("donors")
@@ -94,6 +95,7 @@ export default async function AdminOperationsPage() {
   return (
     <AdminOperationsDashboard
       currentAdmin={currentAdmin}
+      content={content}
       adminUsers={adminUsers}
       donations={donations}
       donors={donors}
