@@ -962,6 +962,7 @@ export default function AdminDashboard({
   const [subscribers] = useState(initialSubscribers);
   const [accountingRecords, setAccountingRecords] = useState(initialAccountingRecords);
   const [status, setStatus] = useState("");
+  const [statusType, setStatusType] = useState<"info" | "success" | "error">("info");
   const [saving, setSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState("");
   const [accountingDocumentPreview, setAccountingDocumentPreview] = useState("");
@@ -1304,9 +1305,14 @@ export default function AdminDashboard({
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
+  function updateStatus(message: string, type: "info" | "success" | "error" = "info") {
+    setStatus(message);
+    setStatusType(type);
+  }
+
   function markUnsaved(message = "You have unsaved changes. Click Save Changes to publish them.") {
     setHasUnsavedChanges(true);
-    setStatus(message);
+    updateStatus(message, "info");
   }
 
   function changeTab(nextTab: Tab) {
@@ -1355,8 +1361,10 @@ export default function AdminDashboard({
     setSaving(false);
     if (response.ok) {
       setHasUnsavedChanges(false);
+      updateStatus(successMessage, "success");
+      return;
     }
-    setStatus(response.ok ? successMessage : "Could not save website.");
+    updateStatus("Could not save website.", "error");
   }
 
   async function saveContent(event?: FormEvent<HTMLFormElement>) {
@@ -1579,7 +1587,8 @@ export default function AdminDashboard({
     }
 
     if (file.size > 700000) {
-      setStatus("Please choose a smaller image under 700 KB.");
+      updateStatus("Please choose a smaller image under 700 KB.", "error");
+      event.target.value = "";
       return;
     }
 
@@ -1596,7 +1605,8 @@ export default function AdminDashboard({
     }
 
     if (file.size > 650000) {
-      setStatus("Please choose a compressed PDF or image under 650 KB.");
+      updateStatus("Please choose a compressed PDF or image under 650 KB.", "error");
+      event.target.value = "";
       return;
     }
 
@@ -1814,7 +1824,17 @@ export default function AdminDashboard({
           </div>
 
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            {status ? <p className="max-w-full truncate rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-800 sm:max-w-sm">{status}</p> : null}
+            {status ? (
+              <p className={`max-w-full truncate rounded-full px-3 py-1.5 text-xs font-bold sm:max-w-sm ${
+                statusType === "error"
+                  ? "bg-rose-50 text-rose-800"
+                  : statusType === "success"
+                  ? "bg-emerald-50 text-emerald-800"
+                  : "bg-amber-50 text-amber-800"
+              }`}>
+                {status}
+              </p>
+            ) : null}
             {hasUnsavedChanges ? <p className="rounded-full bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-700">Unsaved</p> : null}
             <a href="/" target="_blank" className="inline-flex h-10 items-center rounded-full bg-slate-950 px-4 text-sm font-black text-white shadow-sm transition hover:bg-slate-800">
               View Site
@@ -2617,13 +2637,27 @@ export default function AdminDashboard({
                         className="h-11 rounded-[8px] border border-slate-200 px-4"
                         placeholder={listHelp[listKey].second}
                       />
-                      {listKey === "teamMembers" || listKey === "annualReports" ? (
+                      {listKey === "teamMembers" ? (
                         <input
                           value={item.tag || ""}
                           onChange={(event) => updateListItem(listKey, index, "tag", event.target.value)}
                           className="h-11 rounded-[8px] border border-slate-200 px-4 lg:col-span-2"
-                          placeholder={listKey === "annualReports" ? "Type: PDF, Image, External Link, Word, Excel" : "Superpowers: empathy, leadership, partnerships"}
+                          placeholder="Superpowers: empathy, leadership, partnerships"
                         />
+                      ) : null}
+                      {listKey === "annualReports" ? (
+                        <select
+                          value={item.tag || "PDF"}
+                          onChange={(event) => updateListItem(listKey, index, "tag", event.target.value)}
+                          className="h-11 rounded-[8px] border border-slate-200 bg-white px-4 text-slate-900 lg:col-span-2"
+                        >
+                          <option value="PDF">PDF</option>
+                          <option value="Image">Image</option>
+                          <option value="Word">Word</option>
+                          <option value="Excel">Excel</option>
+                          <option value="External Link">External Link</option>
+                          <option value="Presentation">Presentation</option>
+                        </select>
                       ) : null}
                       <textarea
                         value={String(item[listHelp[listKey].body] || "")}

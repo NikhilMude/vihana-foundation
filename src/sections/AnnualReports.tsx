@@ -13,6 +13,7 @@ function reportIcon(type?: string) {
   if (normalized.includes("excel") || normalized.includes("sheet")) return FileSpreadsheet;
   if (normalized.includes("image")) return FileImage;
   if (normalized.includes("external") || normalized.includes("link")) return Globe2;
+  if (normalized.includes("pdf") || normalized.includes("doc") || normalized.includes("word") || normalized.includes("ppt") || normalized.includes("presentation")) return FileText;
   return FileText;
 }
 
@@ -45,13 +46,13 @@ export default function AnnualReports({ content }: { content: SiteContent }) {
 
         <div className="mt-5 overflow-x-auto pb-3 [scrollbar-width:none] sm:mt-8">
           <div className="vihana-report-track flex w-max gap-4">
-          {[...content.annualReports, ...content.annualReports].map((item, index) => {
+          {content.annualReports.map((item, index) => {
             const Icon = reportIcon(item.tag);
             const whatsappHref = `https://wa.me/?text=${encodeURIComponent(shareText(item, content))}`;
             const emailHref = `mailto:?subject=${encodeURIComponent(item.title)}&body=${encodeURIComponent(shareText(item, content))}`;
 
             return (
-              <Reveal key={`${item.id}-${index}`} delay={(index % content.annualReports.length) * 0.04}>
+              <Reveal key={`${item.id}-${index}`} delay={index * 0.04}>
                 <article className="min-w-[280px] max-w-[280px] overflow-hidden rounded-[8px] border border-slate-200 bg-white shadow-sm sm:min-w-[340px] sm:max-w-[340px]">
                   <div className="relative h-36 bg-teal-50 sm:h-40">
                     {item.imageUrl ? (
@@ -76,7 +77,11 @@ export default function AnnualReports({ content }: { content: SiteContent }) {
                           {item.linkLabel || "View"}
                           <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
                         </SmartNavLink>
-                      ) : null}
+                      ) : (
+                        <span className="inline-flex h-9 items-center rounded-full border border-slate-200 bg-slate-100 px-3 text-xs font-black text-slate-500">
+                          No link provided
+                        </span>
+                      )}
                       <button type="button" onClick={() => void shareReport(item, content)} className="inline-flex h-9 items-center rounded-full border border-slate-200 px-3 text-xs font-black text-slate-700 hover:bg-slate-50">
                         <Share2 className="mr-1.5 h-3.5 w-3.5" />
                         Share
